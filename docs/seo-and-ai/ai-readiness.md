@@ -146,7 +146,7 @@ per bot.
 
 ## The readiness report
 
-**Visual Edit → SEO & AI Readiness.** A count of problems appears next to the
+**Visual Edit Lite → SEO & AI Readiness.** A count of problems appears next to the
 menu item.
 
 ### It only reports

@@ -190,6 +190,19 @@ $node  = $bar->get_node( "clara-visual-edit" );
 $title = $node ? trim( wp_strip_all_tags( $node->title ) ) : "";
 $out[] = array( "admin bar says \"Visual Edit Lite\" (got: " . $title . ")", "Visual Edit Lite" === $title );
 
+// The sidebar menu, for the same reason: Pro labels it after the screen, so
+// the derivation has to rename it and nothing static would notice if it did
+// not. $menu rows are [ title, cap, slug, page_title, ... ].
+// NOTE: this whole block is inside a single-quoted shell string. An
+// apostrophe anywhere in it silently ends that string and the assertions
+// stop running -- which is exactly how this comment lost its quotes.
+$sidebar = "";
+global $menu;
+foreach ( (array) $menu as $row ) {
+    if ( isset( $row[2] ) && "visual-edit" === $row[2] ) { $sidebar = trim( wp_strip_all_tags( $row[0] ) ); }
+}
+$out[] = array( "sidebar menu says \"Visual Edit Lite\" (got: " . $sidebar . ")", "Visual Edit Lite" === $sidebar );
+
 foreach ( $out as $row ) { echo ( $row[1] ? "OK|" : "FAIL|" ), $row[0], "\n"; }
 ')
 while IFS='|' read -r verdict label; do

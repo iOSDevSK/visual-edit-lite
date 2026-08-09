@@ -26,7 +26,7 @@ something authorised, without installing a separate SMTP plugin.
 
 ## Choosing how mail is sent
 
-**Visual Edit → Form Settings → Email delivery.**
+**Visual Edit Lite → Form Settings → Email delivery.**
 
 | Option | Use when |
 |---|---|

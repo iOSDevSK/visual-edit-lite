@@ -8,7 +8,7 @@ screen is for.
 Your theme carries the site's pages, posts and images inside it. Nothing
 appears until you import them.
 
-Go to **Appearance → Set up …** (or **Visual Edit → Import Content**) and
+Go to **Appearance → Set up …** (or **Visual Edit Lite → Import Content**) and
 choose **Review what this would add**.
 
 ### Read the review before applying
@@ -93,7 +93,7 @@ than it sounds and is not something the plugin can solve on its own.
 
 ### If the site should be found in search
 
-Open **Visual Edit → SEO & Sharing** and set the business or person name, what
+Open **Visual Edit Lite → SEO & Sharing** and set the business or person name, what
 kind of thing it is, and a logo. That is what search engines and AI assistants
 quote when they describe the site.
 

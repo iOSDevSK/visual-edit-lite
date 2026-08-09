@@ -15,7 +15,7 @@ Whatever the visitor typed, plus:
 - a spam flag
 - a delivery-failure flag if the notification email did not send
 
-Stored under **Visual Edit → Form Submissions**, indefinitely. There is no
+Stored under **Visual Edit Lite → Form Submissions**, indefinitely. There is no
 automatic cleanup — deleting old submissions is a decision, not a default.
 
 ### Mailing-list subscribers
@@ -104,7 +104,7 @@ Also put away: anything **you** made while that theme was active. A post you
 wrote, an image you uploaded, a page you added. It belongs to the design you
 were working on and comes back with it.
 
-**Visual Edit → Parked content** lists what is being held, for every inactive
+**Visual Edit Lite → Parked content** lists what is being held, for every inactive
 theme, with counts. Activating the theme again restores all of it exactly
 where it was.
 

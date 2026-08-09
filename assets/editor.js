@@ -168,7 +168,7 @@
 		var match = visualPages.filter( function ( p ) {
 			return p.key === currentKey;
 		} )[ 0 ];
-		toolbarTitle.textContent = 'Visual Editor — ' + ( match ? match.label : currentKey );
+		toolbarTitle.textContent = 'Visual Edit Lite — ' + ( match ? match.label : currentKey );
 	}
 
 	function switchToKey( key ) {

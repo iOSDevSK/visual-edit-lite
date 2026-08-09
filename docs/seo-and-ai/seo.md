@@ -53,7 +53,7 @@ that already exist, not filling in blanks.
 
 ## Site-wide: SEO & Sharing
 
-**Visual Edit → SEO & Sharing.**
+**Visual Edit Lite → SEO & Sharing.**
 
 | Setting | |
 |---|---|

@@ -14,7 +14,7 @@ See [Forms](forms.md) for the rest of the form settings.
 
 ## Provider
 
-**Visual Edit → Form Settings → Mailing list.**
+**Visual Edit Lite → Form Settings → Mailing list.**
 
 Currently supported: **Brevo**.
 
@@ -64,7 +64,7 @@ checklist, confirms their address, and gets the file.
 
 ## The subscriber list
 
-**Visual Edit → Subscribers.**
+**Visual Edit Lite → Subscribers.**
 
 | Column | |
 |---|---|

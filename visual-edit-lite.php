@@ -2155,7 +2155,7 @@ add_action( 'admin_bar_menu', 'clara_ve_admin_bar_link', 41 );
  * Visual Editor rather than opening each one to check.
  */
 function clara_ve_add_pages_column( $columns ) {
-	$columns['clara_ve_key'] = __( 'Visual Editor', 'visual-edit-lite' );
+	$columns['clara_ve_key'] = __( 'Visual Edit Lite', 'visual-edit-lite' );
 	return $columns;
 }
 add_filter( 'manage_pages_columns', 'clara_ve_add_pages_column' );

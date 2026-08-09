@@ -77,7 +77,7 @@ behaviour, not something the plugin decides.
 
 In this order:
 
-1. It is **stored** in WordPress, under **Visual Edit → Form Submissions**
+1. It is **stored** in WordPress, under **Visual Edit Lite → Form Submissions**
 2. Then it is **emailed** to you
 
 Storage first, deliberately. If email delivery fails — wrong SMTP password,
@@ -165,7 +165,7 @@ the EU — do not need it, and a note nobody chose is a note nobody maintains.
 
 ## Reading submissions
 
-**Visual Edit → Form Submissions.** Each entry opens to show every field, with
+**Visual Edit Lite → Form Submissions.** Each entry opens to show every field, with
 the IP address and any flags.
 
 They are stored indefinitely. There is no automatic cleanup — deleting old

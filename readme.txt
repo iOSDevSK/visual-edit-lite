@@ -85,7 +85,7 @@ depend on the theme at all and work anywhere.
 * **Deleting** the plugin always removes stored secrets (SMTP password,
   provider API keys) and scheduled jobs. Everything else — submissions,
   subscribers, edit history, page sources — is kept unless "also delete all
-  stored data" is enabled under Visual Edit → Form Settings → Uninstall.
+  stored data" is enabled under Visual Edit Lite → Form Settings → Uninstall.
 * **Visual Edit Pro**, the paid edition, shares this plugin's data format and
   its class and option names. The two cannot run at the same time: with Pro
   active, Lite switches itself off and says so rather than crashing the site.

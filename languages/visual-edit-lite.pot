@@ -53,71 +53,73 @@ msgstr ""
 msgid "Could not prepare a temporary directory for the export."
 msgstr ""
 
-#: includes/class-editor-page.php:20
-#: includes/class-editor-page.php:21
+#: includes/class-editor-page.php:25
+#: includes/class-editor-page.php:26
+#: visual-edit-lite.php:853
+#: visual-edit-lite.php:2144
 #: visual-edit-lite.php:2158
-msgid "Visual Editor"
-msgstr ""
-
-#: includes/class-editor-page.php:97
-msgid "You need theme-editing and unfiltered HTML permissions to use the visual editor."
+msgid "Visual Edit Lite"
 msgstr ""
 
 #: includes/class-editor-page.php:102
-msgid "Visual Editor — Front Page"
-msgstr ""
-
-#: includes/class-editor-page.php:103
-msgid "Switch page"
-msgstr ""
-
-#: includes/class-editor-page.php:104
-msgid "Preview live page in a new tab"
-msgstr ""
-
-#: includes/class-editor-page.php:105
-msgid "Toggle edit mode"
-msgstr ""
-
-#: includes/class-editor-page.php:106
-msgid "Preview device"
+msgid "You need theme-editing and unfiltered HTML permissions to use the visual editor."
 msgstr ""
 
 #: includes/class-editor-page.php:107
-msgid "Desktop — full width"
+msgid "Visual Edit Lite — Front Page"
 msgstr ""
 
 #: includes/class-editor-page.php:108
-msgid "Tablet — 820 × 1180"
+msgid "Switch page"
 msgstr ""
 
 #: includes/class-editor-page.php:109
-msgid "Mobile — 390 × 844"
+msgid "Preview live page in a new tab"
+msgstr ""
+
+#: includes/class-editor-page.php:110
+msgid "Toggle edit mode"
+msgstr ""
+
+#: includes/class-editor-page.php:111
+msgid "Preview device"
+msgstr ""
+
+#: includes/class-editor-page.php:112
+msgid "Desktop — full width"
 msgstr ""
 
 #: includes/class-editor-page.php:113
-#: includes/class-editor-page.php:145
-msgid "Search appearance"
+msgid "Tablet — 820 × 1180"
 msgstr ""
 
 #: includes/class-editor-page.php:114
-#: includes/class-editor-page.php:128
+msgid "Mobile — 390 × 844"
+msgstr ""
+
+#: includes/class-editor-page.php:118
+#: includes/class-editor-page.php:150
+msgid "Search appearance"
+msgstr ""
+
+#: includes/class-editor-page.php:119
+#: includes/class-editor-page.php:133
 msgid "History"
 msgstr ""
 
-#: includes/class-editor-page.php:115
+#: includes/class-editor-page.php:120
 msgid "Discard changes"
 msgstr ""
 
-#: includes/class-editor-page.php:116
+#: includes/class-editor-page.php:121
 msgid "Save"
 msgstr ""
 
-#: includes/class-editor-page.php:122
+#: includes/class-editor-page.php:127
 msgid "Front page preview"
 msgstr ""
 
-#: includes/class-editor-page.php:149
+#: includes/class-editor-page.php:154
 msgid "Loading…"
 msgstr ""
 
@@ -1580,11 +1582,6 @@ msgstr ""
 
 #: visual-edit-lite.php:852
 msgid "This content was written for a different design — its own assets and markers are missing from the active theme, so taking ownership would only put the wrong page back on the site. Activate the theme it belongs to, or give this theme its own WordPress install."
-msgstr ""
-
-#: visual-edit-lite.php:853
-#: visual-edit-lite.php:2144
-msgid "Visual Edit Lite"
 msgstr ""
 
 #: visual-edit-lite.php:880

@@ -4,7 +4,7 @@ Bringing a converted site's content into WordPress.
 
 ## Import
 
-**Visual Edit → Import Content.**
+**Visual Edit Lite → Import Content.**
 
 Two ways in:
 
