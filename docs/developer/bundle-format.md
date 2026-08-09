@@ -78,7 +78,7 @@ rather than sitting in a global file.
 |---|---|
 | `sources/{key}.html` | The page's markup, portable |
 | `pseudo/{key}.json` | Decorative styling: path → property map |
-| `posts.json` | `key`, slug, title, status, dates, excerpt, content, terms, optional `seo`, optional `featured_media` |
+| `posts.json` | `key`, slug, title, status, dates, excerpt, content, terms, optional `seo`, optional `featured_media`, optional `author` (byline display name; resolved to an existing user by display name or created with role `author` — absent means the importing user) |
 | `terms.json` | taxonomy, slug, name, description, parent slug |
 | `menus.json` | name, slug, locations, items |
 | `options.json` | Allowlisted settings only |

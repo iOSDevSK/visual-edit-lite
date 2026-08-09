@@ -83,6 +83,17 @@
 		// first image, silently loses its "manage as a list" panel — found
 		// by the conversion gate comparing dist detection against live.
 		loading: 1, decoding: 1, fetchpriority: 1,
+		// Animation stagger: a reveal library (AOS and kin) gives every
+		// member of a staggered list its OWN delay/duration by design —
+		// card 1 at 0ms, card 2 at 100ms, card 3 at 200ms. The values
+		// differ on every member of a group that is one design, so
+		// comparing them verbatim rejects exactly the lists the stagger
+		// was applied to (creative-013).
+		'data-aos-delay': 1, 'data-aos-duration': 1,
+		// Frozen carousel bookkeeping: a static export snapshots whatever
+		// slide index the runtime had assigned at capture time (dexler-014).
+		// Which slide a member WAS is state, not design.
+		'data-swiper-slide-index': 1,
 	};
 	// More than this many editable fields means the matched containers are
 	// loosely-similar page sections, not a card collection -- bail rather
@@ -503,7 +514,16 @@
 		if ( ! c ) {
 			return [];
 		}
-		return c.split( /\s+/ ).sort();
+		// Frozen carousel state: an export captures whichever slide was
+		// active/next/prev (and loop-mode duplicates) at snapshot time, and
+		// those classes ride the STORED markup, so the pristine snapshot
+		// carries them too. Members of one slider differing only by these
+		// are one design in different runtime states (dexler-014). The bare
+		// `swiper-slide` class is structure and stays.
+		var classes = c.split( /\s+/ ).filter( function ( cls ) {
+			return ! /^swiper-slide-(active|prev|next|duplicate)/.test( cls );
+		} );
+		return classes.sort();
 	}
 
 	function childTagSequence( el ) {

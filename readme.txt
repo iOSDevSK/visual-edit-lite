@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.19.6
+Stable tag: 1.19.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -181,6 +181,14 @@ message is sent to the host you configured.
 a picture hosted elsewhere, the plugin downloads that one URL, which you chose,
 and stores the file in your Media Library.
 
+**Gravatar** — used only if a listing template you designed includes the
+`{author_image}` placeholder. It resolves through WordPress's own
+`get_avatar_url()`, so unless another plugin serves avatars locally the
+portrait is fetched by visitors' browsers from `gravatar.com`, which then
+receives their IP address and user agent. A template without that placeholder
+requests nothing.
+Terms: https://automattic.com/terms/ — Privacy: https://automattic.com/privacy/
+
 == Privacy ==
 
 The plugin stores form submissions and mailing-list subscribers in your own
@@ -191,6 +199,27 @@ the plugin is deleted.
 
 == Changelog ==
 
+= 1.19.8 =
+* Staggered and carousel lists are collections again. A reveal library's
+  per-card delay (`data-aos-delay`/`duration`) and a carousel's frozen runtime
+  state (`swiper-slide-active/prev/next/duplicate`,
+  `data-swiper-slide-index`) no longer disqualify sibling cards from the
+  "manage as a list" panel — those are animation timing and captured state,
+  not design differences.
+* Listing cards can carry a byline: new `{author}` and `{author_image}`
+  placeholders for `[wp-posts]` templates, matching
+  `[wp-article field="author"]`.
+* Menu labels land on the item's name, never its description. A two-line
+  dropdown item (name plus a descriptive sentence) used to get its description
+  overwritten by the label on every page; the label now targets the run that
+  carries the name.
+* Imported blog posts keep their byline. A content bundle may name each
+  article's author; the import resolves it to an existing user by display name
+  or creates one (role: author) instead of crediting whoever clicked Import.
+* Derived from Visual Edit Pro 1.19.8. There is no Lite 1.19.7 — Lite carries
+  the version number of the Pro release it was derived from, so the two stay
+  comparable at a glance.
+
 = 1.19.6 =
 * First public release. Visual Edit Lite is derived from Visual Edit Pro
   1.19.6 and shares its version number so the two stay comparable at a
@@ -200,6 +229,11 @@ the plugin is deleted.
   call and no bundled updater anywhere in the code.
 
 == Upgrade Notice ==
+
+= 1.19.8 =
+Staggered and carousel card lists are editable as collections again, listing
+templates can show an author byline, and menu labels stop overwriting item
+descriptions.
 
 = 1.19.6 =
 First public release.

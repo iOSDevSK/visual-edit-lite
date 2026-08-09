@@ -787,18 +787,27 @@ class Clara_VE_Import_Plan {
 				continue;
 			}
 
-			$post_id = wp_insert_post(
-				array(
-					'post_type'     => 'post',
-					'post_name'     => $slug,
-					'post_title'    => isset( $post['title'] ) ? $post['title'] : $slug,
-					'post_status'   => isset( $post['status'] ) ? $post['status'] : 'publish',
-					'post_content'  => Clara_VE_Bundle_Format::from_portable( isset( $post['content'] ) ? $post['content'] : '' ),
-					'post_excerpt'  => Clara_VE_Bundle_Format::from_portable( isset( $post['excerpt'] ) ? $post['excerpt'] : '' ),
-					'post_date_gmt' => isset( $post['date_gmt'] ) ? $post['date_gmt'] : '',
-				),
-				true
+			$insert = array(
+				'post_type'     => 'post',
+				'post_name'     => $slug,
+				'post_title'    => isset( $post['title'] ) ? $post['title'] : $slug,
+				'post_status'   => isset( $post['status'] ) ? $post['status'] : 'publish',
+				'post_content'  => Clara_VE_Bundle_Format::from_portable( isset( $post['content'] ) ? $post['content'] : '' ),
+				'post_excerpt'  => Clara_VE_Bundle_Format::from_portable( isset( $post['excerpt'] ) ? $post['excerpt'] : '' ),
+				'post_date_gmt' => isset( $post['date_gmt'] ) ? $post['date_gmt'] : '',
 			);
+			// The byline the article page printed. Without this every imported
+			// post is attributed to whoever clicked Import — "admin" under
+			// each article the site's own author signed. Only set when the
+			// bundle names one; absent, the current default (the importing
+			// user) is the honest answer, not a guess.
+			if ( ! empty( $post['author'] ) && is_string( $post['author'] ) ) {
+				$author_id = self::resolve_author( $post['author'] );
+				if ( $author_id ) {
+					$insert['post_author'] = $author_id;
+				}
+			}
+			$post_id = wp_insert_post( $insert, true );
 			if ( is_wp_error( $post_id ) ) {
 				continue;
 			}
@@ -838,6 +847,60 @@ class Clara_VE_Import_Plan {
 			/* translators: %d: number of posts */
 			$lines[] = sprintf( _n( '%d blog post added.', '%d blog posts added.', $created, 'visual-edit-lite' ), $created );
 		}
+	}
+
+	/**
+	 * The WP user a bundle's author byline resolves to, created on first
+	 * sight when no user carries the name.
+	 *
+	 * Matching is by display_name, exactly — the byline is display text and
+	 * that is the field it must round-trip through ({author} and
+	 * [wp-article field="author"] both read display_name). Creation follows
+	 * the WXR importer's precedent: an import that names authors creates
+	 * them, because attributing someone's article to the importing admin is
+	 * worse than a new author row. Role 'author' (can write posts, cannot
+	 * touch the site), no email, random password — a sign-in is something
+	 * the owner grants later, not something an import hands out.
+	 *
+	 * @param string $display_name As written in the article's byline.
+	 * @return int User ID, or 0 when the name is empty/unresolvable.
+	 */
+	private static function resolve_author( $display_name ) {
+		static $cache = array();
+		$display_name = trim( wp_strip_all_tags( $display_name ) );
+		if ( '' === $display_name ) {
+			return 0;
+		}
+		if ( isset( $cache[ $display_name ] ) ) {
+			return $cache[ $display_name ];
+		}
+		global $wpdb;
+		$found = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->users} WHERE display_name = %s LIMIT 1", $display_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( $found ) {
+			$cache[ $display_name ] = (int) $found;
+			return (int) $found;
+		}
+		$login = sanitize_user( sanitize_title( $display_name ), true );
+		if ( '' === $login ) {
+			$cache[ $display_name ] = 0;
+			return 0;
+		}
+		$existing = get_user_by( 'login', $login );
+		if ( $existing ) {
+			$cache[ $display_name ] = (int) $existing->ID;
+			return (int) $existing->ID;
+		}
+		$user_id = wp_insert_user(
+			array(
+				'user_login'   => $login,
+				'user_pass'    => wp_generate_password( 24 ),
+				'display_name' => $display_name,
+				'nickname'     => $display_name,
+				'role'         => 'author',
+			)
+		);
+		$cache[ $display_name ] = is_wp_error( $user_id ) ? 0 : (int) $user_id;
+		return $cache[ $display_name ];
 	}
 
 	/**

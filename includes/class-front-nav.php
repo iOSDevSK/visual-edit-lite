@@ -237,7 +237,8 @@ class Clara_VE_Front_Nav {
 
 	/**
 	 * One link element with the menu item's url, label and target written in.
-	 * The label replaces the link's longest text run, so an icon or badge
+	 * The label replaces the run that carried the item's name (see the
+	 * ladder at the replacement site), so an icon, badge or description
 	 * inside the link survives; a plain-text link is replaced wholesale.
 	 *
 	 * When the zone declares active/rest nav classes, a link that wears the
@@ -306,20 +307,62 @@ class Clara_VE_Front_Nav {
 		if ( false === strpos( $inner, '<' ) ) {
 			$inner = $label;
 		} else {
-			// Replace the longest text run between tags, keeping icons and
-			// wrappers exactly where they are.
+			// Which text run is the LABEL? "The longest" was the old answer,
+			// and it is wrong on the common two-line dropdown item — icon,
+			// <span>CRM</span>, <p>For great customer relationships</p> —
+			// where the longest run is the DESCRIPTION. The label landed
+			// there, so every item read its own name twice and the sentence
+			// the design wrote was destroyed on every page (bigspring-017).
+			//
+			// The ladder, in order of evidence:
+			//   1. A run whose text already equals the item's title. Links
+			//      are paired with items positionally, so on any render where
+			//      the owner has not retitled the item — including every
+			//      re-render — the name run identifies itself exactly.
+			//   2. Otherwise the longest run OUTSIDE <p>: block-level prose
+			//      inside a link is descriptive furniture, never the label.
+			//   3. Otherwise the longest run anywhere (one-line links,
+			//      glyph-and-text shapes — the old rule, where it was right).
 			$chunks = preg_split( '/(<(?:"[^"]*"|\'[^\']*\'|[^>"\'])+>)/', $inner, -1, PREG_SPLIT_DELIM_CAPTURE );
-			$best   = -1;
-			$best_len = 0;
+			$title_run   = -1;
+			$best        = -1;
+			$best_len    = 0;
+			$best_any    = -1;
+			$best_any_len = 0;
+			$p_depth     = 0;
+			$item_title  = trim( wp_specialchars_decode( $item->title, ENT_QUOTES ) );
 			foreach ( $chunks as $i => $chunk ) {
-				if ( '' !== $chunk && '<' !== $chunk[0] && strlen( trim( $chunk ) ) > $best_len ) {
+				if ( '' === $chunk ) {
+					continue;
+				}
+				if ( '<' === $chunk[0] ) {
+					if ( preg_match( '/^<p[\s>]/i', $chunk ) ) {
+						++$p_depth;
+					} elseif ( preg_match( '/^<\/p/i', $chunk ) ) {
+						$p_depth = max( 0, $p_depth - 1 );
+					}
+					continue;
+				}
+				$text = trim( html_entity_decode( $chunk, ENT_QUOTES ) );
+				if ( '' === $text ) {
+					continue;
+				}
+				if ( -1 === $title_run && '' !== $item_title && $text === $item_title ) {
+					$title_run = $i;
+				}
+				if ( strlen( $text ) > $best_any_len ) {
+					$best_any     = $i;
+					$best_any_len = strlen( $text );
+				}
+				if ( 0 === $p_depth && strlen( $text ) > $best_len ) {
 					$best     = $i;
-					$best_len = strlen( trim( $chunk ) );
+					$best_len = strlen( $text );
 				}
 			}
-			if ( $best >= 0 ) {
-				$chunks[ $best ] = $label;
-				$inner           = implode( '', $chunks );
+			$target = ( $title_run >= 0 ) ? $title_run : ( ( $best >= 0 ) ? $best : $best_any );
+			if ( $target >= 0 ) {
+				$chunks[ $target ] = $label;
+				$inner             = implode( '', $chunks );
 			} else {
 				$inner .= $label;
 			}

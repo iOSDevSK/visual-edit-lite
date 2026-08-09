@@ -56,8 +56,8 @@ msgstr ""
 #: includes/class-editor-page.php:25
 #: includes/class-editor-page.php:26
 #: visual-edit-lite.php:853
-#: visual-edit-lite.php:2144
-#: visual-edit-lite.php:2158
+#: visual-edit-lite.php:2149
+#: visual-edit-lite.php:2163
 msgid "Visual Edit Lite"
 msgstr ""
 
@@ -494,7 +494,7 @@ msgid "Please wait a moment before submitting again."
 msgstr ""
 
 #: includes/class-forms.php:209
-#: includes/class-import-plan.php:1349
+#: includes/class-import-plan.php:1412
 msgid "%1$s — %2$s"
 msgstr ""
 
@@ -1022,81 +1022,81 @@ msgid_plural "%d categories added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:839
+#: includes/class-import-plan.php:848
 msgid "%d blog post added."
 msgid_plural "%d blog posts added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:932
+#: includes/class-import-plan.php:995
 msgid "%d page added."
 msgid_plural "%d pages added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:940
+#: includes/class-import-plan.php:1003
 msgid "NOT imported — %s"
 msgstr ""
 
-#: includes/class-import-plan.php:1004
+#: includes/class-import-plan.php:1067
 msgid "Freed the address /%s/ from a media file so the imported page could use it."
 msgstr ""
 
-#: includes/class-import-plan.php:1017
+#: includes/class-import-plan.php:1080
 msgid "The address /%1$s/ was already taken by your page \"%2$s\", so the imported page got a slightly different one. Links in the design that point at /%1$s/ will reach your page, not the imported one."
 msgstr ""
 
-#: includes/class-import-plan.php:1040
+#: includes/class-import-plan.php:1103
 msgid "Reused WordPress's own placeholder page \"%s\" so the imported page keeps its proper address."
 msgstr ""
 
-#: includes/class-import-plan.php:1151
+#: includes/class-import-plan.php:1214
 msgid "Menu \"%1$s\" added with %2$d links."
 msgstr ""
 
-#: includes/class-import-plan.php:1165
+#: includes/class-import-plan.php:1228
 msgid "Shown in: %s."
 msgstr ""
 
-#: includes/class-import-plan.php:1171
+#: includes/class-import-plan.php:1234
 msgid "It is not shown anywhere yet: this theme does not register the navigation position it was built for, so there is nothing to attach it to. A theme made by the converter declares that in inc/visual-edit.php."
 msgstr ""
 
-#: includes/class-import-plan.php:1172
+#: includes/class-import-plan.php:1235
 msgid "It is not shown anywhere yet: another menu already occupies that position. Assign it under Appearance → Menus if you want this one instead."
 msgstr ""
 
-#: includes/class-import-plan.php:1195
+#: includes/class-import-plan.php:1258
 msgid "%d setting applied."
 msgid_plural "%d settings applied."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1241
+#: includes/class-import-plan.php:1304
 msgid "Permalinks switched to %s — the imported pages need path-style links to resolve."
 msgstr ""
 
-#: includes/class-import-plan.php:1264
+#: includes/class-import-plan.php:1327
 msgid "The front page is set as a static page, so it can carry its own title, description and social preview."
 msgstr ""
 
-#: includes/class-import-plan.php:1281
+#: includes/class-import-plan.php:1344
 msgid "Note: the bundle used \"%s\" as its blog page. It lists posts through its own design, so do NOT set it under Settings → Reading → Posts page."
 msgstr ""
 
-#: includes/class-import-plan.php:1314
+#: includes/class-import-plan.php:1377
 msgid "%d address from the original site now redirects to its new page, so existing links and search results keep working."
 msgid_plural "%d addresses from the original site now redirect to their new pages, so existing links and search results keep working."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1375
+#: includes/class-import-plan.php:1438
 msgid "%d form submission added."
 msgid_plural "%d form submissions added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1420
+#: includes/class-import-plan.php:1483
 msgid "%d subscriber added."
 msgid_plural "%d subscribers added."
 msgstr[0] ""
@@ -1537,18 +1537,18 @@ msgstr ""
 msgid "Page not found (404)"
 msgstr ""
 
-#: includes/class-tokens.php:672
+#: includes/class-tokens.php:680
 msgid "No article on this side"
 msgstr ""
 
-#: includes/class-tokens.php:738
+#: includes/class-tokens.php:746
 msgid "%d min read"
 msgid_plural "%d min read"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-tokens.php:792
-#: visual-edit-lite.php:1935
+#: includes/class-tokens.php:800
+#: visual-edit-lite.php:1940
 msgid "Thanks — check your inbox."
 msgstr ""
 
@@ -1617,34 +1617,34 @@ msgctxt "post status"
 msgid "Parked with its theme"
 msgstr ""
 
-#: visual-edit-lite.php:1543
+#: visual-edit-lite.php:1548
 msgid "Visual Edit: menu management is off."
 msgstr ""
 
-#: visual-edit-lite.php:1544
+#: visual-edit-lite.php:1549
 msgid "The active theme does not declare its navigation zones (the clara_ve_theme_contract filter), so the plugin cannot know which markup is a menu — a menu created here would not appear on the site. Themes generated by the converter declare this in inc/visual-edit.php."
 msgstr ""
 
-#: visual-edit-lite.php:1933
+#: visual-edit-lite.php:1938
 msgid "Sending…"
 msgstr ""
 
-#: visual-edit-lite.php:1934
+#: visual-edit-lite.php:1939
 msgid "Sent!"
 msgstr ""
 
-#: visual-edit-lite.php:1936
+#: visual-edit-lite.php:1941
 msgid "Something went wrong — please try again."
 msgstr ""
 
-#: visual-edit-lite.php:2146
+#: visual-edit-lite.php:2151
 msgid "Open the front page in the visual editor"
 msgstr ""
 
-#: visual-edit-lite.php:2198
+#: visual-edit-lite.php:2203
 msgid "Advanced (HTML block &amp; %s)"
 msgstr ""
 
-#: visual-edit-lite.php:2199
+#: visual-edit-lite.php:2204
 msgid "Edit HTML block"
 msgstr ""

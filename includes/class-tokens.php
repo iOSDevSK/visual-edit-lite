@@ -264,7 +264,7 @@ class Clara_VE_Tokens {
 
 	/**
 	 * @param array  $atts     count, category, orderby, order, offset, image_size.
-	 * @param string $template Per-item markup with {title} {excerpt} {url} {image} {date} {category} placeholders.
+	 * @param string $template Per-item markup with {title} {excerpt} {url} {image} {date} {category} {tag} {tags} {category2} {author} {author_image} placeholders.
 	 * @return string
 	 */
 	private static function render_posts( $atts, $template ) {
@@ -396,6 +396,14 @@ class Clara_VE_Tokens {
 					'{image}'    => $thumb ? esc_url( $thumb ) : self::BLANK_IMAGE,
 					'{date}'     => esc_html( get_the_date( '', $post ) ),
 					'{category}' => esc_html( $categories ? $categories[0]->name : '' ),
+					// The listing-card counterparts of [wp-article field="author"].
+					// A card design showing a byline had no placeholder to carry
+					// it, so conversions baked the SOURCE article's author into
+					// the template and every card credited the same person.
+					// {author_image} is the avatar URL for the portrait beside
+					// the name — same fallback behaviour as any avatar in WP.
+					'{author}'       => esc_html( get_the_author_meta( 'display_name', $post->post_author ) ),
+					'{author_image}' => esc_url( get_avatar_url( $post->post_author ) ),
 				)
 			);
 		}
