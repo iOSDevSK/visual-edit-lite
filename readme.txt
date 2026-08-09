@@ -1,6 +1,6 @@
 === Visual Edit Lite ===
 Contributors: filipdvoran
-Tags: visual editor, page builder, html editor, seo, ai readiness
+Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
@@ -8,14 +8,19 @@ Stable tag: 1.19.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Point-and-click visual editing for raw-HTML theme pages — the page markup stays 1:1 with the original design, no builder re-structuring.
+Click-to-edit visual editing for WordPress themes built from static HTML — text, images, forms, menus, SEO. Markup stays 1:1 with the design.
 
 == Description ==
 
-Visual Edit Lite is the editing companion for websites converted from a static
-HTML design into WordPress. The converted theme keeps every page's markup
-byte-for-byte identical to the original design; this plugin is what makes those
-pages editable — by clicking, not by rebuilding them in a page builder.
+Visual Edit Lite is the editing companion for a WordPress site built from a
+static HTML design — a hand-written site, or one exported from Lovable, Bolt,
+v0.dev, aidesigner.ai or a Claude design. The theme keeps every page's markup
+byte-for-byte identical to the original; this plugin is what makes those pages
+editable, by clicking rather than by rebuilding them in a page builder.
+
+If you have brought an HTML site into WordPress and want the client to edit it
+without touching the markup — or without the design surviving a page builder —
+this is the piece that was missing.
 
 Nothing here is locked, timed, or waiting for a key. Everything the plugin
 contains works on every install, offline included.

@@ -117,6 +117,7 @@ rsync -a \
   --exclude '__MACOSX' \
   --exclude 'tests/' \
   --exclude 'tools/' \
+  --exclude 'assets-source/' \
   --exclude '*.zip' \
   "$SRC/" "$STAGE/$SLUG/"
 
