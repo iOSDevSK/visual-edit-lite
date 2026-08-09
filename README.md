@@ -7,16 +7,26 @@ came from, because nothing is ever re-structured into blocks or widgets.
 
 ---
 
-## This plugin needs a converted theme
+## What it needs from a theme
 
-**Visual Edit Lite is the editing half of a two-part product.** The other half is a
-converter that turns a finished HTML site — one built in **Lovable, Bolt,
-aidesigner.ai, v0.dev, Claude design**, or written by hand — into a WordPress
-theme that keeps the original markup intact. Visual Edit Lite is what makes
-that theme editable afterwards.
+Visual Edit Lite edits raw HTML in place, so it needs a theme that *has* raw
+HTML: one whose pages are markup rather than blocks, and which declares what
+that markup means through the `clara_ve_theme_contract` filter.
 
-Install it on such a theme and everything below works. Install it on anything
-else and the editing screens will load but have nothing to edit.
+**That contract is open and documented.** Everything a theme must provide is
+written down in [`docs/developer/theme-requirements.md`](docs/developer/theme-requirements.md)
+— a front-page pattern, a handful of template parts, a key marker per block,
+and per-key structural anchors. Any theme can satisfy it, hand-written or
+generated, and no part of it depends on a service.
+
+In practice most such themes are produced by a converter that turns a finished
+HTML site — one built in **Lovable, Bolt, aidesigner.ai, v0.dev, Claude
+design**, or written by hand — into a WordPress theme with the original markup
+intact. That converter is a separate project; this repository is the editor.
+
+Install the plugin on a theme that declares the contract and everything below
+works. Install it on one that does not and the editing screens still load, but
+the canvas has nothing it recognises to edit.
 
 **It is not a page builder and does not work with one.** It is not for
 Gutenberg block themes, Elementor, Divi, Beaver Builder, or ordinary
@@ -24,9 +34,6 @@ WordPress themes. Those store your page as their own data structure — blocks,
 widgets, shortcodes — and render markup from it. This plugin does the
 opposite: it edits the raw HTML the theme already carries, in place. A theme
 that has no raw HTML to edit gives it nothing to work on.
-
-> The converter is a separate, paid service with its own site.
-> <!-- CONVERTER_URL --> _(link to be added)_
 
 Parts of the plugin that do **not** depend on the theme — forms, email
 delivery, mailing lists, the SEO record and emitter, redirects, structured
@@ -109,7 +116,7 @@ same time: with Pro active, Lite switches itself off and says so.
 | WordPress | 6.6 or newer |
 | PHP | 7.4 or newer |
 | Capabilities | `edit_theme_options` **and** `unfiltered_html` |
-| Theme | one produced by the converter |
+| Theme | any theme declaring `clara_ve_theme_contract` (see [theme requirements](docs/developer/theme-requirements.md)) |
 
 Editing round-trips raw HTML, so it requires `unfiltered_html` — the
 capability WordPress uses to mean "this person is trusted with markup". **On
@@ -140,8 +147,8 @@ GPL-2.0-or-later. See [LICENSE](LICENSE).
 The editor is open source on purpose. It is delivered to every site it
 converts, so it is code you can read, audit and keep — which matters for a
 plugin that handles your markup, your form submissions and your subscriber
-list. The conversion service is a separate product; this repository is the
-editor.
+list. The converter is a separate project; this repository is the editor, and
+its theme contract is documented so anyone can build against it.
 
 ## Verifying a build
 

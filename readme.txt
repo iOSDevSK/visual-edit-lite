@@ -66,9 +66,13 @@ run next.
 = What this plugin needs =
 
 A theme whose pages are raw HTML and which declares its contract with the
-plugin (`clara_ve_theme_contract`). Themes produced by the html2wp converter
-do this. On any other theme the editor loads but has nothing it recognises to
-edit.
+plugin through the `clara_ve_theme_contract` filter. The contract is fully
+documented in the plugin's own `docs/developer/theme-requirements.md`, so any
+theme can satisfy it — hand-written or generated. On a theme that does not,
+the editor still loads, but the canvas has nothing it recognises to edit.
+
+Forms, email delivery, mailing lists, SEO, redirects and llms.txt do not
+depend on the theme at all and work anywhere.
 
 == Important notes ==
 
