@@ -225,7 +225,10 @@ class Clara_VE_Zip {
 				wp_delete_file( $path );
 			}
 		}
-		@rmdir( $dir ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		// Scratch directory under uploads, created by scratch_dir() and torn
+		// down here; WP_Filesystem's rmdir needs a credentials round-trip that
+		// a cleanup path must not depend on.
+		@rmdir( $dir ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
 	}
 
 	/**

@@ -201,12 +201,15 @@ class Clara_VE_Optin {
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename=subscribers-' . gmdate( 'Y-m-d' ) . '.csv' );
 
-		$out = fopen( 'php://output', 'w' );
+		// A streamed download, not a file on disk: WP_Filesystem has no
+		// equivalent for writing to php://output, which is the whole point
+		// here — the CSV is never stored anywhere.
+		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 		fputcsv( $out, array( 'email', 'status', 'list', 'form', 'ip', 'asked', 'confirmed', 'consent_text' ) );
 		foreach ( $rows as $row ) {
 			fputcsv( $out, $row );
 		}
-		fclose( $out );
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		exit;
 	}
 
@@ -441,9 +444,9 @@ class Clara_VE_Optin {
 	 */
 	private static function sweep() {
 		global $wpdb;
-		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery, phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 			$wpdb->prepare(
-				'DELETE FROM ' . self::table() . " WHERE status = 'pending' AND created_at < %s",
+				'DELETE FROM ' . self::table() . " WHERE status = 'pending' AND created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 				gmdate( 'Y-m-d H:i:s', time() - ( self::PENDING_DAYS * DAY_IN_SECONDS ) )
 			)
 		);

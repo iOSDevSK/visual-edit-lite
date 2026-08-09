@@ -234,7 +234,7 @@ class Clara_VE_History {
 		self::maybe_install();
 		self::rekey_double_scoped();
 		$page_key = self::scoped_key( $page_key );
-		$count    = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::table() . ' WHERE page_key = %s', $page_key ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$count    = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::table() . ' WHERE page_key = %s', $page_key ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		if ( $count > 0 ) {
 			return;
 		}
@@ -257,7 +257,7 @@ class Clara_VE_History {
 		global $wpdb;
 		self::maybe_install();
 		$page_key = self::scoped_key( $page_key );
-		return $wpdb->get_row( $wpdb->prepare( 'SELECT id, content_hash FROM ' . self::table() . ' WHERE page_key = %s ORDER BY id DESC LIMIT 1', $page_key ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return $wpdb->get_row( $wpdb->prepare( 'SELECT id, content_hash FROM ' . self::table() . ' WHERE page_key = %s ORDER BY id DESC LIMIT 1', $page_key ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 
 	/**
@@ -275,7 +275,7 @@ class Clara_VE_History {
 		global $wpdb;
 		self::maybe_install();
 		$page_key = self::scoped_key( $page_key );
-		$row      = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' WHERE id = %d AND page_key = %s', $id, $page_key ) );
+		$row      = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' WHERE id = %d AND page_key = %s', $id, $page_key ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		if ( ! $row ) {
 			return null;
 		}
@@ -330,7 +330,7 @@ class Clara_VE_History {
 		if ( $source_ids ) {
 			$placeholders = implode( ',', array_fill( 0, count( $source_ids ), '%d' ) );
 			$found        = $wpdb->get_results(
-				$wpdb->prepare( "SELECT id, content_hash FROM {$table} WHERE id IN ({$placeholders})", $source_ids ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
+				$wpdb->prepare( "SELECT id, content_hash FROM {$table} WHERE id IN ({$placeholders})", $source_ids ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 			);
 			foreach ( $found as $f ) {
 				$restore_sources[ (int) $f->id ] = $f->content_hash;

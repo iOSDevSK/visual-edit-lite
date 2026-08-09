@@ -618,14 +618,14 @@ class Clara_VE_Bundle_Writer {
 		global $wpdb;
 		$select = 'SELECT email, list_id, form_id, status, consent_text, ip, created_at, confirmed_at FROM ' . Clara_VE_Optin::table();
 		if ( '' !== $theme && sanitize_key( $theme ) !== sanitize_key( get_stylesheet() ) ) {
-			$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-				$wpdb->prepare( $select . ' WHERE theme = %s ORDER BY id ASC', sanitize_key( $theme ) ),
+			$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+				$wpdb->prepare( $select . ' WHERE theme = %s ORDER BY id ASC', sanitize_key( $theme ) ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 				ARRAY_A
 			);
 			return $rows ? $rows : array();
 		}
-		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$select . ' ORDER BY id ASC',
+		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+			$select . ' ORDER BY id ASC', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 			ARRAY_A
 		);
 		// token_hash is deliberately not selected: it authorises confirming

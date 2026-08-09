@@ -457,8 +457,8 @@ class Clara_VE_Import_Plan {
 		}
 
 		global $wpdb;
-		$existing = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( 'SELECT status FROM ' . Clara_VE_Optin::table() . ' WHERE email = %s', $email )
+		$existing = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+			$wpdb->prepare( 'SELECT status FROM ' . Clara_VE_Optin::table() . ' WHERE email = %s', $email ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		);
 		if ( $existing ) {
 			$same             = isset( $subscriber['status'] ) && $existing->status === $subscriber['status'];
@@ -1344,8 +1344,8 @@ class Clara_VE_Import_Plan {
 			$post_id = wp_insert_post(
 				array(
 					'post_type'   => Clara_VE_Forms::CPT,
-					/* translators: 1: form id, 2: submission date. */
 					'post_title'  => sprintf(
+						/* translators: 1: form id, 2: submission date. */
 						__( '%1$s — %2$s', 'visual-edit-lite' ),
 						isset( $submission['form_id'] ) ? $submission['form_id'] : 'form',
 						isset( $submission['date_gmt'] ) ? $submission['date_gmt'] : ''

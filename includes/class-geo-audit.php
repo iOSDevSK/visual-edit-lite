@@ -186,8 +186,20 @@ class Clara_VE_GEO_Audit {
 		// afterwards rather than found per page.
 		// "elsewhere", not "on another page": posts are in this set now, so the
 		// other thing sharing the description is often not a page at all.
-		self::attach_duplicates( $pages, $descriptions, 'error', __( 'This description is used elsewhere too: %s. Two pages claiming the same summary compete with each other.', 'visual-edit-lite' ) );
-		self::attach_duplicates( $pages, $titles, 'warning', __( 'This title is used elsewhere too: %s.', 'visual-edit-lite' ) );
+		self::attach_duplicates(
+			$pages,
+			$descriptions,
+			'error',
+			/* translators: %s: comma-separated list of the other pages using the same description. */
+			__( 'This description is used elsewhere too: %s. Two pages claiming the same summary compete with each other.', 'visual-edit-lite' )
+		);
+		self::attach_duplicates(
+			$pages,
+			$titles,
+			'warning',
+			/* translators: %s: comma-separated list of the other pages using the same title. */
+			__( 'This title is used elsewhere too: %s.', 'visual-edit-lite' )
+		);
 
 		$report = array(
 			'site'   => self::check_site(),
@@ -674,7 +686,7 @@ class Clara_VE_GEO_Audit {
 						/* translators: 1: posts checked, 2: total posts */
 						esc_html__( 'Showing the %1$d most recent of %2$d posts. Older ones are not checked.', 'visual-edit-lite' ),
 						(int) self::MAX_POSTS,
-						$post_count
+						(int) $post_count
 					);
 					?>
 				</p>

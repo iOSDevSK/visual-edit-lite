@@ -225,17 +225,17 @@ require_once CLARA_VE_DIR . 'includes/class-parked-page.php';
 // dbDelta is idempotent, so this is a cheap no-op once the schema is current.
 add_action( 'init', array( 'Clara_VE_History', 'maybe_install' ), 1 );
 
-/**
- * Load translations from this plugin's own languages/ directory. Explicit
- * because WordPress's automatic just-in-time loading only reads
- * wp-content/languages/plugins/, which the wordpress.org translation
- * pipeline populates — and this plugin is distributed privately, so its
- * translations travel inside the ZIP or nowhere.
+/*
+ * No load_plugin_textdomain() call.
+ *
+ * Pro needed one: it is distributed privately, so its translations travel
+ * inside the ZIP or nowhere. Lite ships through WordPress.org, where
+ * WordPress loads a plugin's translations just in time from
+ * wp-content/languages/plugins/ and, failing that, from this plugin's own
+ * Domain Path — and calling the function anyway is on Plugin Check's
+ * discouraged list. languages/visual-edit-lite.pot is still shipped as the
+ * template translators start from (regenerate with tools/make-pot.php).
  */
-function clara_ve_load_textdomain() {
-	load_plugin_textdomain( 'visual-edit-lite', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-}
-add_action( 'init', 'clara_ve_load_textdomain', 0 );
 
 /**
  * Editing requires theme-level trust: raw HTML round-trips through the editor.
@@ -1684,7 +1684,7 @@ add_action( 'init', 'clara_ve_register_page_key_meta' );
  * @return string|null
  */
 function clara_ve_current_key() {
-	if ( clara_ve_is_edit_preview() && isset( $_GET['clara_ve_key'] ) ) {
+	if ( clara_ve_is_edit_preview() && isset( $_GET['clara_ve_key'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$override = sanitize_key( wp_unslash( $_GET['clara_ve_key'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( in_array( $override, array( CLARA_VE_HEADER_KEY, CLARA_VE_FOOTER_KEY, CLARA_VE_ARTICLE_KEY, CLARA_VE_404_KEY ), true )
 			|| clara_ve_contract_part( $override ) ) {
@@ -1980,7 +1980,11 @@ function clara_ve_print_pseudo_css() {
 		}
 	}
 	if ( $css ) {
-		echo '<style id="clara-ve-pseudo-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n";
+		// wp_strip_all_tags(), not esc_html(): this is a <style> body, where
+		// HTML entities are NOT decoded, so escaping would turn a `>` child
+		// selector into literal `&gt;` and break the rule. Stripping tags is
+		// what actually prevents breaking out of the element.
+		echo '<style id="clara-ve-pseudo-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 add_action( 'wp_head', 'clara_ve_print_pseudo_css', 60 );
@@ -2032,7 +2036,8 @@ function clara_ve_print_article_css() {
 	}
 
 	if ( '' !== $css ) {
-		echo '<style id="clara-ve-article-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n";
+		// See clara_ve_print_pseudo_css() for why this is stripped, not escaped.
+		echo '<style id="clara-ve-article-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 add_action( 'wp_head', 'clara_ve_print_article_css', 61 );
