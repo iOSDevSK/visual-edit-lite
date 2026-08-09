@@ -1,0 +1,1649 @@
+# Copyright (C) 2026 Filip Dvoran
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Visual Edit Lite 1.19.6\n"
+"Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: visual-edit-lite\n"
+
+#: includes/class-bundle-reader.php:67
+msgid "This bundle has no readable manifest.json."
+msgstr ""
+
+#: includes/class-bundle-reader.php:72
+msgid "This does not look like a Clara content bundle."
+msgstr ""
+
+#: includes/class-bundle-reader.php:82
+msgid "This bundle (%s) was made by a newer version of the plugin. Update Visual Edit and try again."
+msgstr ""
+
+#: includes/class-bundle-reader.php:92
+msgid "This bundle declares an implausible number of pages and was not opened."
+msgstr ""
+
+#: includes/class-bundle-reader.php:122
+msgid "This bundle declares an implausible number of posts or files and was not opened."
+msgstr ""
+
+#: includes/class-bundle-reader.php:142
+msgid "This bundle declares an implausible number of submissions or subscribers and was not opened."
+msgstr ""
+
+#: includes/class-bundle-writer.php:92
+msgid "The theme %s is not installed on this site, so there is nothing to package."
+msgstr ""
+
+#: includes/class-bundle-writer.php:106
+msgid "A content-only export needs content in it. Choose a different option."
+msgstr ""
+
+#: includes/class-bundle-writer.php:119
+msgid "This theme has no screenshot.png, so WordPress would show it as a blank tile. Generate one first: node tools/make-screenshot.mjs"
+msgstr ""
+
+#: includes/class-bundle-writer.php:138
+msgid "Could not prepare a temporary directory for the export."
+msgstr ""
+
+#: includes/class-editor-page.php:20
+#: includes/class-editor-page.php:21
+#: visual-edit-lite.php:2106
+msgid "Visual Editor"
+msgstr ""
+
+#: includes/class-editor-page.php:97
+msgid "You need theme-editing and unfiltered HTML permissions to use the visual editor."
+msgstr ""
+
+#: includes/class-editor-page.php:102
+msgid "Visual Editor — Front Page"
+msgstr ""
+
+#: includes/class-editor-page.php:103
+msgid "Switch page"
+msgstr ""
+
+#: includes/class-editor-page.php:104
+msgid "Preview live page in a new tab"
+msgstr ""
+
+#: includes/class-editor-page.php:105
+msgid "Toggle edit mode"
+msgstr ""
+
+#: includes/class-editor-page.php:106
+msgid "Preview device"
+msgstr ""
+
+#: includes/class-editor-page.php:107
+msgid "Desktop — full width"
+msgstr ""
+
+#: includes/class-editor-page.php:108
+msgid "Tablet — 820 × 1180"
+msgstr ""
+
+#: includes/class-editor-page.php:109
+msgid "Mobile — 390 × 844"
+msgstr ""
+
+#: includes/class-editor-page.php:113
+#: includes/class-editor-page.php:145
+msgid "Search appearance"
+msgstr ""
+
+#: includes/class-editor-page.php:114
+#: includes/class-editor-page.php:128
+msgid "History"
+msgstr ""
+
+#: includes/class-editor-page.php:115
+msgid "Discard changes"
+msgstr ""
+
+#: includes/class-editor-page.php:116
+msgid "Save"
+msgstr ""
+
+#: includes/class-editor-page.php:122
+msgid "Front page preview"
+msgstr ""
+
+#: includes/class-editor-page.php:149
+msgid "Loading…"
+msgstr ""
+
+#: includes/class-fonts.php:126
+msgid "You can keep at most %d Google fonts."
+msgstr ""
+
+#: includes/class-fonts.php:183
+msgid "The Google Fonts list could not be loaded."
+msgstr ""
+
+#: includes/class-fonts.php:194
+msgid "The Google Fonts list was not in the expected format."
+msgstr ""
+
+#: includes/class-form-settings.php:130
+#: includes/class-form-settings.php:131
+#: includes/class-form-settings.php:275
+msgid "Form Settings"
+msgstr ""
+
+#: includes/class-form-settings.php:267
+msgid "You need administrator permissions to manage form settings."
+msgstr ""
+
+#: includes/class-form-settings.php:277
+msgid "Where contact-form submissions are sent, how they are protected from spam, and how email leaves the site. These apply to every [wp-form] on the site; a form can still override the recipient with its own to=\"\" attribute."
+msgstr ""
+
+#: includes/class-form-settings.php:284
+msgid "Send submissions to"
+msgstr ""
+
+#: includes/class-form-settings.php:287
+msgid "Leave blank to use the site admin email."
+msgstr ""
+
+#: includes/class-form-settings.php:291
+msgid "From name"
+msgstr ""
+
+#: includes/class-form-settings.php:295
+msgid "From address"
+msgstr ""
+
+#: includes/class-form-settings.php:298
+msgid "Must be an address on this site's own domain — sending \"from\" a visitor's Gmail fails spam checks. The visitor's own address is set as Reply-To so you can reply directly."
+msgstr ""
+
+#: includes/class-form-settings.php:302
+msgid "Minimum fill time (seconds)"
+msgstr ""
+
+#: includes/class-form-settings.php:305
+msgid "Submissions sent faster than this after the page loads are treated as bots and rejected. 0 disables the check. 3 is a good default."
+msgstr ""
+
+#: includes/class-form-settings.php:309
+msgid "Akismet spam filtering"
+msgstr ""
+
+#: includes/class-form-settings.php:311
+msgid "Check submissions against Akismet"
+msgstr ""
+
+#: includes/class-form-settings.php:312
+msgid "Akismet is installed and configured — recommended."
+msgstr ""
+
+#: includes/class-form-settings.php:312
+msgid "Install and configure the free Akismet plugin to enable this."
+msgstr ""
+
+#: includes/class-form-settings.php:317
+msgid "Email delivery"
+msgstr ""
+
+#: includes/class-form-settings.php:318
+msgid "Pick how the site sends email. WordPress's default server mail very often lands in spam — connect a real provider for reliable delivery, no extra plugin needed. The API options send over HTTPS, so they work even on hosts that block outbound SMTP ports. For best results also add SPF/DKIM DNS records for your domain at your provider."
+msgstr ""
+
+#: includes/class-form-settings.php:321
+msgid "Mailer"
+msgstr ""
+
+#: includes/class-form-settings.php:324
+msgid "Default (WordPress server mail)"
+msgstr ""
+
+#: includes/class-form-settings.php:325
+msgid "Other SMTP"
+msgstr ""
+
+#: includes/class-form-settings.php:326
+msgid "Brevo (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:327
+msgid "SendGrid (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:328
+msgid "Postmark (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:329
+msgid "Mailgun (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:336
+msgid "WordPress sends mail directly from the web server. Fine for a quick test, but it commonly lands in spam or is dropped in production — pick a real provider above."
+msgstr ""
+
+#: includes/class-form-settings.php:342
+msgid "SMTP host"
+msgstr ""
+
+#: includes/class-form-settings.php:346
+msgid "Port"
+msgstr ""
+
+#: includes/class-form-settings.php:349
+msgid "587 for TLS (most common), 465 for SSL, 25 for none."
+msgstr ""
+
+#: includes/class-form-settings.php:353
+msgid "Encryption"
+msgstr ""
+
+#: includes/class-form-settings.php:357
+msgid "TLS (recommended)"
+msgstr ""
+
+#: includes/class-form-settings.php:359
+msgid "None"
+msgstr ""
+
+#: includes/class-form-settings.php:364
+msgid "Authentication"
+msgstr ""
+
+#: includes/class-form-settings.php:365
+msgid "This server requires a username and password"
+msgstr ""
+
+#: includes/class-form-settings.php:368
+msgid "Username"
+msgstr ""
+
+#: includes/class-form-settings.php:372
+msgid "Password"
+msgstr ""
+
+#: includes/class-form-settings.php:375
+msgid "Stored encrypted. Leave blank to keep the saved password."
+msgstr ""
+
+#: includes/class-form-settings.php:384
+msgid "Brevo API key"
+msgstr ""
+
+#: includes/class-form-settings.php:387
+msgid "Brevo → SMTP & API → API Keys (v3). Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:396
+msgid "SendGrid API key"
+msgstr ""
+
+#: includes/class-form-settings.php:399
+msgid "SendGrid → Settings → API Keys (Mail Send permission). Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:408
+msgid "Postmark server token"
+msgstr ""
+
+#: includes/class-form-settings.php:411
+msgid "Postmark → your Server → API Tokens. Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:420
+msgid "Mailgun API key"
+msgstr ""
+
+#: includes/class-form-settings.php:423
+msgid "Mailgun → Send → API keys. Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:427
+msgid "Mailgun domain"
+msgstr ""
+
+#: includes/class-form-settings.php:431
+msgid "Region"
+msgstr ""
+
+#: includes/class-form-settings.php:489
+msgid "Mailing list"
+msgstr ""
+
+#: includes/class-form-settings.php:491
+msgid "Where a form set to \"Mailing list\" sends its subscribers. This is separate from the mailer above — the mailer is how email leaves this site, a mailing list is where contacts live and where the welcome email and the download come from. Most transports have no lists at all, so the two are chosen independently."
+msgstr ""
+
+#: includes/class-form-settings.php:495
+msgid "Provider"
+msgstr ""
+
+#: includes/class-form-settings.php:505
+msgid "Add the Brevo API key above — the list uses the same key as the mailer."
+msgstr ""
+
+#: includes/class-form-settings.php:507
+msgid "Brevo reuses the API key you already entered above; there is nothing else to paste."
+msgstr ""
+
+#: includes/class-form-settings.php:514
+msgid "Double opt-in"
+msgstr ""
+
+#: includes/class-form-settings.php:517
+msgid "Off — subscribe immediately"
+msgstr ""
+
+#: includes/class-form-settings.php:518
+msgid "On, handled here — works with any mailer"
+msgstr ""
+
+#: includes/class-form-settings.php:519
+msgid "On, handled by the provider"
+msgstr ""
+
+#: includes/class-form-settings.php:522
+msgid "Handled here: the address is held, a confirmation email goes out through your normal mailer, and only a click subscribes it and sends the download. Works on plain SMTP, Gmail, SendGrid — anything. The consent record (time, IP, wording) stays in this site. Handled by the provider: Brevo does the same thing with its own template, set below."
+msgstr ""
+
+#: includes/class-form-settings.php:527
+msgid "Confirmation email"
+msgstr ""
+
+#: includes/class-form-settings.php:531
+msgid "Must contain {confirm_url} — that is the link. {site} is your From name."
+msgstr ""
+
+#: includes/class-form-settings.php:535
+msgid "Delivery email"
+msgstr ""
+
+#: includes/class-form-settings.php:539
+msgid "Sent after they confirm, never before. {download_url} is the file below."
+msgstr ""
+
+#: includes/class-form-settings.php:543
+msgid "The file they get"
+msgstr ""
+
+#: includes/class-form-settings.php:546
+msgid "Choose from Media Library"
+msgstr ""
+
+#: includes/class-form-settings.php:547
+msgid "Upload the PDF to Media and pick it here. Leave blank if the confirmation email is all you send."
+msgstr ""
+
+#: includes/class-form-settings.php:551
+msgid "Provider template id"
+msgstr ""
+
+#: includes/class-form-settings.php:554
+msgid "The id of a double opt-in template at your provider. Only used when the provider handles it."
+msgstr ""
+
+#: includes/class-form-settings.php:558
+msgid "After confirming, go to"
+msgstr ""
+
+#: includes/class-form-settings.php:561
+msgid "Where the confirmation link lands. Only used when a double opt-in template is set."
+msgstr ""
+
+#: includes/class-form-settings.php:565
+msgid "Consent line"
+msgstr ""
+
+#: includes/class-form-settings.php:567
+msgid "Show a consent note under every connected form"
+msgstr ""
+
+#: includes/class-form-settings.php:570
+msgid "Off by default — turn it on if you collect addresses under GDPR and want the note visible at the point of consent. Link to your privacy policy inside the text with normal HTML: <a href=\"/privacy/\">Privacy Policy</a>."
+msgstr ""
+
+#: includes/class-form-settings.php:577
+msgid "Uninstall"
+msgstr ""
+
+#: includes/class-form-settings.php:580
+msgid "On plugin deletion"
+msgstr ""
+
+#: includes/class-form-settings.php:582
+msgid "Also delete all stored data — form submissions, subscribers, edit history and edited page sources"
+msgstr ""
+
+#: includes/class-form-settings.php:584
+msgid "Off: deleting the plugin keeps your data in the database, so reinstalling picks up where you left off. On: deleting the plugin removes everything it ever stored. Saved passwords and API keys are removed on deletion either way."
+msgstr ""
+
+#: includes/class-form-settings.php:594
+msgid "Send a test email"
+msgstr ""
+
+#: includes/class-form-settings.php:598
+msgid "Test email sent. Check the inbox (and spam folder)."
+msgstr ""
+
+#: includes/class-form-settings.php:599
+msgid "Sending failed — check the mailer credentials above (save first)."
+msgstr ""
+
+#: includes/class-form-settings.php:605
+msgid "Sends a test message to %s using the mailer selected above (save first)."
+msgstr ""
+
+#: includes/class-form-settings.php:611
+msgid "Send test email"
+msgstr ""
+
+#: includes/class-form-settings.php:629
+msgid "•••••••• (saved — leave blank to keep)"
+msgstr ""
+
+#: includes/class-form-settings.php:707
+msgid "By submitting this form you agree to us storing and using the details above to reply to you."
+msgstr ""
+
+#: includes/class-form-settings.php:781
+#: includes/class-optin.php:92
+#: includes/class-optin.php:193
+#: includes/class-optin.php:220
+msgid "You need administrator permissions."
+msgstr ""
+
+#: includes/class-form-settings.php:790
+msgid "Visual Edit — test email"
+msgstr ""
+
+#: includes/class-form-settings.php:791
+msgid "This is a test email. If you received it, your email delivery settings are working."
+msgstr ""
+
+#: includes/class-forms.php:80
+#: includes/class-forms.php:82
+msgid "Form Submissions"
+msgstr ""
+
+#: includes/class-forms.php:83
+msgid "Submission"
+msgstr ""
+
+#: includes/class-forms.php:135
+msgid "This page has been open too long — please reload it and send the form again."
+msgstr ""
+
+#: includes/class-forms.php:138
+msgid "Security check failed — please reload the page and try again."
+msgstr ""
+
+#: includes/class-forms.php:161
+msgid "Please wait a moment before submitting again."
+msgstr ""
+
+#: includes/class-forms.php:209
+#: includes/class-import-plan.php:1349
+msgid "%1$s — %2$s"
+msgstr ""
+
+#: includes/class-forms.php:429
+msgid "New form submission: %s"
+msgstr ""
+
+#: includes/class-forms.php:467
+msgid "Thanks — we got your message (%s)"
+msgstr ""
+
+#: includes/class-forms.php:470
+msgid "Thanks for getting in touch — your message reached %s and someone will read it shortly.\n\nThis is an automatic confirmation; there's no need to reply to it."
+msgstr ""
+
+#: includes/class-geo-audit.php:93
+#: includes/class-geo-audit.php:94
+#: includes/class-geo-audit.php:592
+msgid "SEO &amp; AI Readiness"
+msgstr ""
+
+#: includes/class-geo-audit.php:189
+msgid "This description is used elsewhere too: %s. Two pages claiming the same summary compete with each other."
+msgstr ""
+
+#: includes/class-geo-audit.php:190
+msgid "This title is used elsewhere too: %s."
+msgstr ""
+
+#: includes/class-geo-audit.php:328
+msgid "This post has its own h1, on top of the one the layout makes from the title. That is two."
+msgstr ""
+
+#: includes/class-geo-audit.php:334
+msgid "No h1. Nothing on the page states what it is about in one line."
+msgstr ""
+
+#: includes/class-geo-audit.php:343
+msgid "%d h1 headings. A page can only be about one thing; more than one leaves it ambiguous."
+msgstr ""
+
+#: includes/class-geo-audit.php:361
+msgid "Heading levels jump from h%1$d straight to h%2$d, so the outline of the page has a gap in it."
+msgstr ""
+
+#: includes/class-geo-audit.php:400
+msgid "%d image has no alt attribute."
+msgid_plural "%d images have no alt attribute."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-geo-audit.php:435
+msgid "“%1$s” is answered by a %2$d-word paragraph. Answer engines quote the passage right under the question, so a shorter opening sentence is what gets cited."
+msgstr ""
+
+#: includes/class-geo-audit.php:465
+msgid "No excerpt, so this post has no description. Search results and AI answers will quote whatever sentence they happen to find. Add one in the post editor, under Excerpt."
+msgstr ""
+
+#: includes/class-geo-audit.php:466
+msgid "No description. Search results and AI answers will quote whatever sentence they happen to find."
+msgstr ""
+
+#: includes/class-geo-audit.php:477
+msgid "The description is only %d characters — too short to say what the page offers."
+msgstr ""
+
+#: includes/class-geo-audit.php:489
+msgid "The description is %d characters, so the end of it will be cut off."
+msgstr ""
+
+#: includes/class-geo-audit.php:508
+msgid "No business or personal name is set, so the site name is being used instead."
+msgstr ""
+
+#: includes/class-geo-audit.php:511
+msgid "No social or directory profiles are listed. These are how an answer engine confirms the site belongs to a real, identifiable business."
+msgstr ""
+
+#: includes/class-geo-audit.php:514
+msgid "No logo is set for the site's structured data."
+msgstr ""
+
+#: includes/class-geo-audit.php:517
+msgid "AI crawler rules are switched off, so robots.txt does not mention answer engines at all."
+msgstr ""
+
+#: includes/class-geo-audit.php:520
+msgid "The front page is not set as a static page, so it cannot carry its own title or description."
+msgstr ""
+
+#: includes/class-geo-audit.php:523
+msgid "Permalinks are still set to plain, which breaks the links between imported pages."
+msgstr ""
+
+#: includes/class-geo-audit.php:533
+msgid "Rank Math manages robots.txt itself, so the AI crawler rules here will not appear in it. Copy them into Rank Math → General Settings → Edit robots.txt."
+msgstr ""
+
+#: includes/class-geo-audit.php:584
+#: includes/class-seo-settings.php:164
+msgid "You do not have permission to do that."
+msgstr ""
+
+#: includes/class-geo-audit.php:595
+msgid "What this site tells search engines and AI assistants about itself. Everything here is a report — nothing on this screen changes a page, because the pages are meant to stay exactly as they were designed. Fix anything you want to act on in the Visual Editor."
+msgstr ""
+
+#: includes/class-geo-audit.php:600
+msgid "Worth your attention"
+msgstr ""
+
+#: includes/class-geo-audit.php:605
+msgid "%1$d worth fixing, %2$d worth a look, %3$d suggestions."
+msgstr ""
+
+#: includes/class-geo-audit.php:612
+msgid "Re-check"
+msgstr ""
+
+#: includes/class-geo-audit.php:617
+msgid "The site as a whole"
+msgstr ""
+
+#: includes/class-geo-audit.php:621
+msgid "Change these under SEO &amp; Sharing"
+msgstr ""
+
+#: includes/class-geo-audit.php:626
+msgid "Page by page"
+msgstr ""
+
+#: includes/class-geo-audit.php:630
+msgid "Page"
+msgstr ""
+
+#: includes/class-geo-audit.php:631
+msgid "Findings"
+msgstr ""
+
+#: includes/class-geo-audit.php:641
+msgid "post"
+msgstr ""
+
+#: includes/class-geo-audit.php:650
+msgid "Edit post"
+msgstr ""
+
+#: includes/class-geo-audit.php:651
+msgid "Open in editor"
+msgstr ""
+
+#: includes/class-geo-audit.php:657
+msgid "Nothing to report."
+msgstr ""
+
+#: includes/class-geo-audit.php:675
+msgid "Showing the %1$d most recent of %2$d posts. Older ones are not checked."
+msgstr ""
+
+#: includes/class-geo-audit.php:723
+msgid "Titles and descriptions"
+msgstr ""
+
+#: includes/class-geo-audit.php:726
+msgid "Handled by %s, filled in from the original design."
+msgstr ""
+
+#: includes/class-geo-audit.php:727
+msgid "Handled here — no SEO plugin needed."
+msgstr ""
+
+#: includes/class-geo-audit.php:730
+msgid "%1$d of %2$d pages and posts have a description"
+msgstr ""
+
+#: includes/class-geo-audit.php:737
+msgid "Structured data"
+msgstr ""
+
+#: includes/class-geo-audit.php:740
+msgid "This site describes itself as a %1$s called “%2$s”."
+msgstr ""
+
+#: includes/class-geo-audit.php:744
+msgid "Every page carries it, blog posts as articles"
+msgstr ""
+
+#: includes/class-geo-audit.php:748
+#: includes/class-seo-settings.php:257
+msgid "AI assistants"
+msgstr ""
+
+#: includes/class-geo-audit.php:750
+msgid "Named in robots.txt and pointed at a plain-text summary of the site."
+msgstr ""
+
+#: includes/class-geo-audit.php:751
+msgid "Switched off — robots.txt does not mention them."
+msgstr ""
+
+#: includes/class-geo-audit.php:756
+msgid "Old addresses"
+msgstr ""
+
+#: includes/class-geo-audit.php:758
+msgid "Addresses from before the conversion still work, so existing links and search results are not lost."
+msgstr ""
+
+#: includes/class-geo-audit.php:759
+msgid "No redirects are stored. If this site replaced an older one, its old addresses now return \"not found\"."
+msgstr ""
+
+#: includes/class-geo-audit.php:762
+msgid "%d address redirected"
+msgid_plural "%d addresses redirected"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-geo-audit.php:768
+msgid "Sitemap"
+msgstr ""
+
+#: includes/class-geo-audit.php:769
+msgid "Generated by WordPress; pages you hide from search are left out."
+msgstr ""
+
+#: includes/class-geo-audit.php:775
+msgid "What this site already does"
+msgstr ""
+
+#: includes/class-import-legacy.php:71
+msgid "No .html files found at the top level of the ZIP."
+msgstr ""
+
+#: includes/class-import-legacy.php:94
+msgid "could not be read."
+msgstr ""
+
+#: includes/class-import-legacy.php:107
+msgid "%1$s — no %2$s content found, skipped."
+msgstr ""
+
+#: includes/class-import-legacy.php:147
+msgid "updated"
+msgstr ""
+
+#: includes/class-import-legacy.php:147
+msgid "created"
+msgstr ""
+
+#: includes/class-import-legacy.php:158
+msgid "view"
+msgstr ""
+
+#: includes/class-import-page.php:37
+#: includes/class-import-page.php:38
+#: includes/class-import-page.php:60
+msgid "Import Content"
+msgstr ""
+
+#: includes/class-import-page.php:47
+msgid "You need theme-editing and unfiltered HTML permissions to import content."
+msgstr ""
+
+#: includes/class-import-page.php:86
+msgid "Import finished"
+msgstr ""
+
+#: includes/class-import-page.php:102
+msgid "Content that came with this theme"
+msgstr ""
+
+#: includes/class-import-page.php:110
+msgid "%1$s ships with %2$d pages, %3$d blog posts and %4$d images. Nothing you have already edited will be touched."
+msgstr ""
+
+#: includes/class-import-page.php:121
+msgid "Review what this would add"
+msgstr ""
+
+#: includes/class-import-page.php:129
+msgid "Import from a ZIP"
+msgstr ""
+
+#: includes/class-import-page.php:131
+msgid "Either kind of export works here: a full theme ZIP, or a content-only ZIP for an install that already has the theme. Only the content is read in both cases — importing never installs or changes a theme."
+msgstr ""
+
+#: includes/class-import-page.php:141
+msgid "This server accepts uploads up to %s. A larger bundle can be unzipped into wp-content/themes/ over SFTP instead — it then appears above."
+msgstr ""
+
+#: includes/class-import-page.php:146
+msgid "Review this ZIP"
+msgstr ""
+
+#: includes/class-import-page.php:159
+msgid "That import has expired. Start again."
+msgstr ""
+
+#: includes/class-import-page.php:166
+#: includes/class-parked-page.php:156
+#: includes/class-parked-page.php:404
+msgid "Pages"
+msgstr ""
+
+#: includes/class-import-page.php:167
+#: includes/class-parked-page.php:157
+#: includes/class-parked-page.php:405
+msgid "Blog posts"
+msgstr ""
+
+#: includes/class-import-page.php:168
+msgid "Categories"
+msgstr ""
+
+#: includes/class-import-page.php:169
+#: includes/class-parked-page.php:159
+#: includes/class-parked-page.php:407
+msgid "Menus"
+msgstr ""
+
+#: includes/class-import-page.php:170
+#: includes/class-parked-page.php:406
+msgid "Images"
+msgstr ""
+
+#: includes/class-import-page.php:171
+msgid "Settings"
+msgstr ""
+
+#: includes/class-import-page.php:172
+#: includes/class-parked-page.php:409
+msgid "Form submissions"
+msgstr ""
+
+#: includes/class-import-page.php:173
+#: includes/class-optin.php:70
+#: includes/class-optin.php:71
+#: includes/class-optin.php:102
+msgid "Subscribers"
+msgstr ""
+
+#: includes/class-import-page.php:176
+msgid "will be added"
+msgstr ""
+
+#: includes/class-import-page.php:177
+msgid "already identical"
+msgstr ""
+
+#: includes/class-import-page.php:178
+msgid "kept as it is"
+msgstr ""
+
+#: includes/class-import-page.php:179
+msgid "cannot be imported"
+msgstr ""
+
+#: includes/class-import-page.php:186
+msgid "%1$d items will be added. %2$d are already here or have been edited by you, and are left untouched."
+msgstr ""
+
+#: includes/class-import-page.php:197
+msgid "%d items cannot be imported at all — see the reasons below."
+msgstr ""
+
+#: includes/class-import-page.php:206
+msgid "Type"
+msgstr ""
+
+#: includes/class-import-page.php:207
+msgid "Item"
+msgstr ""
+
+#: includes/class-import-page.php:208
+msgid "What happens"
+msgstr ""
+
+#: includes/class-import-page.php:209
+msgid "Why"
+msgstr ""
+
+#: includes/class-import-page.php:228
+msgid "Add the new items"
+msgstr ""
+
+#: includes/class-import-page.php:229
+#: includes/class-parked-page.php:215
+msgid "Cancel"
+msgstr ""
+
+#: includes/class-import-page.php:241
+msgid "No file was uploaded."
+msgstr ""
+
+#: includes/class-import-page.php:296
+msgid "This is a built static site, not a content bundle. Export the site from a WordPress install that already has it, and import that ZIP instead."
+msgstr ""
+
+#: includes/class-import-page.php:297
+msgid "This ZIP contains no clara-content bundle and no HTML pages."
+msgstr ""
+
+#: includes/class-import-page.php:307
+msgid "The active theme carries no content bundle."
+msgstr ""
+
+#: includes/class-import-page.php:356
+msgid "Nothing new to add — this site already has everything in the bundle."
+msgstr ""
+
+#: includes/class-import-plan.php:125
+msgid "Image paths corrected — this theme's own files are stored under their own path."
+msgstr ""
+
+#: includes/class-import-plan.php:129
+msgid "Already exactly this content."
+msgstr ""
+
+#: includes/class-import-plan.php:138
+msgid "Nothing saved for this page yet."
+msgstr ""
+
+#: includes/class-import-plan.php:146
+msgid "You have edited this page (%d saved version). It will be left alone."
+msgid_plural "You have edited this page (%d saved versions). It will be left alone."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:164
+msgid "A post with this slug already exists."
+msgstr ""
+
+#: includes/class-import-plan.php:181
+msgid "Already exists; kept as it is."
+msgstr ""
+
+#: includes/class-import-plan.php:199
+msgid "A menu with this name already exists; your own menu is kept."
+msgstr ""
+
+#: includes/class-import-plan.php:202
+msgid "%d link"
+msgid_plural "%d links"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:347
+msgid "Unsafe file path in the bundle."
+msgstr ""
+
+#: includes/class-import-plan.php:352
+msgid "Not included in this bundle."
+msgstr ""
+
+#: includes/class-import-plan.php:359
+msgid "The file is still on disk, but its Media Library record is missing and will be recreated."
+msgstr ""
+
+#: includes/class-import-plan.php:361
+msgid "The file is still hidden with a previously removed theme and will be restored to the Media Library."
+msgstr ""
+
+#: includes/class-import-plan.php:363
+msgid "Same file already here."
+msgstr ""
+
+#: includes/class-import-plan.php:365
+msgid "A different file already has this name in this theme's own folder; yours is kept."
+msgstr ""
+
+#: includes/class-import-plan.php:379
+msgid "Another theme already has a file with this name, so this one is stored under its own path. Nothing existing is replaced."
+msgstr ""
+
+#: includes/class-import-plan.php:396
+msgid "Already set to this."
+msgstr ""
+
+#: includes/class-import-plan.php:399
+msgid "You have your own setting here; it is kept."
+msgstr ""
+
+#: includes/class-import-plan.php:436
+msgid "Already imported."
+msgstr ""
+
+#: includes/class-import-plan.php:455
+msgid "No email address."
+msgstr ""
+
+#: includes/class-import-plan.php:467
+msgid "Already on your list."
+msgstr ""
+
+#: includes/class-import-plan.php:468
+msgid "Already on your list with a different status; yours is kept."
+msgstr ""
+
+#: includes/class-import-plan.php:516
+msgid "That import has expired. Upload the ZIP again."
+msgstr ""
+
+#: includes/class-import-plan.php:533
+msgid "This site already holds editable content created for %s. Importing another theme's content on top of it would leave the site a mix of two designs, so nothing was imported. Give this theme its own WordPress install, or activate that theme again to keep working on it."
+msgstr ""
+
+#: includes/class-import-plan.php:708
+msgid "%d image had the same name as another theme's but different contents, so it was stored separately."
+msgid_plural "%d images had the same names as another theme's but different contents, so they were stored separately."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:720
+msgid "%d image added to the Media Library."
+msgid_plural "%d images added to the Media Library."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:770
+msgid "%d category added."
+msgid_plural "%d categories added."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:839
+msgid "%d blog post added."
+msgid_plural "%d blog posts added."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:932
+msgid "%d page added."
+msgid_plural "%d pages added."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:940
+msgid "NOT imported — %s"
+msgstr ""
+
+#: includes/class-import-plan.php:1004
+msgid "Freed the address /%s/ from a media file so the imported page could use it."
+msgstr ""
+
+#: includes/class-import-plan.php:1017
+msgid "The address /%1$s/ was already taken by your page \"%2$s\", so the imported page got a slightly different one. Links in the design that point at /%1$s/ will reach your page, not the imported one."
+msgstr ""
+
+#: includes/class-import-plan.php:1040
+msgid "Reused WordPress's own placeholder page \"%s\" so the imported page keeps its proper address."
+msgstr ""
+
+#: includes/class-import-plan.php:1151
+msgid "Menu \"%1$s\" added with %2$d links."
+msgstr ""
+
+#: includes/class-import-plan.php:1165
+msgid "Shown in: %s."
+msgstr ""
+
+#: includes/class-import-plan.php:1171
+msgid "It is not shown anywhere yet: this theme does not register the navigation position it was built for, so there is nothing to attach it to. A theme made by the converter declares that in inc/visual-edit.php."
+msgstr ""
+
+#: includes/class-import-plan.php:1172
+msgid "It is not shown anywhere yet: another menu already occupies that position. Assign it under Appearance → Menus if you want this one instead."
+msgstr ""
+
+#: includes/class-import-plan.php:1195
+msgid "%d setting applied."
+msgid_plural "%d settings applied."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:1241
+msgid "Permalinks switched to %s — the imported pages need path-style links to resolve."
+msgstr ""
+
+#: includes/class-import-plan.php:1264
+msgid "The front page is set as a static page, so it can carry its own title, description and social preview."
+msgstr ""
+
+#: includes/class-import-plan.php:1281
+msgid "Note: the bundle used \"%s\" as its blog page. It lists posts through its own design, so do NOT set it under Settings → Reading → Posts page."
+msgstr ""
+
+#: includes/class-import-plan.php:1314
+msgid "%d address from the original site now redirects to its new page, so existing links and search results keep working."
+msgid_plural "%d addresses from the original site now redirect to their new pages, so existing links and search results keep working."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:1375
+msgid "%d form submission added."
+msgid_plural "%d form submissions added."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-import-plan.php:1420
+msgid "%d subscriber added."
+msgid_plural "%d subscribers added."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-lists.php:38
+msgid "None — mailing list forms are unavailable"
+msgstr ""
+
+#: includes/class-lists.php:39
+msgid "Brevo"
+msgstr ""
+
+#: includes/class-lists.php:73
+#: includes/class-lists.php:127
+msgid "No mailing list provider is connected."
+msgstr ""
+
+#: includes/class-lists.php:131
+msgid "A list and a valid email address are required."
+msgstr ""
+
+#: includes/class-lists.php:216
+msgid "Brevo said %1$d: %2$s"
+msgstr ""
+
+#: includes/class-lists.php:218
+msgid "no reason given"
+msgstr ""
+
+#: includes/class-media.php:40
+msgid "Imported media"
+msgstr ""
+
+#: includes/class-media.php:45
+msgid "The image could not be saved to the Media Library."
+msgstr ""
+
+#: includes/class-optin.php:104
+msgid "Everyone who asked to join a list through a form on this site, and whether they confirmed. This is the consent record — the mailing list itself lives at your provider. Unconfirmed rows are deleted automatically after two weeks."
+msgstr ""
+
+#: includes/class-optin.php:108
+msgid "Deleted."
+msgstr ""
+
+#: includes/class-optin.php:114
+msgid "Export CSV"
+msgstr ""
+
+#: includes/class-optin.php:118
+msgid "%d records"
+msgstr ""
+
+#: includes/class-optin.php:126
+msgid "Email"
+msgstr ""
+
+#: includes/class-optin.php:127
+msgid "Status"
+msgstr ""
+
+#: includes/class-optin.php:128
+msgid "List"
+msgstr ""
+
+#: includes/class-optin.php:129
+msgid "Asked"
+msgstr ""
+
+#: includes/class-optin.php:130
+#: includes/class-optin.php:144
+msgid "Confirmed"
+msgstr ""
+
+#: includes/class-optin.php:131
+msgid "Consent given to"
+msgstr ""
+
+#: includes/class-optin.php:137
+msgid "Nobody yet. A form set to \"Mailing list\" adds people here."
+msgstr ""
+
+#: includes/class-optin.php:146
+msgid "Waiting"
+msgstr ""
+
+#: includes/class-optin.php:152
+msgid "(no consent line was shown)"
+msgstr ""
+
+#: includes/class-optin.php:156
+msgid "Delete this record? The consent evidence goes with it."
+msgstr ""
+
+#: includes/class-optin.php:157
+msgid "Delete"
+msgstr ""
+
+#: includes/class-optin.php:307
+msgid "A valid email address is required."
+msgstr ""
+
+#: includes/class-optin.php:331
+msgid "Could not record the request."
+msgstr ""
+
+#: includes/class-optin.php:352
+msgid "Could not send the confirmation email."
+msgstr ""
+
+#: includes/class-optin.php:463
+msgid "Please confirm your email address"
+msgstr ""
+
+#: includes/class-optin.php:467
+msgid "Thanks for signing up. Please confirm this is your address by opening the link below:\n\n{confirm_url}\n\nIf you didn't ask for this, ignore this email and nothing further will happen."
+msgstr ""
+
+#: includes/class-optin.php:471
+msgid "Here it is"
+msgstr ""
+
+#: includes/class-optin.php:475
+msgid "Thanks for confirming — here's what you signed up for:\n\n{download_url}"
+msgstr ""
+
+#: includes/class-parked-page.php:87
+msgid "You need permission to delete themes."
+msgstr ""
+
+#: includes/class-parked-page.php:92
+msgid "The active theme cannot be deleted."
+msgstr ""
+
+#: includes/class-parked-page.php:130
+msgid "Delete %s and everything it brought"
+msgstr ""
+
+#: includes/class-parked-page.php:133
+msgid "This cannot be undone."
+msgstr ""
+
+#: includes/class-parked-page.php:139
+msgid "Deleting this theme also destroys the %d item its import created, permanently. Deactivating a theme puts its content away and is reversible; this is not."
+msgid_plural "Deleting this theme also destroys the %d items its import created, permanently. Deactivating a theme puts its content away and is reversible; this is not."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-parked-page.php:158
+msgid "Images, and their files"
+msgstr ""
+
+#: includes/class-parked-page.php:160
+#: includes/class-parked-page.php:408
+msgid "Categories and tags"
+msgstr ""
+
+#: includes/class-parked-page.php:161
+msgid "Form submissions, including the addresses and IPs in them"
+msgstr ""
+
+#: includes/class-parked-page.php:162
+msgid "Mailing-list subscribers, and their consent records"
+msgstr ""
+
+#: includes/class-parked-page.php:163
+#: includes/class-parked-page.php:411
+msgid "Redirects from the original site"
+msgstr ""
+
+#: includes/class-parked-page.php:164
+#: includes/class-parked-page.php:413
+msgid "Saved versions"
+msgstr ""
+
+#: includes/class-parked-page.php:178
+msgid "Images shared with another installed theme — these are KEPT"
+msgstr ""
+
+#: includes/class-parked-page.php:191
+msgid "%d form submission on this site predates the plugin recording which theme a submission arrived through. It cannot be attributed to this theme or to any other, so it is NOT deleted and stays under Form Submissions."
+msgid_plural "%d form submissions on this site predate the plugin recording which theme a submission arrived through. They cannot be attributed to this theme or to any other, so they are NOT deleted and stay under Form Submissions."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-parked-page.php:205
+msgid "Take a copy first if there is any chance you will want it back. The export is a content package that can be imported into any site that has this theme."
+msgstr ""
+
+#: includes/class-parked-page.php:213
+msgid "Export this content first"
+msgstr ""
+
+#: includes/class-parked-page.php:227
+msgid "I understand this permanently deletes the content listed above."
+msgstr ""
+
+#: includes/class-parked-page.php:232
+msgid "Delete %s and its content"
+msgstr ""
+
+#: includes/class-parked-page.php:249
+#: includes/class-parked-page.php:250
+#: includes/class-parked-page.php:358
+msgid "Parked content"
+msgstr ""
+
+#: includes/class-parked-page.php:306
+msgid "You need theme-editing permissions to export content."
+msgstr ""
+
+#: includes/class-parked-page.php:344
+msgid "You need theme-editing permissions to see this."
+msgstr ""
+
+#: includes/class-parked-page.php:364
+msgid "%s and everything it brought have been deleted."
+msgstr ""
+
+#: includes/class-parked-page.php:368
+msgid "Nothing is being held for any inactive theme."
+msgstr ""
+
+#: includes/class-parked-page.php:372
+msgid "These themes are not active, and the content their imports created is put away rather than deleted — invisible on the site and in the ordinary admin lists, exactly as if the theme had never been installed. Activating a theme again brings all of it back where it was."
+msgstr ""
+
+#: includes/class-parked-page.php:391
+msgid "This theme is no longer installed — its folder was removed outside WordPress, so nothing was able to tidy up after it. Its content is still here, listed below. Reinstall the theme to bring it back, or delete the content permanently."
+msgstr ""
+
+#: includes/class-parked-page.php:410
+msgid "Mailing-list subscribers"
+msgstr ""
+
+#: includes/class-parked-page.php:412
+msgid "Editable pages and parts"
+msgstr ""
+
+#: includes/class-parked-page.php:431
+msgid "This theme was already here before the plugin started recording what a site looked like beforehand, so its front-page and SEO settings cannot be put back to what they were before it. Everything else restores normally."
+msgstr ""
+
+#: includes/class-parked-page.php:442
+msgid "Activate and restore"
+msgstr ""
+
+#: includes/class-parked-page.php:449
+msgid "Export this content"
+msgstr ""
+
+#: includes/class-parked-page.php:452
+msgid "Delete permanently…"
+msgstr ""
+
+#: includes/class-rest.php:244
+msgid "Only an http(s) image address can be imported."
+msgstr ""
+
+#: includes/class-rest.php:247
+msgid "That address cannot be fetched from this server."
+msgstr ""
+
+#: includes/class-rest.php:266
+msgid "That address points inside this server's own network, so it will not be fetched."
+msgstr ""
+
+#: includes/class-rest.php:280
+msgid "That image is too large to import (max 16 MB)."
+msgstr ""
+
+#: includes/class-rest.php:289
+msgid "Only PNG, JPG, WebP or GIF images can be imported."
+msgstr ""
+
+#: includes/class-rest.php:295
+msgid "The downloaded image could not be read."
+msgstr ""
+
+#: includes/class-rest.php:304
+msgid "Imported image"
+msgstr ""
+
+#: includes/class-rest.php:351
+msgid "No menu is assigned to any declared menu location."
+msgstr ""
+
+#: includes/class-rest.php:375
+msgid "Could not find a matching menu item."
+msgstr ""
+
+#: includes/class-rest.php:542
+msgid "This is shared across every page, so it has no title or description of its own."
+msgstr ""
+
+#: includes/class-rest.php:741
+msgid "Could not rename that save."
+msgstr ""
+
+#: includes/class-rest.php:753
+msgid "That save is outside the history this editor keeps. The last ten saves and the Original remain available."
+msgstr ""
+
+#: includes/class-rest.php:757
+msgid "That save no longer exists."
+msgstr ""
+
+#: includes/class-seo-settings.php:49
+#: includes/class-seo-settings.php:50
+#: includes/class-seo-settings.php:177
+msgid "SEO &amp; Sharing"
+msgstr ""
+
+#: includes/class-seo-settings.php:179
+msgid "What is true of the whole site. Each page's own title and description live in the Visual Editor, under Search appearance."
+msgstr ""
+
+#: includes/class-seo-settings.php:188
+msgid "%s is installed and writes the page titles and descriptions. The settings here still apply: they describe the business itself, which it does not carry."
+msgstr ""
+
+#: includes/class-seo-settings.php:200
+msgid "Business or personal name"
+msgstr ""
+
+#: includes/class-seo-settings.php:206
+msgid "Left empty, the site title is used."
+msgstr ""
+
+#: includes/class-seo-settings.php:210
+msgid "What it is"
+msgstr ""
+
+#: includes/class-seo-settings.php:219
+msgid "Taken from the original design where it said so. Changing it changes how search engines and AI assistants classify the business."
+msgstr ""
+
+#: includes/class-seo-settings.php:227
+msgid "Logo"
+msgstr ""
+
+#: includes/class-seo-settings.php:228
+msgid "Used in structured data, where a square image works best."
+msgstr ""
+
+#: includes/class-seo-settings.php:234
+msgid "Default sharing image"
+msgstr ""
+
+#: includes/class-seo-settings.php:235
+msgid "Shown when a page shared on social media has no image of its own. Without one, those posts render as an empty grey box."
+msgstr ""
+
+#: includes/class-seo-settings.php:239
+msgid "Profiles elsewhere"
+msgstr ""
+
+#: includes/class-seo-settings.php:244
+msgid "One address per line. This is how an AI assistant confirms the site belongs to a real, identifiable business rather than guessing."
+msgstr ""
+
+#: includes/class-seo-settings.php:248
+msgid "Title separator"
+msgstr ""
+
+#: includes/class-seo-settings.php:253
+msgid "Between a page name and the site name, on pages that have no title of their own."
+msgstr ""
+
+#: includes/class-seo-settings.php:261
+msgid "Let AI assistants read this site, and tell them where the plain-text summary is"
+msgstr ""
+
+#: includes/class-seo-settings.php:267
+msgid "Names the known assistant crawlers in robots.txt and points them at %s."
+msgstr ""
+
+#: includes/class-seo-settings.php:298
+msgid "Choose…"
+msgstr ""
+
+#: includes/class-seo.php:227
+msgid "Visual Edit filled in the SEO title and description for %d page from the original design."
+msgid_plural "Visual Edit filled in the SEO titles and descriptions for %d pages and posts from the original design."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-seo.php:238
+msgid "Yoast caches what it shows, so run SEO → Tools → Optimize SEO Data once to make them appear."
+msgstr ""
+
+#: includes/class-seo.php:239
+msgid "Worth knowing: this theme keeps each page as one block of HTML, so Yoast's readability and keyword analysis will grade the markup rather than the writing. You can switch both off under SEO → Settings → Site features."
+msgstr ""
+
+#: includes/class-seo.php:534
+msgid "Yoast SEO"
+msgstr ""
+
+#: includes/class-seo.php:536
+msgid "Rank Math"
+msgstr ""
+
+#: includes/class-seo.php:652
+msgid "Search results for “%s”"
+msgstr ""
+
+#: includes/class-seo.php:654
+msgid "Page not found"
+msgstr ""
+
+#: includes/class-seo.php:679
+msgid "page %d"
+msgstr ""
+
+#: includes/class-source-store.php:284
+msgid "Home"
+msgstr ""
+
+#: includes/class-source-store.php:630
+msgid "Front Page"
+msgstr ""
+
+#: includes/class-source-store.php:692
+msgid "Header"
+msgstr ""
+
+#: includes/class-source-store.php:693
+msgid "Footer"
+msgstr ""
+
+#: includes/class-source-store.php:694
+msgid "Article template"
+msgstr ""
+
+#: includes/class-source-store.php:695
+msgid "Page not found (404)"
+msgstr ""
+
+#: includes/class-tokens.php:672
+msgid "No article on this side"
+msgstr ""
+
+#: includes/class-tokens.php:738
+msgid "%d min read"
+msgid_plural "%d min read"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-tokens.php:792
+#: visual-edit-lite.php:1888
+msgid "Thanks — check your inbox."
+msgstr ""
+
+#: includes/class-zip.php:41
+msgid "Nothing to archive."
+msgstr ""
+
+#: includes/class-zip.php:59
+msgid "Could not create the ZIP file."
+msgstr ""
+
+#: includes/class-zip.php:78
+msgid "Could not finish writing the ZIP file."
+msgstr ""
+
+#: includes/class-zip.php:113
+msgid "Could not initialize the filesystem to extract the ZIP."
+msgstr ""
+
+#: includes/class-zip.php:261
+msgid "Could not create a writable folder at %s. Check that wp-content/uploads is writable by the web server (a leftover folder owned by a different user is a common cause)."
+msgstr ""
+
+#: visual-edit-lite.php:795
+msgid "Not allowed."
+msgstr ""
+
+#: visual-edit-lite.php:805
+msgid "This content was written for a different design — its own assets and markers are missing from the active theme, so taking ownership would only put the wrong page back on the site. Activate the theme it belongs to, or give this theme its own WordPress install."
+msgstr ""
+
+#: visual-edit-lite.php:806
+#: visual-edit-lite.php:2092
+msgid "Visual Edit Pro"
+msgstr ""
+
+#: visual-edit-lite.php:833
+msgid "another theme"
+msgstr ""
+
+#: visual-edit-lite.php:838
+msgid "Visual Edit: this site's editable content belongs to a different theme."
+msgstr ""
+
+#: visual-edit-lite.php:842
+msgid "The stored pages, styles and history were created for %1$s, but %2$s is active. Editing is paused: the plugin will not serve one theme's markup through another's design, and will not overwrite it either. Nothing has been lost."
+msgstr ""
+
+#: visual-edit-lite.php:849
+msgid "This content predates per-theme storage, so it could not be filed under the theme that made it. Activate %s to carry on editing it — that also files it, and from then on both themes can hold their own content on this install side by side."
+msgstr ""
+
+#: visual-edit-lite.php:853
+msgid "Themes"
+msgstr ""
+
+#: visual-edit-lite.php:865
+msgid "This content belongs to %s — take ownership"
+msgstr ""
+
+#: visual-edit-lite.php:871
+msgid "There is no \"take ownership\" here on purpose: this content carries another design's own assets and markers, so claiming it would only put the wrong page back on the site."
+msgstr ""
+
+#: visual-edit-lite.php:1441
+msgctxt "post status"
+msgid "Parked with its theme"
+msgstr ""
+
+#: visual-edit-lite.php:1496
+msgid "Visual Edit: menu management is off."
+msgstr ""
+
+#: visual-edit-lite.php:1497
+msgid "The active theme does not declare its navigation zones (the clara_ve_theme_contract filter), so the plugin cannot know which markup is a menu — a menu created here would not appear on the site. Themes generated by the converter declare this in inc/visual-edit.php."
+msgstr ""
+
+#: visual-edit-lite.php:1886
+msgid "Sending…"
+msgstr ""
+
+#: visual-edit-lite.php:1887
+msgid "Sent!"
+msgstr ""
+
+#: visual-edit-lite.php:1889
+msgid "Something went wrong — please try again."
+msgstr ""
+
+#: visual-edit-lite.php:2094
+msgid "Open the front page in the visual editor"
+msgstr ""
+
+#: visual-edit-lite.php:2146
+msgid "Advanced (HTML block &amp; %s)"
+msgstr ""
+
+#: visual-edit-lite.php:2147
+msgid "Edit HTML block"
+msgstr ""

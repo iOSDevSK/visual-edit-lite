@@ -1,0 +1,40 @@
+/**
+ * The two elements this plugin adds to a form it did not design: the consent
+ * note and the submit result.
+ *
+ * These rules are a FLOOR, not a design. They exist so the additions never look
+ * broken in markup the plugin has never seen — and, just as importantly, they
+ * live in a stylesheet rather than in style="" attributes so a theme can
+ * overrule every one of them with an ordinary class selector. Inline styles
+ * would have been simpler and would have made the elements unstyleable, which
+ * is the opposite of what a theme-respecting plugin should do.
+ *
+ * The width trio is the part that matters. A designed form is usually a flex
+ * row (input + button) that does not wrap; anything added near it inherits that
+ * layout and becomes a column unless it insists on a full line. Harmless in a
+ * block parent, decisive in a flex or grid one.
+ */
+
+.cve-consent,
+.cve-form-message {
+	flex-basis: 100%;
+	width: 100%;
+	grid-column: 1 / -1;
+	margin: 0.9em 0 0;
+	font-size: 0.8em;
+	line-height: 1.45;
+}
+
+.cve-consent {
+	opacity: 0.75;
+}
+
+.cve-form-message {
+	font-size: 0.85em;
+	opacity: 0.8;
+}
+
+/* An error has to read as one even on a theme that never styled it. */
+.cve-form-message[data-cve-error] {
+	opacity: 1;
+}

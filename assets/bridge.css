@@ -1,0 +1,94 @@
+/* Edit-mode affordances — ported from open-design's guide overlay:
+   every editable element carries a permanent dashed outline, hover turns
+   solid, selection adds the glow ring, inline editing tints the field. */
+
+/* Every stamped element is selectable in edit mode. Wrappers and empty
+   decorative elements (a 1px rule, a spacer) carry a faint dashed outline so
+   it's visible they can be picked; editable leaves get a stronger outline
+   below. Decorative leaves often set pointer-events:none in the site CSS so
+   clicks fall through — re-enable it here so hit testing (elementsFromPoint)
+   and clicks can resolve to any stamped element. */
+html[data-cve-edit-mode] [data-cve-path] {
+	outline: 1px dashed rgba(37, 99, 235, 0.14);
+	outline-offset: 3px;
+	cursor: pointer !important;
+	pointer-events: auto !important;
+}
+
+html[data-cve-edit-mode] [data-cve-kind] {
+	outline: 1px dashed rgba(37, 99, 235, 0.35);
+	outline-offset: 3px;
+}
+
+html[data-cve-edit-mode] [data-cve-hover] {
+	outline: 2px solid #2563eb !important;
+	outline-offset: 3px;
+}
+
+html[data-cve-edit-mode] [data-cve-selected] {
+	outline: 2px solid #2563eb !important;
+	outline-offset: 4px;
+	box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+}
+
+/* Custom Content Collections: while the items popup is open, every element
+   the detector considers part of "this list" — a distinct color from
+   ordinary selection (blue), so it reads as "this is the group" rather than
+   "this is what's selected." The confirmation step for detection risk: if
+   the wrong container was matched, it is visible before a save, not after. */
+html[data-cve-edit-mode] [data-cve-collection-hl] {
+	outline: 2px dashed #f59e0b !important;
+	outline-offset: 4px;
+}
+
+html[data-cve-edit-mode] [data-cve-editing='true'] {
+	outline: 2px solid #2563eb !important;
+	outline-offset: 4px;
+	background: rgba(37, 99, 235, 0.06);
+	cursor: text !important;
+}
+
+/* Pure containers (a section, a `.wrap` div, the header/footer's own root —
+   `data-cve-path` with no `data-cve-kind`) are typically full-bleed and sit
+   flush against a neighboring block, often at a hard color transition
+   (paper -> ink at the header/footer seam, or section to section). Their
+   box edge basically *is* that seam, so ANY permanent outline there — in
+   or out — reads as a stray divider line rather than an edit hint, unlike
+   a text/link/image leaf sitting inside a padded container. So containers
+   only pick up their outline on hover/selection (transient, interaction-
+   driven); the permanent low-alpha "you can pick this" outline is reserved
+   for kind-having leaves, whose tighter box doesn't create this seam. */
+html[data-cve-edit-mode] [data-cve-path]:not([data-cve-kind]) {
+	outline: none;
+}
+
+/* Freeze entrance animations so nothing shifts mid-edit. */
+html[data-cve-edit-mode] .js .reveal,
+html[data-cve-edit-mode] .reveal {
+	opacity: 1 !important;
+	transform: none !important;
+	transition: opacity 0s, transform 0s !important;
+}
+html[data-cve-edit-mode] .hero-media.kenburns img {
+	animation: none !important;
+}
+html[data-cve-edit-mode] .hero h1,
+html[data-cve-edit-mode] .hero-rule,
+html[data-cve-edit-mode] .hero p,
+html[data-cve-edit-mode] .hero-actions {
+	animation: none !important;
+	opacity: 1 !important;
+	transform: none !important;
+}
+
+/* Hydrated [wp-posts]/[wp-form]/[wp-menu] zones are wrapped in a marker div —
+   but ONLY in the edit preview (see class-tokens.php), and a wrapper that the
+   public page doesn't have is a layout change: dropped inside a grid or flex
+   container it becomes that container's only child, so the items inside it
+   stop being laid out and collapse into one column. `display: contents` gives
+   the marker no box of its own, so its children lay out exactly as they do on
+   the live page. It stays a real element, which is all the zone lookup needs
+   (bridge.js finds it with closest(), not from layout). */
+[data-cve-zone][data-cve-skip] {
+	display: contents;
+}

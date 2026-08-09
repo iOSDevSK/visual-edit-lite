@@ -1,0 +1,14 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Build output — the distributable is produced by tools/build-plugin.sh,
+# never committed, so the ZIP can't drift from the source that made it.
+*.zip
+
+# Compiled translations: the .pot template is committed (translators start
+# from it), the .mo/.po a translator produces are theirs to ship.
+*.mo

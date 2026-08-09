@@ -1,0 +1,1244 @@
+/* Visual editor admin screen — canvas + open-design-style floating panel */
+
+#wpcontent {
+	padding-left: 0;
+}
+
+.clara-ve-app {
+	display: flex;
+	flex-direction: column;
+	height: calc( 100vh - 32px - 65px );
+	/* #wpcontent's padding-left is already zeroed above, so this app already
+	   starts flush with it — a further negative margin here pulled the
+	   toolbar 20px past that edge, in under the fixed, high-z-index admin
+	   sidebar, clipping the first few pixels of the title behind it. */
+}
+
+.clara-ve-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 16px;
+	background: #fff;
+	border-bottom: 1px solid #dcdcde;
+	/* Safety net: if the window is too narrow for every control to fit even
+	   after the title truncates, scroll within the toolbar itself rather than
+	   letting something silently get clipped or pushed off-screen. */
+	overflow-x: auto;
+}
+
+/* The title is the only truly flexible item — it shrinks with an ellipsis
+   instead of being hard-clipped mid-letter when the toolbar is crowded. */
+.clara-ve-toolbar > strong {
+	flex-shrink: 1;
+	min-width: 60px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* Every other toolbar control keeps its natural size — only the title and
+   the spacer give way. */
+.clara-ve-toolbar > *:not( strong ) {
+	flex-shrink: 0;
+}
+
+.clara-ve-page-picker {
+	max-width: 220px;
+	height: 34px;
+}
+
+.clara-ve-preview-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	border-radius: 8px;
+	background: #f0f0f1;
+	color: #50575e;
+	cursor: pointer;
+}
+
+.clara-ve-preview-btn:hover {
+	background: #dcdcde;
+}
+
+.clara-ve-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	border-radius: 8px;
+	background: #2563eb;
+	color: #fff;
+	cursor: pointer;
+}
+
+.clara-ve-toggle.is-off {
+	background: #dcdcde;
+	color: #50575e;
+}
+
+.clara-ve-spacer {
+	flex: 1;
+	min-width: 12px;
+}
+
+.clara-ve-status {
+	color: #646970;
+	font-size: 12px;
+}
+
+/* Google fonts picker — a modal over the whole screen, because browsing ~1900
+   families needs more room than the element panel has. */
+.cve-fontpicker {
+	position: fixed;
+	inset: 0;
+	z-index: 200;
+	background: rgba(10, 10, 12, 0.6);
+}
+.cve-fontpicker[hidden] {
+	display: none;
+}
+/* Absolute, not flex-centred: openFontPicker() sets left/top in px so the box
+   can then be dragged. A flex-centred child ignores both. */
+.cve-fontpicker-box {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	width: min(560px, 92vw);
+	max-height: min(680px, 86vh);
+	padding: 16px 18px 14px;
+	border-radius: 16px;
+	background: #202024;
+	color: #f5f5f7;
+	box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+	font-size: 13px;
+}
+.cve-fontpicker-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 10px;
+	cursor: grab; /* matches .cve-head — same gesture, same cursor */
+}
+.cve-fontpicker-head strong {
+	font-size: 14px;
+}
+.cve-fontpicker-count {
+	margin-left: auto;
+	color: #a7a7ad;
+	font-variant-numeric: tabular-nums;
+}
+.cve-fontpicker-search {
+	width: 100%;
+	padding: 8px 11px;
+	border: 1px solid #3a3a42;
+	border-radius: 9px;
+	background: #17171b;
+	color: #f5f5f7;
+	font-size: 13px;
+}
+.cve-fontpicker-search::placeholder {
+	color: #7c7c85;
+}
+.cve-fontpicker-chosen {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 10px 0;
+	border-bottom: 1px solid #303038;
+}
+.cve-fontchip {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 4px 6px 4px 11px;
+	border-radius: 999px;
+	background: #2e2e36;
+	font-size: 13px;
+}
+.cve-fontchip-x {
+	border: 0;
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	background: #46464f;
+	color: #d5d5da;
+	cursor: pointer;
+	font-size: 10px;
+	line-height: 1;
+}
+.cve-fontchip-x:hover {
+	background: #a5333a;
+	color: #fff;
+}
+.cve-fontpicker-list {
+	flex: 1;
+	overflow-y: auto;
+	margin: 4px -6px 6px;
+	padding: 0 6px;
+}
+.cve-fontrow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 7px 2px;
+	border-bottom: 1px solid #29292f;
+}
+.cve-fontrow-name {
+	width: 150px;
+	flex: none;
+	color: #c9c9d0;
+	font-size: 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* The point of the row: the family rendered in its own face. */
+.cve-fontrow-prev {
+	flex: 1;
+	font-size: 19px;
+	line-height: 1.3;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.cve-fontrow-add {
+	flex: none;
+	width: auto;
+	padding: 4px 12px;
+	margin: 0;
+	font-size: 12px;
+}
+.cve-fontrow-add:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+.cve-addfont {
+	margin-top: 6px;
+}
+
+/* Expired editing session — the preview came back without the bridge, so
+   nothing on it can be edited. Covers the canvas because that is exactly
+   what stopped working. */
+#clara-ve-stale {
+	position: absolute;
+	inset: 0;
+	z-index: 70;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(15, 15, 18, 0.55);
+}
+#clara-ve-stale[hidden] {
+	display: none;
+}
+.clara-ve-stale-box {
+	max-width: 380px;
+	padding: 22px 24px;
+	border-radius: 12px;
+	background: #fff;
+	box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+	text-align: center;
+}
+.clara-ve-stale-box strong {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 15px;
+	color: #1d2327;
+}
+.clara-ve-stale-box p {
+	margin: 0 0 14px;
+	color: #50575e;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+/* This toolbar control sets `display`, which beats the UA stylesheet's
+   `[hidden] { display: none }` — so hiding it from JS needs saying here. */
+.clara-ve-history-btn[hidden] {
+	display: none;
+}
+
+.clara-ve-body {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-height: 0;
+}
+
+/* Device switcher (segmented icon buttons). */
+.clara-ve-devices {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	border-radius: 9px;
+	background: #f0f0f1;
+}
+
+.clara-ve-device {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 28px;
+	border: 0;
+	border-radius: 7px;
+	background: transparent;
+	color: #50575e;
+	cursor: pointer;
+}
+
+.clara-ve-device:hover {
+	color: #1d2327;
+}
+
+.clara-ve-device.is-active {
+	background: #fff;
+	color: #2563eb;
+	box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.12 );
+}
+
+.clara-ve-device .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}
+
+/* Canvas holds the (optionally scaled) preview. */
+.clara-ve-canvas {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
+.clara-ve-clip {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
+.clara-ve-shell {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
+#clara-ve-frame {
+	flex: 1;
+	width: 100%;
+	height: 100%;
+	min-width: 0;
+	border: 0;
+	background: #f0f0f1;
+}
+
+/* Device mode: scrollable, centred canvas with a rounded device frame. */
+.clara-ve-canvas.is-device {
+	overflow: auto;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 24px;
+	background-color: #e9e9ec;
+	background-image:
+		linear-gradient( 45deg, #dedee2 25%, transparent 25%, transparent 75%, #dedee2 75% ),
+		linear-gradient( 45deg, #dedee2 25%, transparent 25%, transparent 75%, #dedee2 75% );
+	background-size: 16px 16px;
+	background-position: 0 0, 8px 8px;
+}
+
+.clara-ve-canvas.is-device .clara-ve-clip {
+	flex: 0 0 auto;
+	overflow: hidden;
+	border: 1px solid #c9c9cf;
+	border-radius: 18px;
+	box-shadow: 0 24px 80px rgba( 0, 0, 0, 0.22 );
+	background: #fff;
+}
+
+.clara-ve-canvas.is-mobile .clara-ve-clip {
+	border-radius: 28px;
+}
+
+.clara-ve-canvas.is-device .clara-ve-shell {
+	flex: 0 0 auto;
+	transform-origin: 0 0;
+}
+
+/* ---- History toggle + docked panel (git-like: append-only, restore = new entry) ---- */
+
+.clara-ve-history-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	border-radius: 8px;
+	background: #f0f0f1;
+	color: #50575e;
+	cursor: pointer;
+}
+
+.clara-ve-history-btn.is-active {
+	background: #2563eb;
+	color: #fff;
+}
+
+/* Collapsed by default (width animates to 0, not display:none — the panel
+   slides in/out rather than snapping). Content keeps a fixed 320px width so
+   it doesn't squash mid-transition; the collapsing outer box clips it. */
+.clara-ve-history {
+	flex: 0 0 auto;
+	width: 0;
+	display: flex;
+	flex-direction: column;
+	background: #1c1c1f;
+	color: #f5f5f7;
+	border-left: 1px solid transparent;
+	overflow: hidden;
+	transition: width 0.22s ease, border-color 0.22s ease;
+}
+
+.clara-ve-history.is-open {
+	width: 320px;
+	border-left-color: #2c2c31;
+}
+
+.clara-ve-history[hidden] {
+	display: none; /* defensive fallback if the hidden attribute is ever used directly */
+}
+
+.cve-history-head,
+.cve-history-list {
+	width: 320px; /* fixed so content doesn't reflow while the outer box collapses */
+	box-sizing: border-box; /* padding must be INSIDE the 320px, or it overflows
+		past the parent's 320px + overflow:hidden and clips the close button */
+}
+
+.cve-history-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex: 0 0 auto;
+	padding: 14px 16px;
+	border-bottom: 1px solid #2c2c31;
+	font-size: 15px;
+}
+
+.cve-history-list {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 6px 14px 14px;
+}
+
+/* Search appearance panel. Borrows .clara-ve-history wholesale for the
+   slide-in mechanic — same collapsing 320px box, same fixed-width content so
+   nothing reflows mid-transition — and only adds the form. */
+.cve-seo-body {
+	width: 320px;
+	box-sizing: border-box;
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 12px 16px 18px;
+}
+
+.cve-seo-field {
+	margin: 0 0 14px;
+}
+
+.cve-seo-field > label {
+	display: block;
+	margin-bottom: 5px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: #a8a8b3;
+}
+
+.cve-seo-field input[type="text"],
+.cve-seo-field textarea {
+	width: 100%;
+	box-sizing: border-box;
+	background: #26262b;
+	color: #f5f5f7;
+	border: 1px solid #3a3a42;
+	border-radius: 5px;
+	padding: 7px 9px;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.cve-seo-field textarea {
+	resize: vertical;
+	min-height: 68px;
+}
+
+.cve-seo-field input[type="text"]:focus,
+.cve-seo-field textarea:focus {
+	outline: none;
+	border-color: #6a6a78;
+	box-shadow: 0 0 0 1px #6a6a78;
+}
+
+/* Character budget. Not a hard limit — Google truncates by pixel width, not
+   character count, so the number is guidance and typing past it is allowed. */
+.cve-seo-count {
+	float: right;
+	font-size: 11px;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+	color: #7a7a86;
+}
+
+.cve-seo-count.is-over {
+	color: #f0a35e;
+}
+
+.cve-seo-check {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	font-size: 12px;
+	color: #c9c9d2;
+	line-height: 1.45;
+}
+
+.cve-seo-check input {
+	margin: 2px 0 0;
+	flex: 0 0 auto;
+}
+
+/* Google result preview. Deliberately mimics a SERP entry rather than showing
+   the raw fields: the owner is writing for that box, and seeing it is what
+   makes an over-long title obviously over-long. */
+.cve-seo-preview {
+	background: #fff;
+	border-radius: 6px;
+	padding: 11px 12px;
+	margin: 0 0 14px;
+	font-family: arial, sans-serif;
+}
+
+.cve-seo-preview-url {
+	color: #202124;
+	font-size: 12px;
+	line-height: 1.3;
+	word-break: break-all;
+}
+
+.cve-seo-preview-title {
+	color: #1a0dab;
+	font-size: 16px;
+	line-height: 1.3;
+	margin: 2px 0 1px;
+}
+
+.cve-seo-preview-desc {
+	color: #4d5156;
+	font-size: 12px;
+	line-height: 1.45;
+}
+
+.cve-seo-thumb {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 5px;
+	margin-top: 8px;
+}
+
+.cve-seo-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.cve-seo-host {
+	font-size: 11px;
+	line-height: 1.5;
+	color: #9a9aa6;
+	margin: 12px 0 0;
+	padding-top: 10px;
+	border-top: 1px solid #2c2c31;
+}
+
+.cve-seo-host a {
+	color: #b8c8ff;
+}
+
+/* Questions editor — a second window over the element panel. Centred rather
+   than docked: it is a list being reorganised, which needs width the 320px
+   docked panels do not have. */
+/* Positioned in px by openFaqEditor() so makeDraggable() can take over — no
+   transform centring, which would make the first drag jump by half the box. */
+.cve-faq-modal {
+	position: fixed;
+	z-index: 100001; /* above the element panel, which it is opened from */
+	width: min(560px, calc(100vw - 48px));
+	max-height: calc(100vh - 96px);
+	display: flex;
+	flex-direction: column;
+	background: #1c1c1f;
+	color: #f5f5f7;
+	border: 1px solid #2c2c31;
+	border-radius: 12px;
+	box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.cve-faq-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+	padding: 12px 14px;
+	border-bottom: 1px solid #2c2c31;
+	font-size: 15px;
+	cursor: grab; /* matches .cve-head — same gesture, same cursor */
+}
+
+.cve-faq-head .cve-title {
+	flex: 1;
+	min-width: 0;
+}
+
+.cve-faq-rows {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 12px 16px 4px;
+}
+
+.cve-faq-row {
+	background: #232327;
+	border-radius: 11px;
+	padding: 8px 10px 10px;
+	margin-bottom: 10px;
+}
+
+.cve-faq-bar {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 7px;
+}
+
+.cve-faq-num {
+	flex: 1;
+	font-size: 11px;
+	font-weight: 600;
+	color: #7a7a86;
+}
+
+.cve-faq-bar .cve-icon:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+
+/* !important throughout, and not out of laziness: wp-admin styles
+   `input[type="text"]` and `textarea`, which as an element-plus-attribute
+   selector outranks a plain class — so the question field rendered with a WHITE
+   background inside a dark panel until these won. The same reason .cve-text and
+   .cve-textarea above carry them. Field surface matched to .cve-field (#2c2c31)
+   so a question reads as the same kind of control as everything on the panel
+   this popup was opened from. */
+.cve-faq-q,
+.cve-faq-a {
+	display: block !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+	background: #2c2c31 !important;
+	color: #f5f5f7 !important;
+	border: 1px solid transparent !important;
+	border-radius: 9px !important;
+	padding: 8px 11px !important;
+	margin: 0 !important;
+	font-size: 13px !important;
+	line-height: 1.45 !important;
+	font-family: inherit !important;
+	box-shadow: none !important;
+	min-height: 0 !important;
+}
+
+.cve-faq-q {
+	margin-bottom: 6px !important;
+	font-weight: 600 !important;
+}
+
+.cve-faq-a {
+	resize: vertical !important;
+	min-height: 62px !important;
+	color: #d6d6dd !important; /* the answer is supporting text, not the headline */
+}
+
+.cve-faq-q::placeholder,
+.cve-faq-a::placeholder {
+	color: #8e8e93;
+}
+
+.cve-faq-q:focus,
+.cve-faq-a:focus {
+	outline: none !important;
+	border-color: #6a6a78 !important;
+	box-shadow: 0 0 0 1px #6a6a78 !important;
+}
+
+.cve-faq-warn {
+	margin: 0 16px 8px;
+	padding: 8px 10px;
+	background: #3a2f18;
+	border-radius: 6px;
+	font-size: 11px;
+	line-height: 1.5;
+	color: #f0c98e;
+}
+
+.cve-faq-warn[hidden] {
+	display: none;
+}
+
+.cve-faq-modal > .cve-btn-block {
+	margin: 0 16px 12px;
+	width: calc(100% - 32px);
+}
+
+.cve-faq-foot {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	flex: 0 0 auto;
+	padding: 12px 16px 14px;
+	border-top: 1px solid #2c2c31;
+}
+
+/* Items editor (Custom Content Collections) — the generic form of the
+   questions editor above, reusing its modal/row/field chrome wholesale
+   (.cve-faq-modal, .cve-faq-rows, .cve-faq-row, .cve-faq-q, .cve-faq-a all
+   apply unchanged). Only what's genuinely new needs rules here: a row can
+   hold more than the fixed two fields FAQ always has, and an image field
+   needs a thumbnail. */
+.cve-collection-fields > .cve-collection-field {
+	margin-bottom: 8px;
+}
+
+.cve-collection-fields > .cve-collection-field:last-child {
+	margin-bottom: 0;
+}
+
+.cve-collection-field--image {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.cve-collection-thumb {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+	border-radius: 7px;
+	flex: 0 0 auto;
+	background: #2c2c31;
+}
+
+.cve-history-row {
+	display: flex;
+	gap: 10px;
+	padding: 12px 0;
+	border-bottom: 1px solid rgba( 255, 255, 255, 0.06 );
+}
+
+.cve-history-dot {
+	flex: 0 0 auto;
+	width: 10px;
+	height: 10px;
+	margin-top: 5px;
+	border-radius: 50%;
+	border: 2px solid #5c5c62;
+	background: transparent;
+}
+
+.cve-history-dot.is-head {
+	border-color: #e2725b;
+	background: #e2725b;
+}
+
+.cve-history-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.cve-history-title {
+	display: block;
+	width: 100%;
+	border: 0 !important;
+	background: transparent !important;
+	color: #f5f5f7 !important;
+	font-size: 13.5px;
+	font-weight: 600;
+	padding: 2px 6px !important;
+	margin: 0 0 0 -6px;
+	border-radius: 5px;
+	box-shadow: none !important;
+	min-height: 0 !important;
+}
+
+.cve-history-title:hover,
+.cve-history-title:focus {
+	background: rgba( 255, 255, 255, 0.07 ) !important;
+	outline: none;
+}
+
+.cve-history-meta {
+	color: #8e8e93;
+	font-size: 11.5px;
+	margin: 3px 0 8px;
+}
+
+.cve-history-restore {
+	padding: 5px 12px;
+	font-size: 12px;
+}
+
+.cve-history-restore:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+/* ---- Floating inspector panel (open-design dark look) ---- */
+
+.cve-panel {
+	position: absolute;
+	z-index: 100;
+	width: 340px;
+	max-height: calc( 100% - 24px );
+	overflow-y: auto;
+	padding: 14px 16px 12px;
+	border-radius: 16px;
+	background: #202024;
+	color: #f5f5f7;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+	font-size: 13px;
+}
+
+.cve-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 10px;
+	cursor: grab;
+	user-select: none;
+}
+
+/* While dragging a panel: no accidental text selection anywhere, and a
+   consistent grabbing cursor even when the pointer outruns the handle. */
+body.cve-dragging,
+body.cve-dragging * {
+	user-select: none !important;
+	cursor: grabbing !important;
+}
+
+.cve-grip {
+	color: #8e8e93;
+	font-size: 14px;
+	letter-spacing: 2px;
+}
+
+.cve-title {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 15px;
+}
+
+.cve-close {
+	width: 30px;
+	height: 30px;
+	border: 1px solid #3a3a3f;
+	border-radius: 9px;
+	background: transparent;
+	color: #f5f5f7;
+	cursor: pointer;
+}
+
+.cve-section {
+	margin: 14px 0 8px;
+	color: #8e8e93;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+}
+
+.cve-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.cve-field {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 4px 0;
+	padding: 7px 10px;
+	border-radius: 9px;
+	background: #2c2c31;
+	min-width: 0;
+}
+
+.cve-field-label {
+	color: #8e8e93;
+	flex: 0 0 auto;
+}
+
+.cve-select,
+.cve-num,
+.cve-text,
+.cve-hex {
+	flex: 1;
+	min-width: 0;
+	border: 0 !important;
+	background: transparent !important;
+	color: #f5f5f7 !important;
+	font-size: 13px;
+	box-shadow: none !important;
+	text-align: right;
+	padding: 0 !important;
+	min-height: 0 !important;
+}
+
+.cve-select {
+	appearance: auto;
+}
+
+.cve-select option {
+	background: #2c2c31;
+	color: #f5f5f7;
+}
+
+.cve-num {
+	width: 54px;
+	flex: 0 1 auto;
+}
+
+.cve-unit {
+	color: #8e8e93;
+}
+
+.cve-step {
+	flex: 0 0 auto;
+	width: 20px;
+	border: 0;
+	background: transparent;
+	color: #8e8e93;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.cve-step:hover {
+	color: #fff;
+}
+
+.cve-color {
+	flex: 0 0 auto;
+	width: 26px;
+	height: 22px;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	cursor: pointer;
+}
+
+.cve-checkrow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 8px 0;
+	color: #d5d5da;
+}
+
+.cve-img {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 140px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: 8px;
+}
+
+.cve-video-preview {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 160px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: 8px;
+	background: #000;
+}
+
+/* One row per <source> — format fallbacks or responsive breakpoints, each
+   replaced independently so swapping one never collapses the others. */
+.cve-sources {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.cve-source-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-radius: 8px;
+	background: rgba( 255, 255, 255, 0.05 );
+}
+
+.cve-source-label {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: #d5d5da;
+	font-size: 12px;
+}
+
+.cve-source-replace {
+	flex: 0 0 auto;
+	padding: 5px 12px;
+	font-size: 12px;
+}
+
+.cve-note {
+	margin: 10px 0 4px;
+	color: #8e8e93;
+	font-size: 12px;
+}
+
+.cve-foot {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 14px;
+	padding-top: 12px;
+	border-top: 1px solid #3a3a3f;
+}
+
+.cve-flex {
+	flex: 1;
+}
+
+.cve-icon {
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: #d5d5da;
+	font-size: 15px;
+	cursor: pointer;
+}
+
+.cve-icon:hover {
+	background: #2c2c31;
+}
+
+.cve-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px 16px;
+	border: 0;
+	border-radius: 999px;
+	background: #2c2c31;
+	color: #f5f5f7;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.cve-btn-light {
+	background: transparent;
+	border: 1px solid #3a3a3f;
+}
+
+.cve-btn-save {
+	background: #f5f0e6;
+	color: #1c1c1e;
+}
+
+/* Ornament Symbol field: preview the glyph in the ornament's real font. */
+.cve-symbol {
+	font-size: 22px !important;
+	text-align: center !important;
+	line-height: 1.2;
+}
+
+/* Full-width panel buttons (ornament convert, video/poster pickers). */
+.cve-btn-block {
+	display: flex;
+	width: 100%;
+	margin: 2px 0 6px;
+}
+
+.cve-btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.cve-textarea {
+	display: block;
+	width: 100%;
+	min-height: 66px;
+	margin: 2px 0 8px;
+	padding: 9px 11px;
+	border: 1px solid #3a3a3f;
+	border-radius: 10px;
+	background: #2c2c31;
+	color: #f5f5f7;
+	font-size: 13px;
+	font-family: inherit;
+	line-height: 1.45;
+	resize: vertical;
+	box-sizing: border-box;
+}
+
+.cve-textarea::placeholder {
+	color: #8e8e93;
+}
+
+/* One-tap typographic glyphs (curly quotes, guillemets, em dash). */
+.cve-glyphs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 4px 0 2px;
+}
+
+.cve-glyph {
+	flex: 0 0 auto;
+	min-width: 34px;
+	height: 30px;
+	padding: 0 8px;
+	border: 1px solid rgba( 255, 255, 255, 0.14 ) !important;
+	border-radius: 7px;
+	background: rgba( 255, 255, 255, 0.06 ) !important;
+	color: #f5f5f7 !important;
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+	box-shadow: none !important;
+}
+
+.cve-glyph:hover {
+	background: rgba( 255, 255, 255, 0.14 ) !important;
+}
+
+/* Async AI job toasts (image edit / video generate) — deliberately fixed to
+   the viewport, not the per-element panel, so a job's "processing"/"done"
+   status stays visible even after the panel that started it has closed or
+   the user has selected something else entirely. */
+.cve-toasts {
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	z-index: 200;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: 320px;
+}
+
+.cve-toast {
+	padding: 10px 14px;
+	border-radius: 10px;
+	background: #202024;
+	color: #f5f5f7;
+	font-size: 13px;
+	line-height: 1.4;
+	box-shadow: 0 12px 30px rgba( 0, 0, 0, 0.4 );
+	border-left: 3px solid #5a5a60;
+}
+
+.cve-toast-processing {
+	border-left-color: #2563eb;
+}
+
+.cve-toast-done {
+	border-left-color: #22c55e;
+}
+
+.cve-toast-error {
+	border-left-color: #ef4444;
+}
+
+/* A field whose control is two stacked things — a picker plus the free-text
+   escape hatch it reveals. */
+.cve-field-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	flex: 1;
+	min-width: 0;
+}
+
+.cve-field-stack .cve-text,
+.cve-field-stack .cve-select {
+	width: 100%;
+}
+
+/* ---- Format toggles (italic / underline / super / sub) ---- */
+/* Same field chrome as every typography row; the active state borrows the
+   Save button's cream-on-ink inversion, so "on" reads instantly without
+   introducing a new accent color to the panel. */
+.cve-fmtgroup {
+	display: flex;
+	gap: 4px;
+	margin-left: auto;
+}
+
+.cve-fmt {
+	min-width: 30px;
+	height: 28px;
+	padding: 0 6px;
+	border: 1px solid #3a3a40;
+	border-radius: 7px;
+	background: transparent;
+	color: #d5d5da;
+	font-size: 13px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.cve-fmt:nth-child(1) {
+	font-style: italic;
+	font-family: Georgia, serif;
+}
+
+.cve-fmt:nth-child(2) {
+	text-decoration: underline;
+}
+
+.cve-fmt:hover {
+	background: #3a3a40;
+}
+
+.cve-fmt.on {
+	background: #f5f0e6;
+	border-color: #f5f0e6;
+	color: #1c1c1e;
+}
