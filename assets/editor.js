@@ -110,7 +110,6 @@
 		if ( seoPanel && seoPanel.classList.contains( 'is-open' ) ) {
 			loadSeo(); // per page, so a stale panel would edit the page just left
 		}
-		renderAiThread();
 	}
 
 	// The plain, real URL a logged-out visitor sees — no `clara_edit`/nonce
@@ -207,7 +206,6 @@
 		if ( seoPanel && seoPanel.classList.contains( 'is-open' ) ) {
 			loadSeo(); // per page, so a stale panel would edit the page just left
 		}
-		renderAiThread();
 	}
 
 	function loadVisualPages() {
@@ -1763,6 +1761,35 @@
 	function pxNumber( value ) {
 		var n = parseFloat( value );
 		return isNaN( n ) ? 0 : Math.round( n * 100 ) / 100;
+	}
+
+	// ---- Toasts ----
+	// A transient message that does not need the panel that raised it to stay
+	// open. In Pro these sit inside the background-job block, because a
+	// generation running for minutes is what made them necessary; they are
+	// used well outside it, so Lite keeps them under a heading of their own.
+
+	var toastRoot = null;
+	// The one toast that can be raised repeatedly by the same gesture, so it
+	// is held onto and replaced instead of stacking.
+	var loadMoreToast = null;
+	function ensureToastRoot() {
+		if ( ! toastRoot ) {
+			toastRoot = el( 'div', 'cve-toasts' );
+			document.body.appendChild( toastRoot );
+		}
+		return toastRoot;
+	}
+	function showToast( text, cls, autoHideMs ) {
+		var root = ensureToastRoot();
+		var t = el( 'div', 'cve-toast' + ( cls ? ' ' + cls : '' ), text );
+		root.appendChild( t );
+		if ( autoHideMs ) {
+			setTimeout( function () {
+				t.remove();
+			}, autoHideMs );
+		}
+		return t;
 	}
 
 	// ---- Preview watchdog ----
@@ -3554,12 +3581,10 @@
 		seoToggle.setAttribute( 'aria-pressed', open ? 'true' : 'false' );
 		if ( open ) {
 			// The docked panels are siblings of the canvas, each taking a fixed
-			// 320px out of it. Two could coexist; a third cannot — on a 1440px
-			// screen it leaves the preview under 500px wide, which is no longer a
-			// preview of anything. So opening one closes the others. Only ever on
-			// the way OPEN, which is also what keeps this from recursing.
+			// 320px out of it. Both at once leaves the preview too narrow to be
+			// a preview of anything, so opening one closes the other. Only ever
+			// on the way OPEN, which is also what keeps this from recursing.
 			setHistoryOpen( false );
-			setAiOpen( false );
 			loadSeo();
 		}
 	}

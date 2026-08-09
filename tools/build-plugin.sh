@@ -44,6 +44,13 @@ command -v node >/dev/null && for j in "$SRC"/assets/*.js; do
   node --check "$j" >/dev/null || fail "JS syntax error in $j"
 done
 
+# node --check proves a file PARSES. It says nothing about whether the
+# functions it calls still EXIST — and the derivation deletes whole sections
+# of editor.js. Three calls outlived their definitions once; one of them threw
+# on every click of the Search-appearance button.
+php "$SRC/tools/check-js-symbols.php" "$SRC"/assets/*.js >/dev/null \
+  || { php "$SRC/tools/check-js-symbols.php" "$SRC"/assets/*.js; fail "a called function has no definition"; }
+
 # ------------------------------------------------------- Lite purity gates ---
 # Each of these must match NOTHING outside comments that deliberately explain
 # the absence. A hit means the derivation missed something.

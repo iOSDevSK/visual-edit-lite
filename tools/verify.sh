@@ -51,6 +51,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Cheap checks first: no point booting WordPress to learn that a function is
+# missing. build-plugin.sh runs this too; here it fails fast and by name.
+php "$SRC/tools/check-js-symbols.php" "$SRC"/assets/*.js || die "a called function has no definition"
+
 command -v docker >/dev/null || die "docker is required"
 docker info >/dev/null 2>&1 || die "docker is installed but not running"
 
