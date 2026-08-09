@@ -163,6 +163,18 @@ plus the Original). Exits non-zero on any failure; `--keep` leaves the site up
 on `localhost:8897`. Offline, point it at a local copy:
 `PLUGIN_CHECK_ZIP=/path/to/plugin-check.zip tools/verify.sh`.
 
+## Releasing
+
+    tools/release.sh            # or: tools/release.sh X.Y.Z
+
+Verifies, pushes, builds, tags (bare version — no `v` prefix), publishes the
+GitHub Release with the ZIP attached, then **downloads the published asset
+back and diffs it against a fresh build**. One command, because "push now,
+release later" is how the download stops matching the code.
+
+Release notes are read from the matching `= X.Y.Z =` block in `readme.txt`,
+so the changelog has one home.
+
 ## Regenerating the translation template
 
     php tools/make-pot.php
