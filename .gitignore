@@ -12,3 +12,7 @@ Thumbs.db
 # Compiled translations: the .pot template is committed (translators start
 # from it), the .mo/.po a translator produces are theirs to ship.
 *.mo
+
+# Written by tools/verify.sh, read by .githooks/pre-push: which commit was
+# last proven clean. Local state, never shared.
+.verified

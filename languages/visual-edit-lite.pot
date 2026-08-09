@@ -55,7 +55,7 @@ msgstr ""
 
 #: includes/class-editor-page.php:20
 #: includes/class-editor-page.php:21
-#: visual-edit-lite.php:2106
+#: visual-edit-lite.php:2158
 msgid "Visual Editor"
 msgstr ""
 
@@ -458,7 +458,7 @@ msgstr ""
 #: includes/class-form-settings.php:781
 #: includes/class-optin.php:92
 #: includes/class-optin.php:193
-#: includes/class-optin.php:220
+#: includes/class-optin.php:223
 msgid "You need administrator permissions."
 msgstr ""
 
@@ -510,217 +510,217 @@ msgstr ""
 
 #: includes/class-geo-audit.php:93
 #: includes/class-geo-audit.php:94
-#: includes/class-geo-audit.php:592
+#: includes/class-geo-audit.php:604
 msgid "SEO &amp; AI Readiness"
 msgstr ""
 
-#: includes/class-geo-audit.php:189
+#: includes/class-geo-audit.php:194
 msgid "This description is used elsewhere too: %s. Two pages claiming the same summary compete with each other."
 msgstr ""
 
-#: includes/class-geo-audit.php:190
+#: includes/class-geo-audit.php:201
 msgid "This title is used elsewhere too: %s."
 msgstr ""
 
-#: includes/class-geo-audit.php:328
+#: includes/class-geo-audit.php:340
 msgid "This post has its own h1, on top of the one the layout makes from the title. That is two."
 msgstr ""
 
-#: includes/class-geo-audit.php:334
+#: includes/class-geo-audit.php:346
 msgid "No h1. Nothing on the page states what it is about in one line."
 msgstr ""
 
-#: includes/class-geo-audit.php:343
+#: includes/class-geo-audit.php:355
 msgid "%d h1 headings. A page can only be about one thing; more than one leaves it ambiguous."
 msgstr ""
 
-#: includes/class-geo-audit.php:361
+#: includes/class-geo-audit.php:373
 msgid "Heading levels jump from h%1$d straight to h%2$d, so the outline of the page has a gap in it."
 msgstr ""
 
-#: includes/class-geo-audit.php:400
+#: includes/class-geo-audit.php:412
 msgid "%d image has no alt attribute."
 msgid_plural "%d images have no alt attribute."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-geo-audit.php:435
+#: includes/class-geo-audit.php:447
 msgid "“%1$s” is answered by a %2$d-word paragraph. Answer engines quote the passage right under the question, so a shorter opening sentence is what gets cited."
 msgstr ""
 
-#: includes/class-geo-audit.php:465
+#: includes/class-geo-audit.php:477
 msgid "No excerpt, so this post has no description. Search results and AI answers will quote whatever sentence they happen to find. Add one in the post editor, under Excerpt."
 msgstr ""
 
-#: includes/class-geo-audit.php:466
+#: includes/class-geo-audit.php:478
 msgid "No description. Search results and AI answers will quote whatever sentence they happen to find."
 msgstr ""
 
-#: includes/class-geo-audit.php:477
+#: includes/class-geo-audit.php:489
 msgid "The description is only %d characters — too short to say what the page offers."
 msgstr ""
 
-#: includes/class-geo-audit.php:489
+#: includes/class-geo-audit.php:501
 msgid "The description is %d characters, so the end of it will be cut off."
 msgstr ""
 
-#: includes/class-geo-audit.php:508
+#: includes/class-geo-audit.php:520
 msgid "No business or personal name is set, so the site name is being used instead."
 msgstr ""
 
-#: includes/class-geo-audit.php:511
+#: includes/class-geo-audit.php:523
 msgid "No social or directory profiles are listed. These are how an answer engine confirms the site belongs to a real, identifiable business."
 msgstr ""
 
-#: includes/class-geo-audit.php:514
+#: includes/class-geo-audit.php:526
 msgid "No logo is set for the site's structured data."
 msgstr ""
 
-#: includes/class-geo-audit.php:517
+#: includes/class-geo-audit.php:529
 msgid "AI crawler rules are switched off, so robots.txt does not mention answer engines at all."
 msgstr ""
 
-#: includes/class-geo-audit.php:520
+#: includes/class-geo-audit.php:532
 msgid "The front page is not set as a static page, so it cannot carry its own title or description."
 msgstr ""
 
-#: includes/class-geo-audit.php:523
+#: includes/class-geo-audit.php:535
 msgid "Permalinks are still set to plain, which breaks the links between imported pages."
 msgstr ""
 
-#: includes/class-geo-audit.php:533
+#: includes/class-geo-audit.php:545
 msgid "Rank Math manages robots.txt itself, so the AI crawler rules here will not appear in it. Copy them into Rank Math → General Settings → Edit robots.txt."
 msgstr ""
 
-#: includes/class-geo-audit.php:584
+#: includes/class-geo-audit.php:596
 #: includes/class-seo-settings.php:164
 msgid "You do not have permission to do that."
 msgstr ""
 
-#: includes/class-geo-audit.php:595
+#: includes/class-geo-audit.php:607
 msgid "What this site tells search engines and AI assistants about itself. Everything here is a report — nothing on this screen changes a page, because the pages are meant to stay exactly as they were designed. Fix anything you want to act on in the Visual Editor."
 msgstr ""
 
-#: includes/class-geo-audit.php:600
+#: includes/class-geo-audit.php:612
 msgid "Worth your attention"
 msgstr ""
 
-#: includes/class-geo-audit.php:605
+#: includes/class-geo-audit.php:617
 msgid "%1$d worth fixing, %2$d worth a look, %3$d suggestions."
 msgstr ""
 
-#: includes/class-geo-audit.php:612
+#: includes/class-geo-audit.php:624
 msgid "Re-check"
 msgstr ""
 
-#: includes/class-geo-audit.php:617
+#: includes/class-geo-audit.php:629
 msgid "The site as a whole"
 msgstr ""
 
-#: includes/class-geo-audit.php:621
+#: includes/class-geo-audit.php:633
 msgid "Change these under SEO &amp; Sharing"
 msgstr ""
 
-#: includes/class-geo-audit.php:626
+#: includes/class-geo-audit.php:638
 msgid "Page by page"
 msgstr ""
 
-#: includes/class-geo-audit.php:630
+#: includes/class-geo-audit.php:642
 msgid "Page"
 msgstr ""
 
-#: includes/class-geo-audit.php:631
+#: includes/class-geo-audit.php:643
 msgid "Findings"
 msgstr ""
 
-#: includes/class-geo-audit.php:641
+#: includes/class-geo-audit.php:653
 msgid "post"
 msgstr ""
 
-#: includes/class-geo-audit.php:650
+#: includes/class-geo-audit.php:662
 msgid "Edit post"
 msgstr ""
 
-#: includes/class-geo-audit.php:651
+#: includes/class-geo-audit.php:663
 msgid "Open in editor"
 msgstr ""
 
-#: includes/class-geo-audit.php:657
+#: includes/class-geo-audit.php:669
 msgid "Nothing to report."
 msgstr ""
 
-#: includes/class-geo-audit.php:675
+#: includes/class-geo-audit.php:687
 msgid "Showing the %1$d most recent of %2$d posts. Older ones are not checked."
 msgstr ""
 
-#: includes/class-geo-audit.php:723
+#: includes/class-geo-audit.php:735
 msgid "Titles and descriptions"
 msgstr ""
 
-#: includes/class-geo-audit.php:726
+#: includes/class-geo-audit.php:738
 msgid "Handled by %s, filled in from the original design."
 msgstr ""
 
-#: includes/class-geo-audit.php:727
+#: includes/class-geo-audit.php:739
 msgid "Handled here — no SEO plugin needed."
 msgstr ""
 
-#: includes/class-geo-audit.php:730
+#: includes/class-geo-audit.php:742
 msgid "%1$d of %2$d pages and posts have a description"
 msgstr ""
 
-#: includes/class-geo-audit.php:737
+#: includes/class-geo-audit.php:749
 msgid "Structured data"
 msgstr ""
 
-#: includes/class-geo-audit.php:740
+#: includes/class-geo-audit.php:752
 msgid "This site describes itself as a %1$s called “%2$s”."
 msgstr ""
 
-#: includes/class-geo-audit.php:744
+#: includes/class-geo-audit.php:756
 msgid "Every page carries it, blog posts as articles"
 msgstr ""
 
-#: includes/class-geo-audit.php:748
+#: includes/class-geo-audit.php:760
 #: includes/class-seo-settings.php:257
 msgid "AI assistants"
 msgstr ""
 
-#: includes/class-geo-audit.php:750
+#: includes/class-geo-audit.php:762
 msgid "Named in robots.txt and pointed at a plain-text summary of the site."
 msgstr ""
 
-#: includes/class-geo-audit.php:751
+#: includes/class-geo-audit.php:763
 msgid "Switched off — robots.txt does not mention them."
 msgstr ""
 
-#: includes/class-geo-audit.php:756
+#: includes/class-geo-audit.php:768
 msgid "Old addresses"
 msgstr ""
 
-#: includes/class-geo-audit.php:758
+#: includes/class-geo-audit.php:770
 msgid "Addresses from before the conversion still work, so existing links and search results are not lost."
 msgstr ""
 
-#: includes/class-geo-audit.php:759
+#: includes/class-geo-audit.php:771
 msgid "No redirects are stored. If this site replaced an older one, its old addresses now return \"not found\"."
 msgstr ""
 
-#: includes/class-geo-audit.php:762
+#: includes/class-geo-audit.php:774
 msgid "%d address redirected"
 msgid_plural "%d addresses redirected"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-geo-audit.php:768
+#: includes/class-geo-audit.php:780
 msgid "Sitemap"
 msgstr ""
 
-#: includes/class-geo-audit.php:769
+#: includes/class-geo-audit.php:781
 msgid "Generated by WordPress; pages you hide from search are left out."
 msgstr ""
 
-#: includes/class-geo-audit.php:775
+#: includes/class-geo-audit.php:787
 msgid "What this site already does"
 msgstr ""
 
@@ -902,7 +902,7 @@ msgstr ""
 msgid "The active theme carries no content bundle."
 msgstr ""
 
-#: includes/class-import-page.php:356
+#: includes/class-import-page.php:360
 msgid "Nothing new to add — this site already has everything in the bundle."
 msgstr ""
 
@@ -1194,31 +1194,31 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: includes/class-optin.php:307
+#: includes/class-optin.php:310
 msgid "A valid email address is required."
 msgstr ""
 
-#: includes/class-optin.php:331
+#: includes/class-optin.php:334
 msgid "Could not record the request."
 msgstr ""
 
-#: includes/class-optin.php:352
+#: includes/class-optin.php:355
 msgid "Could not send the confirmation email."
 msgstr ""
 
-#: includes/class-optin.php:463
+#: includes/class-optin.php:466
 msgid "Please confirm your email address"
 msgstr ""
 
-#: includes/class-optin.php:467
+#: includes/class-optin.php:470
 msgid "Thanks for signing up. Please confirm this is your address by opening the link below:\n\n{confirm_url}\n\nIf you didn't ask for this, ignore this email and nothing further will happen."
 msgstr ""
 
-#: includes/class-optin.php:471
+#: includes/class-optin.php:474
 msgid "Here it is"
 msgstr ""
 
-#: includes/class-optin.php:475
+#: includes/class-optin.php:478
 msgid "Thanks for confirming — here's what you signed up for:\n\n{download_url}"
 msgstr ""
 
@@ -1546,7 +1546,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: includes/class-tokens.php:792
-#: visual-edit-lite.php:1888
+#: visual-edit-lite.php:1935
 msgid "Thanks — check your inbox."
 msgstr ""
 
@@ -1566,84 +1566,88 @@ msgstr ""
 msgid "Could not initialize the filesystem to extract the ZIP."
 msgstr ""
 
-#: includes/class-zip.php:261
+#: includes/class-zip.php:264
 msgid "Could not create a writable folder at %s. Check that wp-content/uploads is writable by the web server (a leftover folder owned by a different user is a common cause)."
 msgstr ""
 
-#: visual-edit-lite.php:795
-msgid "Not allowed."
-msgstr ""
-
-#: visual-edit-lite.php:805
-msgid "This content was written for a different design — its own assets and markers are missing from the active theme, so taking ownership would only put the wrong page back on the site. Activate the theme it belongs to, or give this theme its own WordPress install."
-msgstr ""
-
-#: visual-edit-lite.php:806
-#: visual-edit-lite.php:2092
-msgid "Visual Edit Pro"
-msgstr ""
-
-#: visual-edit-lite.php:833
-msgid "another theme"
-msgstr ""
-
-#: visual-edit-lite.php:838
-msgid "Visual Edit: this site's editable content belongs to a different theme."
+#: visual-edit-lite.php:59
+msgid "Visual Edit Lite is switched off because Visual Edit Pro is active on this site. Pro already includes everything Lite does — deactivate Lite to clear this notice."
 msgstr ""
 
 #: visual-edit-lite.php:842
-msgid "The stored pages, styles and history were created for %1$s, but %2$s is active. Editing is paused: the plugin will not serve one theme's markup through another's design, and will not overwrite it either. Nothing has been lost."
+msgid "Not allowed."
 msgstr ""
 
-#: visual-edit-lite.php:849
-msgid "This content predates per-theme storage, so it could not be filed under the theme that made it. Activate %s to carry on editing it — that also files it, and from then on both themes can hold their own content on this install side by side."
+#: visual-edit-lite.php:852
+msgid "This content was written for a different design — its own assets and markers are missing from the active theme, so taking ownership would only put the wrong page back on the site. Activate the theme it belongs to, or give this theme its own WordPress install."
 msgstr ""
 
 #: visual-edit-lite.php:853
+#: visual-edit-lite.php:2144
+msgid "Visual Edit Lite"
+msgstr ""
+
+#: visual-edit-lite.php:880
+msgid "another theme"
+msgstr ""
+
+#: visual-edit-lite.php:885
+msgid "Visual Edit: this site's editable content belongs to a different theme."
+msgstr ""
+
+#: visual-edit-lite.php:889
+msgid "The stored pages, styles and history were created for %1$s, but %2$s is active. Editing is paused: the plugin will not serve one theme's markup through another's design, and will not overwrite it either. Nothing has been lost."
+msgstr ""
+
+#: visual-edit-lite.php:896
+msgid "This content predates per-theme storage, so it could not be filed under the theme that made it. Activate %s to carry on editing it — that also files it, and from then on both themes can hold their own content on this install side by side."
+msgstr ""
+
+#: visual-edit-lite.php:900
 msgid "Themes"
 msgstr ""
 
-#: visual-edit-lite.php:865
+#: visual-edit-lite.php:912
 msgid "This content belongs to %s — take ownership"
 msgstr ""
 
-#: visual-edit-lite.php:871
+#: visual-edit-lite.php:918
 msgid "There is no \"take ownership\" here on purpose: this content carries another design's own assets and markers, so claiming it would only put the wrong page back on the site."
 msgstr ""
 
-#: visual-edit-lite.php:1441
+#: visual-edit-lite.php:1488
 msgctxt "post status"
 msgid "Parked with its theme"
 msgstr ""
 
-#: visual-edit-lite.php:1496
+#: visual-edit-lite.php:1543
 msgid "Visual Edit: menu management is off."
 msgstr ""
 
-#: visual-edit-lite.php:1497
+#: visual-edit-lite.php:1544
 msgid "The active theme does not declare its navigation zones (the clara_ve_theme_contract filter), so the plugin cannot know which markup is a menu — a menu created here would not appear on the site. Themes generated by the converter declare this in inc/visual-edit.php."
 msgstr ""
 
-#: visual-edit-lite.php:1886
+#: visual-edit-lite.php:1933
 msgid "Sending…"
 msgstr ""
 
-#: visual-edit-lite.php:1887
+#: visual-edit-lite.php:1934
 msgid "Sent!"
 msgstr ""
 
-#: visual-edit-lite.php:1889
+#: visual-edit-lite.php:1936
 msgid "Something went wrong — please try again."
 msgstr ""
 
-#: visual-edit-lite.php:2094
+#: visual-edit-lite.php:2146
 msgid "Open the front page in the visual editor"
 msgstr ""
 
-#: visual-edit-lite.php:2146
+#: visual-edit-lite.php:2198
 msgid "Advanced (HTML block &amp; %s)"
 msgstr ""
 
-#: visual-edit-lite.php:2147
+#: visual-edit-lite.php:2199
 msgid "Edit HTML block"
 msgstr ""

@@ -850,7 +850,7 @@ function clara_ve_handover_owner() {
 	if ( 'mismatch' === clara_ve_data_theme_verdict() ) {
 		wp_die(
 			esc_html__( 'This content was written for a different design — its own assets and markers are missing from the active theme, so taking ownership would only put the wrong page back on the site. Activate the theme it belongs to, or give this theme its own WordPress install.', 'visual-edit-lite' ),
-			esc_html__( 'Visual Edit Pro', 'visual-edit-lite' ),
+			esc_html__( 'Visual Edit Lite', 'visual-edit-lite' ),
 			array( 'back_link' => true )
 		);
 	}
@@ -2141,7 +2141,7 @@ function clara_ve_admin_bar_link( $wp_admin_bar ) {
 	$wp_admin_bar->add_node(
 		array(
 			'id'    => 'clara-visual-edit',
-			'title' => '<span class="ab-icon dashicons dashicons-edit" style="top:2px"></span>' . esc_html__( 'Visual Edit Pro', 'visual-edit-lite' ),
+			'title' => '<span class="ab-icon dashicons dashicons-edit" style="top:2px"></span>' . esc_html__( 'Visual Edit Lite', 'visual-edit-lite' ),
 			'href'  => admin_url( 'admin.php?page=visual-edit' ),
 			'meta'  => array( 'title' => __( 'Open the front page in the visual editor', 'visual-edit-lite' ) ),
 		)

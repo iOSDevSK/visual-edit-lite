@@ -180,6 +180,16 @@ ob_start(); Clara_VE_Editor_Page::render(); $html = ob_get_clean();
 $out[] = array( "editor renders", 500 < strlen( $html ) );
 $out[] = array( "no AI chat panel in the DOM", false === strpos( $html, "clara-ve-ai-chat" ) );
 
+// The product name as a USER sees it. Pro hardcodes "Visual Edit Pro" into
+// the admin-bar node, and it shipped that way in Lite because no gate looked
+// at a product name and nobody re-rendered the bar after the derivation.
+require_once ABSPATH . "wp-includes/class-wp-admin-bar.php";
+$bar = new WP_Admin_Bar();
+clara_ve_admin_bar_link( $bar );
+$node  = $bar->get_node( "clara-visual-edit" );
+$title = $node ? trim( wp_strip_all_tags( $node->title ) ) : "";
+$out[] = array( "admin bar says \"Visual Edit Lite\" (got: " . $title . ")", "Visual Edit Lite" === $title );
+
 foreach ( $out as $row ) { echo ( $row[1] ? "OK|" : "FAIL|" ), $row[0], "\n"; }
 ')
 while IFS='|' read -r verdict label; do
@@ -201,7 +211,16 @@ echo
 if [ "$FAILED" = "0" ]; then
   printf '\033[32m✓ VERIFIED\033[0m — %s is clean and ready to release/submit.\n' "$SLUG"
   echo "  package: $STAGE_ZIP"
+  # Stamp the verified commit so .githooks/pre-push can skip an unchanged
+  # re-push. Only a clean tree earns a stamp: a dirty one verified something
+  # that is not what a push would send.
+  if [ -z "$(git -C "$SRC" status --porcelain 2>/dev/null)" ]; then
+    git -C "$SRC" rev-parse HEAD 2>/dev/null | tr -d '\n' > "$SRC/.verified"
+  else
+    rm -f "$SRC/.verified"
+  fi
   exit 0
 fi
+rm -f "$SRC/.verified"
 printf '\033[31m✗ FAILED\033[0m — do not release or submit this build.\n'
 exit 1

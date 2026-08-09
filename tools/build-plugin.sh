@@ -64,6 +64,17 @@ purity "updater survived"           'updatepulse|UpdatePulse|plugin-update-check
 purity "AI code survived"           'Clara_VE_AI_|clara-ve-ai|clara_ve_ai_|ai-chat|ai-image|ai-video|ai-job|openrouter|OpenRouter'
 purity "Turnstile survived"         'turnstile'
 purity "theme export survived"      'Clara_VE_Export_Page|clara_ve_export_theme'
+
+# The product name itself. Pro hardcodes "Visual Edit Pro" into user-visible
+# strings — the admin-bar node and a wp_die() title — and neither carries a
+# licence gate, an AI class or any other marker the greps above look for, so
+# both shipped in Lite reading "Visual Edit Pro" to anyone using it. Matched as
+# a QUOTED literal so the prose that legitimately names Pro (the coexistence
+# notice, and comments explaining what Lite was derived from) still passes.
+NAMEHITS="$(grep -rn "['\"]Visual Edit Pro['\"]" "$SRC" \
+  --include='*.php' --include='*.js' --include='*.css' \
+  --exclude-dir=.git --exclude-dir=tools || true)"
+[ -z "$NAMEHITS" ] || { echo "$NAMEHITS" >&2; fail "the Pro product name is still in a user-visible string"; }
 grep -rn "Require License\|Update URI" "$MAIN" >/dev/null 2>&1 && fail "forbidden plugin header present"
 
 # ------------------------------------------------ WordPress.org submission ---

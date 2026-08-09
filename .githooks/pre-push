@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Nothing leaves this repo unverified.
+#
+# `tools/verify.sh` builds the package, boots a throwaway WordPress, runs the
+# official Plugin Check across every category and asserts the Lite-specific
+# behaviour. This hook makes that a precondition of `git push` rather than a
+# step someone remembers — which is the difference that matters: two pushes
+# already shipped an admin-bar node reading "Visual Edit Pro", because the
+# static greps had nothing to say about a product name and no one re-ran the
+# live check after the edit.
+#
+# Skipped when the current HEAD has already been verified clean (see the
+# .verified stamp tools/verify.sh writes), so an unchanged re-push is instant.
+#
+# Enable after cloning:   git config core.hooksPath .githooks
+# Deliberate bypass:      git push --no-verify   (say why in the commit)
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+HEAD_SHA="$(git rev-parse HEAD)"
+DIRTY=0
+[ -n "$(git status --porcelain)" ] && DIRTY=1
+
+if [ "$DIRTY" = "0" ] && [ -f .verified ] && [ "$(cat .verified)" = "$HEAD_SHA" ]; then
+  echo "pre-push: $HEAD_SHA already verified — nothing changed since."
+  exit 0
+fi
+
+if [ "$DIRTY" = "1" ]; then
+  echo "pre-push: working tree is dirty — verifying it, but note that what you"
+  echo "          are pushing is HEAD, not what is on disk."
+fi
+
+echo "pre-push: running tools/verify.sh (build + WordPress + Plugin Check)…"
+if ! tools/verify.sh; then
+  cat >&2 <<'MSG'
+
+pre-push: REFUSED — verification failed, so this is not pushed.
+
+Fix the failures above and try again. If Docker is unavailable and you must
+push documentation-only work, `git push --no-verify` bypasses this — but the
+next real push verifies everything anyway, so the debt is short-lived.
+MSG
+  exit 1
+fi
+
+[ "$DIRTY" = "0" ] && printf '%s' "$HEAD_SHA" > .verified
+echo "pre-push: verified — pushing."
+exit 0
