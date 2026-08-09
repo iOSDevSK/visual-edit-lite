@@ -1530,7 +1530,12 @@ function clara_ve_contract_notice() {
 	$screen_id = (string) $screen->id;
 	$relevant  = 'nav-menus' === $screen_id
 		|| 'themes' === $screen_id
-		|| false !== strpos( $screen_id, 'visual-edit-lite' )
+		// The ADMIN PAGE SLUG, which stays 'visual-edit' — it is not the text
+		// domain and not the plugin slug. The screen id is
+		// toplevel_page_visual-edit, so matching 'visual-edit-lite' here
+		// silently matched nothing and this notice stopped reaching the one
+		// person it is for.
+		|| false !== strpos( $screen_id, 'visual-edit' )
 		|| false !== strpos( $screen_id, '-setup' );
 	if ( ! $relevant || ! current_user_can( 'edit_theme_options' ) ) {
 		return;

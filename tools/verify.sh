@@ -207,6 +207,15 @@ foreach ( (array) $menu as $row ) {
 }
 $out[] = array( "sidebar menu says \"Visual Edit Lite\" (got: " . $sidebar . ")", "Visual Edit Lite" === $sidebar );
 
+// The theme in this container declares no contract, so the incompatibility
+// notice must reach the plugin screen. It is gated on the ADMIN PAGE SLUG,
+// which is not the text domain -- renaming one into the other made the check
+// match nothing and the notice vanished, silently.
+set_current_screen( "toplevel_page_visual-edit" );
+wp_set_current_user( 1 );
+ob_start(); clara_ve_contract_notice(); $notice = ob_get_clean();
+$out[] = array( "no-contract notice reaches the plugin screen", false !== strpos( $notice, "notice-warning" ) );
+
 foreach ( $out as $row ) { echo ( $row[1] ? "OK|" : "FAIL|" ), $row[0], "\n"; }
 ')
 while IFS='|' read -r verdict label; do
