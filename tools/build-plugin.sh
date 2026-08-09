@@ -99,7 +99,16 @@ rsync -a \
   --exclude '__MACOSX' \
   --exclude 'tests/' \
   --exclude 'tools/' \
+  --exclude '*.zip' \
   "$SRC/" "$STAGE/$SLUG/"
+
+# Plugin Check's file_type rule forbids archives inside a plugin, and the
+# obvious way to trip it is to write the output ZIP into the source tree and
+# then build again — the second build packs the first one. The rsync exclude
+# above is the fix; this is the proof it worked.
+if find "$STAGE/$SLUG" \( -name '*.zip' -o -name '*.gz' -o -name '*.rar' -o -name '*.phar' -o -name '*.exe' \) -print -quit | grep -q .; then
+  fail "an archive or binary ended up inside the package"
+fi
 
 mkdir -p "$(dirname "$OUT")"
 rm -f "$OUT"

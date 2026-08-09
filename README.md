@@ -143,6 +143,19 @@ plugin that handles your markup, your form submissions and your subscriber
 list. The conversion service is a separate product; this repository is the
 editor.
 
+## Verifying a build
+
+    tools/verify.sh
+
+Builds the package, boots a throwaway WordPress in Docker, installs the
+extracted ZIP under its real slug, installs the official
+[Plugin Check](https://wordpress.org/plugins/plugin-check/) if it is not
+already there, runs it across every category, and asserts the Lite-specific
+behaviour (no licence gate, no Pro classes, no AI routes, history listing ten
+plus the Original). Exits non-zero on any failure; `--keep` leaves the site up
+on `localhost:8897`. Offline, point it at a local copy:
+`PLUGIN_CHECK_ZIP=/path/to/plugin-check.zip tools/verify.sh`.
+
 ## Regenerating the translation template
 
     php tools/make-pot.php

@@ -20,6 +20,12 @@ pages editable — by clicking, not by rebuilding them in a page builder.
 Nothing here is locked, timed, or waiting for a key. Everything the plugin
 contains works on every install, offline included.
 
+Development happens in the open at
+https://github.com/iOSDevSK/visual-edit-lite — the full source, the build
+script and the translation-template generator are there. The plugin has no
+build step: the PHP, CSS and JavaScript shipped in this package are the
+source, unminified and uncompiled.
+
 * **Point-and-click editing** of text, links, images and video, directly on
   the live page, with a git-like per-page edit history.
 * **Repeating content** (FAQ lists, service cards, team members, portfolio
@@ -48,10 +54,14 @@ contains works on every install, offline included.
 
 = Editing history =
 
-Every Save is a restore point. The history panel offers the last ten saves
+Every Save is a restore point. The history panel lists the last ten saves
 plus the Original — the design exactly as the theme shipped it — so there is
-always a way back. Older saves keep accumulating in the database rather than
-being deleted, so nothing is lost if you later move to Visual Edit Pro.
+always a way back, however long ago you started.
+
+The panel lists ten; the table keeps up to three hundred per page. Those rows
+are your own content in your own database, and the plugin never deletes them
+to make a point — they are there for backups, for WP-CLI, and for whatever you
+run next.
 
 = What this plugin needs =
 
@@ -95,16 +105,15 @@ nothing in the plugin to unlock.
 
 An AI assistant that edits pages conversationally, AI image editing and AI
 video generation (all bring-your-own API key), Cloudflare Turnstile as an
-extra anti-spam layer, one-click theme export, and a deeper visible save
-history (300 restore points per page instead of ten). Pro is sold separately
-and is not required for anything Lite does.
+extra anti-spam layer, one-click theme export, and a history panel that lists
+300 restore points per page instead of ten. Pro is sold separately and is not
+required for anything Lite does.
 
 = Will I lose my work if I switch between Lite and Pro? =
 
 No. Both editions store content, history and settings under the same names, so
-either one reads what the other wrote. Lite records the full save history even
-though it shows the last ten, so installing Pro later reveals the saves that
-were recorded all along.
+either one reads what the other wrote, in both directions and with nothing to
+migrate.
 
 = Can I use it on a theme I built myself? =
 
