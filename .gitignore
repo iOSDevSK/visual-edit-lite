@@ -12,3 +12,4 @@ Thumbs.db
 # Compiled translations: the .pot template is committed (translators start
 # from it), the .mo/.po a translator produces are theirs to ship.
 *.mo
+.verified
