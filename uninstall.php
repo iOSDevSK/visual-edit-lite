@@ -23,6 +23,54 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 global $wpdb;
 
+// ---- Always, and FIRST: take every parked page back out.
+//
+// Parking is the plugin's own idea — a page put away under the internal
+// `clara_ve_parked` status at a `{key}--ve-{theme}` address, restorable
+// because this plugin registers that status and remembers what it was. Delete
+// the plugin while any theme's content is parked and nothing registers the
+// status any more: those pages become unqueryable, invisible in wp-admin and
+// on the site, at addresses nobody would guess — and the only code that could
+// have brought them back has just been deleted. That is the one piece of
+// parking bookkeeping the owner cannot undo by hand, so it is undone here,
+// before the opt-in gate, for everyone.
+//
+// Deliberately plain SQL and no plugin classes: uninstall.php must not depend
+// on plugin code loading, and by this point it is not.
+$clara_ve_parked_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	"SELECT ID FROM {$wpdb->posts} WHERE post_status = 'clara_ve_parked'"
+);
+foreach ( array_map( 'intval', (array) $clara_ve_parked_ids ) as $clara_ve_id ) {
+	$clara_ve_was  = (string) get_post_meta( $clara_ve_id, '_clara_ve_status', true );
+	$clara_ve_slug = (string) get_post_meta( $clara_ve_id, '_clara_ve_slug', true );
+	// 'publish' is what an imported page was, and the safe floor when the
+	// remembered status is missing or names something this site no longer has.
+	$clara_ve_status = ( '' !== $clara_ve_was && get_post_status_object( $clara_ve_was ) ) ? $clara_ve_was : 'publish';
+	$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->posts,
+		'' !== $clara_ve_slug
+			? array( 'post_status' => $clara_ve_status, 'post_name' => $clara_ve_slug )
+			: array( 'post_status' => $clara_ve_status ),
+		array( 'ID' => $clara_ve_id )
+	);
+	clean_post_cache( $clara_ve_id );
+	delete_post_meta( $clara_ve_id, '_clara_ve_status' );
+	delete_post_meta( $clara_ve_id, '_clara_ve_slug' );
+}
+// The attachment half of the same idea: a flag whose only reader is gone.
+$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_clara_ve_parked'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+// And the registry's parked flags, so a reinstall does not believe content is
+// put away when it is now live.
+$clara_ve_registry = get_option( 'clara_ve_themes', array() );
+if ( is_array( $clara_ve_registry ) && $clara_ve_registry ) {
+	foreach ( $clara_ve_registry as $clara_ve_slug_key => $clara_ve_record ) {
+		if ( is_array( $clara_ve_record ) ) {
+			unset( $clara_ve_registry[ $clara_ve_slug_key ]['parked'] );
+		}
+	}
+	update_option( 'clara_ve_themes', $clara_ve_registry, false );
+}
+
 // ---- Always: secrets. Enumerated literally rather than by importing the
 // plugin's classes — uninstall.php must not depend on plugin code loading.
 $clara_ve_secret_options = array(

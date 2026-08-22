@@ -314,6 +314,7 @@ class Clara_VE_Form_Settings {
 					</tr>
 				</table>
 
+
 				<h2><?php esc_html_e( 'Email delivery', 'visual-edit-lite' ); ?></h2>
 				<p class="description" style="max-width:680px"><?php esc_html_e( 'Pick how the site sends email. WordPress\'s default server mail very often lands in spam — connect a real provider for reliable delivery, no extra plugin needed. The API options send over HTTPS, so they work even on hosts that block outbound SMTP ports. For best results also add SPF/DKIM DNS records for your domain at your provider.', 'visual-edit-lite' ); ?></p>
 				<table class="form-table" role="presentation">
@@ -804,12 +805,9 @@ class Clara_VE_Form_Settings {
 	}
 
 	// ---- Secret-at-rest crypto (AES-256-CBC keyed by the site auth salt) ----
-	// Protects against a DB-only leak (a backup, read-only DB access), not
-	// against full file+DB compromise (the salt lives in wp-config.php).
-	//
-	// base64 here is binary-safe transport for CIPHERTEXT into a text option
-	// column — never encoding used to hide what the code does, which is what
-	// the "no obfuscation" rule is about.
+	// Mirrors class-ai-settings.php: protects against a DB-only leak (a backup,
+	// read-only DB access), not against full file+DB compromise (the salt lives
+	// in wp-config.php).
 
 	private static function encrypt( $plain ) {
 		if ( '' === $plain ) {
@@ -818,7 +816,7 @@ class Clara_VE_Form_Settings {
 		$key    = hash( 'sha256', wp_salt( 'auth' ), true );
 		$iv     = openssl_random_pseudo_bytes( 16 );
 		$cipher = openssl_encrypt( $plain, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
-		return false === $cipher ? '' : base64_encode( $iv . $cipher ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		return false === $cipher ? '' : base64_encode( $iv . $cipher );
 	}
 
 	private static function decrypt( $stored ) {
@@ -826,7 +824,7 @@ class Clara_VE_Form_Settings {
 		if ( '' === $stored ) {
 			return '';
 		}
-		$raw = base64_decode( $stored, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		$raw = base64_decode( $stored, true );
 		if ( false === $raw || strlen( $raw ) < 17 ) {
 			return '';
 		}

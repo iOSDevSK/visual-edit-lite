@@ -197,7 +197,7 @@ tile. The screen gives you the command to generate one.
 
 ## Reporting a bug
 
-[github.com/iOSDevSK/visual-edit/issues](https://github.com/iOSDevSK/visual-edit/issues)
+[github.com/iOSDevSK/visual-edit-lite/issues](https://github.com/iOSDevSK/visual-edit-lite/issues)
 
 Useful to include: WordPress and PHP versions, whether it is multisite,
 whether Yoast or Rank Math is installed, what you did, what happened, and

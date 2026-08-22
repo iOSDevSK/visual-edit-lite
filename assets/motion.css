@@ -1,0 +1,91 @@
+/**
+ * Movement, as a handful of classes.
+ *
+ * Two rules govern everything here:
+ *
+ * 1. WITHOUT JAVASCRIPT, NOTHING IS HIDDEN. The starting state of a reveal is
+ *    applied only once the script has run and added `cve-motion` to the root
+ *    element. A stylesheet that hides content on its own is a stylesheet that
+ *    hides content when the script fails to load, and a page whose words are
+ *    invisible is worse than a page that does not animate.
+ *
+ * 2. `prefers-reduced-motion` is honoured completely, not softened. Somebody
+ *    who has asked their machine to stop moving things has asked for that.
+ */
+
+/* Reveal on scroll ------------------------------------------------------- */
+
+.cve-motion [class*="cve-anim-"] {
+	opacity: 0;
+	transition:
+		opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+		transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: opacity, transform;
+}
+
+.cve-motion .cve-anim-fade-up {
+	transform: translateY(24px);
+}
+.cve-motion .cve-anim-fade-down {
+	transform: translateY(-24px);
+}
+.cve-motion .cve-anim-zoom {
+	transform: scale(0.94);
+}
+.cve-motion .cve-anim-slide-left {
+	transform: translateX(32px);
+}
+.cve-motion .cve-anim-slide-right {
+	transform: translateX(-32px);
+}
+
+/* The script adds this when the block has been scrolled into view. */
+.cve-motion [class*="cve-anim-"].is-revealed {
+	opacity: 1;
+	transform: none;
+}
+
+/* Hover ------------------------------------------------------------------ */
+
+/* No `.cve-motion` gate: a hover effect has no hidden starting state, so it
+   costs nothing when the script never runs. */
+[class*="cve-hover-"] {
+	transition:
+		transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 300ms cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 300ms ease;
+}
+
+.cve-hover-lift:hover {
+	transform: translateY(-4px);
+}
+.cve-hover-grow:hover {
+	transform: scale(1.03);
+}
+.cve-hover-soften:hover {
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+}
+.cve-hover-dim:hover {
+	opacity: 0.72;
+}
+
+/* A hover that moves the whole card should not fight the picture inside it. */
+.cve-hover-grow,
+.cve-hover-lift {
+	transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cve-motion [class*="cve-anim-"],
+	.cve-motion [class*="cve-anim-"].is-revealed,
+	[class*="cve-hover-"],
+	.cve-hover-lift:hover,
+	.cve-hover-grow:hover,
+	.cve-hover-soften:hover,
+	.cve-hover-dim:hover {
+		opacity: 1;
+		transform: none;
+		box-shadow: none;
+		transition: none;
+	}
+}

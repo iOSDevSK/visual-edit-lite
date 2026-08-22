@@ -57,10 +57,15 @@ user (`wp --user=1 …`).
 
 This is the requirement that decides whether the plugin is useful to you.
 
-**Visual Edit edits raw HTML that the theme carries.** It is built for themes
-produced by the converter, which turns a finished HTML site — built in
-Lovable, Bolt, aidesigner.ai, v0.dev, Claude design, or written by hand — into
-a WordPress theme whose pages keep their original markup.
+**Visual Edit edits raw HTML that the theme carries.** So it needs a theme
+whose pages are markup rather than blocks, and which declares what that markup
+means through the `clara_ve_theme_contract` filter. That contract is open and
+written down in full, so any theme can satisfy it, hand-written or generated.
+
+In practice most such themes come from a converter that turns a finished HTML
+site — built in Lovable, Bolt, aidesigner.ai, v0.dev, Claude design, or
+written by hand — into a WordPress theme whose pages keep their original
+markup.
 
 ### What it does not work with
 
@@ -115,10 +120,9 @@ None of these are required; each unlocks one feature.
 | Akismet | Form spam classification | Requires the Akismet plugin with a key |
 | Brevo | Mailing lists | Reuses the API key you already set for email delivery |
 | SMTP or a mail provider | Reliable email delivery | See [Email delivery](../guide/email-delivery.md) — this one matters more than it sounds |
-| `ffmpeg` on the server | Downscaling generated video | Optional; without it the clip is kept at full size |
 
 ## Distribution
 
-Visual Edit is not on wordpress.org. It is supplied as a ZIP alongside a
-converted theme, and updated by uploading a newer ZIP. See
+Visual Edit Lite is in the wordpress.org plugin directory, so it installs and
+updates the way any other directory plugin does. See
 [Installation](installation.md).

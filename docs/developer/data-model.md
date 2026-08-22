@@ -80,9 +80,8 @@ import — the only thing that survives the theme's directory being deleted),
 `clara_ve_theme_registry_backfill`, `clara_ve_legacy_media_stamp_version`
 
 **State** — `clara_ve_redirects`, `clara_ve_history_db_version`,
-`clara_ve_optin_db_version`, `clara_ve_ai_active_jobs`,
-`clara_ve_form_secrets_repaired`, `clara_ve_seo_synced_host`,
-`clara_ve_seo_reindex_due`
+`clara_ve_optin_db_version`, `clara_ve_form_secrets_repaired`,
+`clara_ve_seo_synced_host`, `clara_ve_seo_reindex_due`
 
 **Design** — `clara_ve_google_fonts`
 
@@ -196,7 +195,7 @@ Two implementation details worth knowing if you touch this:
   existed
 - A one-shot repair migrates values written before that fix
 
-The same eight names are listed independently in three places — the export
+The same five names are listed independently in three places — the export
 allowlist, the settings class, and `uninstall.php` (which deliberately does
 not load plugin classes). Redundant on purpose.
 

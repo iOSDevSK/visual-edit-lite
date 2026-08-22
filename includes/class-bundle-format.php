@@ -78,6 +78,8 @@ class Clara_VE_Bundle_Format {
 		'clara_ve_seo_default_og_image'  => 'portable',
 		'clara_ve_seo_title_separator'   => 'portable',
 
+		// AI model preferences (the KEYS that pay for them are in NEVER_EXPORT)
+
 		// This site's own wiring
 		'clara_ve_form_to'               => 'site',
 		'clara_ve_form_from_email'       => 'site',
@@ -263,7 +265,7 @@ class Clara_VE_Bundle_Format {
 	 * Records are stored resolved, matching how post_content and post_excerpt
 	 * are already handled: tokens exist at the bundle boundary and nowhere
 	 * else. Without this an imported og:image stays
-	 * "__CLARA_UPLOADS_URI__/clara-ve-import/front-page/og-image.jpg", which is
+	 * "__CLARA_UPLOADS_URI__/ve-import/front-page/og-image.jpg", which is
 	 * not a URL — every social preview on the delivered site would silently
 	 * come up blank, and the failure is invisible from inside WordPress.
 	 *

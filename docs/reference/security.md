@@ -25,7 +25,7 @@ Screens holding credentials or personal data sit one tier higher at
 
 ## Public REST endpoints
 
-Four routes are unauthenticated. Each is public because it must be, and each
+Three routes are unauthenticated. Each is public because it must be, and each
 has a specific gate.
 
 ### `GET /posts` — blog "load more"
@@ -40,7 +40,7 @@ page key and a page number bounded to 2–500.
 
 Must be anonymous; visitors are not logged in.
 
-**The gate:** six layers, below.
+**The gate:** five layers, below.
 
 ### `GET /confirm` — mailing-list double opt-in
 
@@ -53,15 +53,6 @@ Every outcome — valid, invalid, already used, prefetched by a mail client —
 lands on the same page. The endpoint is not an oracle for whether an address
 is on a list, and a mail client's link-prefetching cannot accidentally confirm
 someone.
-
-### `POST /ai-job/{id}/run` — background worker
-
-A server-to-server loopback the site fires at itself. It carries no session
-cookies, so a capability check is impossible.
-
-**The gate:** a per-job 32-character random token compared in constant time,
-with the job id constrained by the route regex. Jobs are claimed under a lock,
-so a duplicate trigger cannot cause a second paid provider call.
 
 ## Form anti-spam
 
@@ -120,7 +111,7 @@ knew about is worse than one sitting in a list marked "spam".
 
 ## Secret storage
 
-Eight options hold credentials. Encryption is AES-256-CBC with a random IV,
+Five options hold credentials. Encryption is AES-256-CBC with a random IV,
 the key derived from `wp_salt('auth')`.
 
 **What it protects:** a database-only exposure — a leaked backup, read-only
@@ -142,7 +133,7 @@ Three independent layers stop credentials leaving in a package:
 1. **The options list is an allowlist** — the writer iterates that array
    rather than scanning the options table, so a new setting is excluded until
    deliberately listed. That is the intended failure direction
-2. **A never-export list** of the eight credential options, checked on the way
+2. **A never-export list** of the five credential options, checked on the way
    out *and* on the way in
 3. **A value-shape pattern** matched against exported values, catching a key
    pasted into the wrong field
@@ -168,7 +159,7 @@ off by default in every package.
 ## Reporting a vulnerability
 
 Open an issue at
-[github.com/iOSDevSK/visual-edit/issues](https://github.com/iOSDevSK/visual-edit/issues).
+[github.com/iOSDevSK/visual-edit-lite/issues](https://github.com/iOSDevSK/visual-edit-lite/issues).
 For something you would rather not post publicly, say so in the issue without
 details and a private channel will be arranged.
 

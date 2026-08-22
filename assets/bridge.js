@@ -69,6 +69,11 @@
 		id: 1, 'aria-controls': 1, 'aria-labelledby': 1, 'aria-describedby': 1, for: 1,
 		'aria-expanded': 1, 'aria-selected': 1, 'aria-hidden': 1, 'data-state': 1,
 		hidden: 1, tabindex: 1,
+		// Some themes mark the first card in a dark section with this render
+		// state attribute while the remaining cards inherit the same appearance
+		// from their parent. It is not item content or structure; treating its
+		// presence as a design difference rejects the whole repeated section.
+		'data-dark': 1,
 		// The OPEN item of an accordion/tab set carries this and the closed
 		// ones do not -- same family as aria-expanded, and leaving it out
 		// made the widget's own state look like a design difference.
@@ -94,6 +99,27 @@
 		// slide index the runtime had assigned at capture time (dexler-014).
 		// Which slide a member WAS is state, not design.
 		'data-swiper-slide-index': 1,
+		// The same stagger, hand-rolled. A site with no reveal library writes
+		// its own index -- nothing on the first member, then 1, 2, 3 -- and
+		// styles the delay from it (`[data-d="2"] { transition-delay: .2s }`).
+		// It is the AOS case with a shorter name, and it cost a whole site:
+		// on one photographer's pages EVERY repeated section was rejected by
+		// it at once -- service cards, process steps, add-ons, testimonials --
+		// so the owner would have been offered none of them.
+		'data-d': 1,
+		// Image geometry and responsive plumbing. The same family as
+		// loading/decoding/fetchpriority above, arriving from the other
+		// direction: a performance pass (or a careful author) writes each
+		// image's intrinsic width/height, and `sizes` only onto the images
+		// that got a srcset variant -- so a film strip mixing portrait and
+		// landscape photographs, some with variants and some without, has
+		// members differing by exactly these three. None is item content:
+		// what the owner edits is src and alt, which the slot diff reads
+		// through the whitelist. Verified on a photographer's 18-frame
+		// marquee -- every element carried a valid edit path and the group
+		// was offered to nobody, because 1024x1536 beside 1536x1024 read
+		// as two designs.
+		width: 1, height: 1, sizes: 1,
 	};
 	// More than this many editable fields means the matched containers are
 	// loosely-similar page sections, not a card collection -- bail rather
@@ -280,7 +306,63 @@
 			stampSubtree( child, childPath );
 		}
 	}
-	stampSubtree( root, '' );
+	// On a block page the addresses already exist: the server put them on the
+	// elements at render time, computed from the parsed block tree, because
+	// there is no walk of the rendered DOM that could find them. A Query Loop
+	// is ONE stored block rendering N cards — the positional walk below would
+	// happily stamp the third card, and a save against that path would rewrite
+	// the template every card is drawn from.
+	//
+	// So the walk is skipped entirely and the server's addresses are adopted
+	// under the attribute the rest of this file already reads. Everything with
+	// no address is invisible to selection, which is the point: unstamped
+	// means uneditable, by construction rather than by a check.
+	//
+	// The address goes on the element the panel should actually edit, which is
+	// not always the element the block wraps: a button's words live in its <a>,
+	// a picture in its <img>. The block's own address travels with them, so a
+	// patch still names the block and the server still knows which part of it
+	// this operation touches.
+	function adoptServerAddresses() {
+		var blocks = document.querySelectorAll( '[data-ve-block]' );
+		for ( var i = 0; i < blocks.length; i++ ) {
+			var block = blocks[ i ];
+			var address = block.getAttribute( 'data-ve-block' );
+			var capability = block.getAttribute( 'data-ve-edit' ) || 'none';
+			var target = block;
+
+			if ( 'image' === capability ) {
+				target = block.querySelector( 'img' ) || block;
+			} else if ( 'button' === capability ) {
+				target = block.querySelector( 'a' ) || block;
+			} else if ( 'details' === capability ) {
+				// The question is the <summary>; the answer under it is child
+				// blocks, each addressed in its own right.
+				target = block.querySelector( 'summary' ) || block;
+			} else if ( 'section' === capability || 'spacer' === capability || 'style-lite' === capability ) {
+				// The element itself. These have no words of their own — what
+				// they offer is styling, and the panel reads the capability to
+				// know not to show a text field.
+				target = block;
+			} else if ( 'text' !== capability ) {
+				// Read-only. It keeps its data-ve-edit="none" for anything that
+				// wants to explain why, but nothing here can address it.
+				continue;
+			}
+
+			target.setAttribute( PATH_ATTR, 'path-' + address );
+			if ( ! target.hasAttribute( 'data-cve-class' ) ) {
+				target.setAttribute( 'data-cve-class', target.className || '' );
+			}
+			applyKind( target );
+		}
+	}
+
+	if ( config.blockMode ) {
+		adoptServerAddresses();
+	} else {
+		stampSubtree( root, '' );
+	}
 
 	function pathOf( el ) {
 		return el.getAttribute( PATH_ATTR ) || '';
@@ -502,6 +584,46 @@
 	// section's own paragraph) matched as one "collection," and reordering
 	// or deleting an "item" there would have scrambled unrelated sections.
 
+	function classBaseForCongruence( cls ) {
+		// Tailwind variants describe where a utility applies, not a member's
+		// identity. Strip variants outside arbitrary values so `[animation-delay:…]`
+		// remains one utility rather than being mistaken for a variant prefix.
+		var base = cls;
+		var start = 0;
+		while ( start < base.length ) {
+			var depth = 0;
+			var separator = -1;
+			for ( var i = 0; i < base.length; i++ ) {
+				if ( '[' === base[ i ] ) {
+					depth++;
+				} else if ( ']' === base[ i ] && depth > 0 ) {
+					depth--;
+				} else if ( ':' === base[ i ] && 0 === depth ) {
+					separator = i;
+					break;
+				}
+			}
+			if ( separator < 0 ) {
+				break;
+			}
+			base = base.slice( separator + 1 );
+			start++;
+		}
+		return base;
+	}
+
+	function isPositionInSetUtility( cls ) {
+		var base = classBaseForCongruence( cls ).replace( /!$/, '' );
+		return /^-?(?:col|row)-(?:span|start|end)(?:-|$)/.test( base )
+			|| /^-?order(?:-|$)/.test( base )
+			|| /^z-(?:auto|0|10|20|30|40|50)(?:-|$)/.test( base )
+			|| /^overflow-(?:auto|hidden|clip|visible|scroll)(?:-|$)/.test( base )
+			|| /^rounded-(?:t|r|b|l|s|e|tl|tr|br|bl|ss|se|ee|es)(?:-|$)/.test( base )
+			|| /^border(?:-|$)/.test( base )
+			|| /^p(?:t|r|b|l|s|e)(?:-|$)/.test( base )
+			|| /^\[(?:animation-delay|animation-duration):[^\]]+\]$/.test( base );
+	}
+
 	function classListSorted( el ) {
 		// The pristine snapshot (see stampSubtree) when one exists -- the
 		// live className can have drifted (scroll-reveal, active-nav, lazy-
@@ -521,7 +643,8 @@
 		// are one design in different runtime states (dexler-014). The bare
 		// `swiper-slide` class is structure and stays.
 		var classes = c.split( /\s+/ ).filter( function ( cls ) {
-			return ! /^swiper-slide-(active|prev|next|duplicate)/.test( cls );
+			return ! /^swiper-slide-(active|prev|next|duplicate)/.test( cls )
+				&& ! isPositionInSetUtility( cls );
 		} );
 		return classes.sort();
 	}
@@ -530,6 +653,16 @@
 		var out = [];
 		for ( var i = 0; i < el.children.length; i++ ) {
 			out.push( el.children[ i ].tagName.toLowerCase() );
+		}
+		// Comparison tables commonly use one <tbody> per feature group, with
+		// each group containing a heading row plus a different number of feature
+		// rows. The body is still the repeatable unit; its row count is data, not
+		// a different design. Keep the wildcard narrow so ordinary cards retain
+		// exact child-shape congruence.
+		if ( 'TBODY' === el.tagName && out.length && out.every( function ( tag ) {
+			return 'tr' === tag;
+		} ) ) {
+			return [ 'tr*' ];
 		}
 		return out;
 	}
@@ -553,30 +686,87 @@
 		return out;
 	}
 
-	// True only if the matched members sit in one unbroken run among the
-	// parent's element children -- nothing else interleaved. See the block
-	// comment above for the real page this rule was written to exclude.
-	function isContiguousCollectionRun( parent, members ) {
-		var kids = parent.children;
-		var first = -1;
-		var last = -1;
-		for ( var i = 0; i < kids.length; i++ ) {
-			if ( members.indexOf( kids[ i ] ) !== -1 ) {
-				if ( first === -1 ) {
-					first = i;
-				}
-				last = i;
-			}
-		}
-		if ( first === -1 ) {
+	// A decorative separator between list members: carries nothing an owner
+	// could edit — no children, no text, no media or link — so it is
+	// punctuation, not content. A word ticker's <i></i> dots and a card list's
+	// <hr> qualify; a heading between paragraph groups fails on its text and
+	// an <img> fails on its src, which is exactly the prose protection the
+	// mixed-tag rule below exists for.
+	function isDecorativeSeparator( el ) {
+		if ( el.children.length || ( el.textContent || '' ).trim() ) {
 			return false;
 		}
-		for ( var j = first; j <= last; j++ ) {
-			if ( members.indexOf( kids[ j ] ) === -1 ) {
-				return false;
+		if ( /^(IMG|VIDEO|IFRAME|EMBED|OBJECT|INPUT|SVG|PICTURE|SOURCE|CANVAS)$/.test( el.tagName ) ) {
+			return false;
+		}
+		return ! el.hasAttribute( 'src' ) && ! el.hasAttribute( 'href' );
+	}
+
+	// The separator nodes of a mixed-tag parent, or null when its non-member
+	// children are anything more than punctuation. All of them must also share
+	// ONE shape — a strip alternating words with two different ornaments is
+	// not a pattern this claims to understand.
+	function collectionSeparators( parent, members ) {
+		var seps = [];
+		for ( var i = 0; i < parent.children.length; i++ ) {
+			if ( members.indexOf( parent.children[ i ] ) === -1 ) {
+				seps.push( parent.children[ i ] );
 			}
 		}
-		return true;
+		if ( ! seps.length ) {
+			return null;
+		}
+		var sig = shapeSignature( seps[ 0 ] );
+		for ( var s = 0; s < seps.length; s++ ) {
+			if ( ! isDecorativeSeparator( seps[ s ] ) || shapeSignature( seps[ s ] ) !== sig ) {
+				return null;
+			}
+		}
+		return seps;
+	}
+
+	// A homogeneous-tag parent can contain separators such as table heading
+	// rows between otherwise identical data rows. Return each maximal run in
+	// that case. Mixed-tag parents retain the all-or-nothing contiguity rule —
+	// which prevents prose paragraphs separated by headings or images from
+	// becoming a collection — with ONE carve-out: when every non-member child
+	// is a decorative separator of one shape (a word ticker's <i></i> dots),
+	// the members are a single list that happens to be punctuated, and they
+	// merge into one run. Verified need: a five-word strip duplicated for a
+	// seamless loop was ten individually-editable spans and no list at all.
+	function collectionRuns( parent, members ) {
+		var kids = parent.children;
+		var homogeneous = true;
+		for ( var tagIndex = 1; tagIndex < kids.length; tagIndex++ ) {
+			if ( kids[ tagIndex ].tagName !== kids[ 0 ].tagName ) {
+				homogeneous = false;
+				break;
+			}
+		}
+		var runs = [];
+		var run = [];
+		for ( var i = 0; i < kids.length; i++ ) {
+			if ( members.indexOf( kids[ i ] ) !== -1 ) {
+				run.push( kids[ i ] );
+			} else if ( run.length ) {
+				runs.push( run );
+				run = [];
+			}
+		}
+		if ( run.length ) {
+			runs.push( run );
+		}
+		if ( homogeneous ) {
+			return runs;
+		}
+		if ( runs.length > 1 && members.length >= 2 && collectionSeparators( parent, members ) ) {
+			var merged = [];
+			for ( var r = 0; r < runs.length; r++ ) {
+				merged.push.apply( merged, runs[ r ] );
+			}
+			return [ merged ];
+		}
+		return 1 === runs.length ? runs : [];
 	}
 
 	function collectionValuesVary( vals ) {
@@ -594,8 +784,8 @@
 	// toggled by the page's own script), and this comparison runs at every
 	// recursion depth, not only the top.
 	function collectionAttrValue( el, name ) {
-		if ( 'class' === name && el.hasAttribute( 'data-cve-class' ) ) {
-			return el.getAttribute( 'data-cve-class' ) || '';
+		if ( 'class' === name ) {
+			return classListSorted( el ).join( ' ' );
 		}
 		if ( 'style' === name ) {
 			return normalizeStyleForCongruence( el.getAttribute( 'style' ) );
@@ -621,13 +811,20 @@
 	 */
 	function normalizeStyleForCongruence( value ) {
 		return String( value || '' ).split( ';' ).map( function ( decl ) {
-			return decl.trim();
+			decl = decl.trim();
+			var colon = decl.indexOf( ':' );
+			if ( colon < 0 ) {
+				return decl;
+			}
+			return decl.slice( 0, colon ).trim().toLowerCase() + ':' + decl.slice( colon + 1 ).trim();
 		} ).filter( function ( decl ) {
 			if ( ! decl ) {
 				return false;
 			}
 			var prop = decl.split( ':' )[ 0 ].trim().toLowerCase();
 			return 0 !== prop.indexOf( '--' )
+				&& 'opacity' !== prop
+				&& 'transform' !== prop
 				&& 'animation-name' !== prop
 				&& 'animation-duration' !== prop
 				&& 'transition-duration' !== prop;
@@ -747,7 +944,14 @@
 		if ( collectionValuesVary( ownVals ) ) {
 			slots.push( { type: 'text-own', path: path } );
 		}
-		for ( var c = 0; c < first.children.length; c++ ) {
+		// A table body may have a different number of rows from its sibling
+		// bodies. Walk only the shared prefix; the untouched extra rows remain
+		// part of each body and are carried through an atomic collection save.
+		var commonChildren = first.children.length;
+		for ( i = 1; i < members.length; i++ ) {
+			commonChildren = Math.min( commonChildren, members[ i ].children.length );
+		}
+		for ( var c = 0; c < commonChildren; c++ ) {
 			var kids = members.map( function ( m ) { return m.children[ c ]; } );
 			diffCollectionMembers( kids, path.concat( [ c ] ), slots );
 		}
@@ -851,23 +1055,30 @@
 		while ( node && node !== root && node.parentElement ) {
 			var parent = node.parentElement;
 			var members = congruentSiblings( node, parent );
-			if ( members.length >= 2 && isContiguousCollectionRun( parent, members ) ) {
+			var runs = collectionRuns( parent, members );
+			var run = runs.filter( function ( candidate ) {
+				return candidate.indexOf( node ) !== -1;
+			} )[ 0 ] || null;
+			// Cells in a table row are columns, not a repeatable list. The
+			// containing row remains eligible when walking up to its tbody.
+			var rowCells = 'TR' === parent.tagName && ( 'TD' === node.tagName || 'TH' === node.tagName );
+			if ( ! rowCells && run && run.length >= 2 ) {
 				var listPath = pathOf( parent );
 				if ( listPath ) {
 					var slots = [];
-					diffCollectionMembers( members, [], slots );
+					diffCollectionMembers( run, [], slots );
 					if ( slots.length >= 1 && slots.length <= MAX_COLLECTION_SLOTS ) {
 						return {
 							listPath: listPath,
 							shape: shapeSignature( node ),
 							slotSchema: slots,
-							items: members.map( function ( m ) {
+							items: run.map( function ( m ) {
 								return {
 									current: m === node,
 									values: slots.map( function ( s ) { return collectionSlotValue( m, s ); } ),
 								};
 							} ),
-							count: members.length,
+							count: run.length,
 						};
 					}
 				}
@@ -935,8 +1146,18 @@
 		// CSS ::before/::after ornaments (quote marks etc.) are not DOM nodes;
 		// expose their computed look so the host can style them through the
 		// plugin's CSS layer or convert them into real, editable elements.
+		//
+		// Withheld on a block page for the same reason the repeating-set
+		// detector is: an ornament is edited by writing a rule into this
+		// plugin's own CSS layer, keyed on a positional path. A block page
+		// has no such layer — its styling lives in block attributes — so the
+		// panel would offer a control whose save the translator then refuses,
+		// aborting everything else the person did in the same sitting.
 		var ornaments = [];
 		[ 'before', 'after' ].forEach( function ( which ) {
+			if ( config.blockMode ) {
+				return;
+			}
 			var cs = window.getComputedStyle( el, '::' + which );
 			if ( cs && cs.content && cs.content !== 'none' && cs.content !== 'normal' && cs.content !== '""' ) {
 				ornaments.push( {
@@ -982,13 +1203,27 @@
 			// The question-and-answer unit this element belongs to, if any — so
 			// the panel can add or remove a WHOLE question instead of editing
 			// the text of one and leaving its answer orphaned.
-			faq: faqUnitFor( el ),
+			// Withheld on a block page: the questions editor rewrites a whole
+			// <details> run as one source string, which is a raw-HTML
+			// operation. On blocks each question is its own core/details
+			// block — editable in place once Phase 3 stamps that type — and
+			// offering the old editor here only produces a save that aborts.
+			faq: config.blockMode ? null : faqUnitFor( el ),
 			// The generic repeating-card/list unit this element belongs to, if
 			// any (rooms, services, team members...) -- same "whole list, not
 			// one item" addressing as faq above, and mutually exclusive with
 			// it: collectionUnitFor steps aside wherever faqUnitFor already
 			// matches.
-			collection: collectionUnitFor( el ),
+			// Withheld on a block page. This detector finds repeated shapes
+			// in the RENDERED DOM and offers to reorder, add and delete them —
+			// structural edits to a source string, which addressed patches to
+			// named blocks cannot express. The repeated shapes on such a page
+			// are usually a Query Loop's output anyway, where there is nothing
+			// to reorder because there is only one stored block. Per-item text
+			// editing still works: each list item is its own block. Decided
+			// here rather than inside the detector, which stays a pure
+			// question about the DOM.
+			collection: config.blockMode ? null : collectionUnitFor( el ),
 			zone: zoneOf( el ),
 			tagName: el.tagName.toLowerCase(),
 			label:
@@ -998,8 +1233,285 @@
 			rect: { x: Math.round( rect.x ), y: Math.round( rect.y ), width: Math.round( rect.width ), height: Math.round( rect.height ) },
 			fields: fields,
 			styles: stylesFor( measureEl ),
+			// Which theme presets this block is already using, so the styling
+			// panel opens showing the truth rather than "theme default" on an
+			// element that is plainly not the default. Read from the classes
+			// WordPress emits for preset attributes — the attributes
+			// themselves live in the stored markup, which the browser does not
+			// have, and asking the server for them on every click would put a
+			// request between a click and a panel.
+			blockAttrs: config.blockMode ? blockPresetsOn( el ) : null,
+			// The block's own styling, read back off the element the way the
+			// preset classes are, so the panel opens showing what is set
+			// rather than blank. Inline style is where custom values live;
+			// nothing else on a block page writes one.
+			blockStyle: config.blockMode ? blockStyleOn( styledElementOf( el ) ) : null,
+			// Which block this element belongs to, and what it may become.
+			// The panel branches on both: a heading gets a level control, a
+			// section gets padding, a paragraph gets neither.
+			blockName: config.blockMode ? blockNameOf( el ) : null,
+			veCapability: config.blockMode ? capabilityOf( el ) : null,
+			// The block's own class list, which is where movement is stored.
+			// Read from the block element, not the clicked one: a click on a
+			// paragraph inside a section must report the section's classes
+			// when the section is what the panel is acting on.
+			blockClassName: config.blockMode ? blockClassesOf( el ) : null,
+			headingLevel: config.blockMode ? headingLevelOf( el ) : null,
+			// The section this element sits in, for the operations that act on
+			// whole sections rather than on what was clicked.
+			sectionAddress: config.blockMode ? sectionAddressOf( el ) : null,
+			sectionName: config.blockMode ? sectionNameOf( el ) : null,
+			// What this block is already tuned to on smaller screens. Stamped
+			// by the server, because the rules live in the page's meta and the
+			// browser has no other way to see them.
+			responsive: config.blockMode ? responsiveOn( el ) : null,
 		};
 	}
+
+	// has-accent-color, has-band-background-color, has-large-font-size,
+	// has-display-font-family, has-text-align-center — WordPress's own
+	// conventions, and the only place a rendered page records which preset a
+	// block chose.
+	// Custom values live in the element's inline style, expressed as the same
+	// dot-paths the panel and the store use. Read from whichever element the
+	// server writes to, which styledElementOf() decides.
+	var STYLE_PATHS = {
+		fontSize: 'typography.fontSize',
+		lineHeight: 'typography.lineHeight',
+		letterSpacing: 'typography.letterSpacing',
+		fontWeight: 'typography.fontWeight',
+		fontStyle: 'typography.fontStyle',
+		textTransform: 'typography.textTransform',
+		textAlign: 'typography.textAlign',
+		color: 'color.text',
+		backgroundColor: 'color.background',
+		borderRadius: 'border.radius',
+		borderTopWidth: 'border.width',
+		borderTopStyle: 'border.style',
+		borderTopColor: 'border.color',
+		boxShadow: 'shadow',
+		minHeight: 'dimensions.minHeight',
+		paddingTop: 'spacing.padding.top',
+		paddingRight: 'spacing.padding.right',
+		paddingBottom: 'spacing.padding.bottom',
+		paddingLeft: 'spacing.padding.left',
+		marginTop: 'spacing.margin.top',
+		marginBottom: 'spacing.margin.bottom',
+	};
+
+	// The markup carries a spacing preset as the custom property it expands
+	// to; a block stores it as the preset reference. Reading one and writing
+	// the other is what would make the panel show a chosen step as though it
+	// were a typed-in value — and turn it into one on the next save.
+	function unexpandPreset( value ) {
+		var match = /^var\(\s*--wp--preset--([a-z-]+)--([a-z0-9-]+)\s*\)$/.exec( value );
+		return match ? 'var:preset|' + match[ 1 ] + '|' + match[ 2 ] : value;
+	}
+
+	function blockStyleOn( el ) {
+		var out = {};
+		if ( ! el.style ) {
+			return out;
+		}
+		// core/spacer's height is an attribute, not a style, but the markup is
+		// the only place it is written down: a spacer left at its default
+		// carries no attribute at all. Reading it here is what stops the panel
+		// opening a 140px spacer showing 100px.
+		if ( el.style.height ) {
+			out.height = el.style.height;
+		}
+		Object.keys( STYLE_PATHS ).forEach( function ( property ) {
+			var value = el.style[ property ];
+			if ( value ) {
+				out[ STYLE_PATHS[ property ] ] = unexpandPreset( value );
+			}
+		} );
+		// text-decoration reads back as a shorthand in some browsers.
+		if ( el.style.textDecorationLine || el.style.textDecoration ) {
+			out['typography.textDecoration'] = ( el.style.textDecorationLine || el.style.textDecoration ).split( ' ' )[ 0 ];
+		}
+
+		// A gradient is written to the `background` shorthand, and only a
+		// gradient is — a flat colour goes to background-color.
+		if ( el.style.background && el.style.background.indexOf( 'gradient' ) !== -1 ) {
+			out['color.gradient'] = el.style.background;
+		}
+
+		// core/image keeps its border and shadow on the picture, not on the
+		// figure around it, so those are read from where they were written.
+		var block = stampedBlockOf( el );
+		if ( block && 'core/image' === block.getAttribute( 'data-ve-name' ) ) {
+			var picture = block.querySelector( 'img' );
+			if ( picture ) {
+				[ 'borderRadius', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'boxShadow' ]
+					.forEach( function ( property ) {
+						if ( picture.style[ property ] ) {
+							out[ STYLE_PATHS[ property ] ] = unexpandPreset( picture.style[ property ] );
+						}
+					} );
+			}
+		}
+
+		// And what the markup cannot carry at all: a block's gap, its aspect
+		// ratio, whether it sticks. The server stamps those, because they are
+		// stored in the block and never written into the page.
+		if ( block && block.getAttribute( 'data-ve-stored' ) ) {
+			try {
+				var stored = JSON.parse( block.getAttribute( 'data-ve-stored' ) );
+				Object.keys( stored ).forEach( function ( path ) {
+					out[ path ] = stored[ path ];
+				} );
+			} catch ( e ) {
+				// A malformed stamp is not worth breaking the panel over.
+			}
+		}
+		return out;
+	}
+
+	function stampedBlockOf( el ) {
+		return el.closest ? el.closest( '[data-ve-block]' ) : null;
+	}
+
+	// The whole SECTION an element belongs to — the outermost block, whose
+	// address is a bare number.
+	//
+	// Structural operations work on these and nothing else, so a click that
+	// landed on a paragraph three levels down still has to report the section
+	// it lives in. Reporting the paragraph instead is how a Delete button ends
+	// up removing something other than what it names.
+	function sectionOf( el ) {
+		var node = stampedBlockOf( el );
+		var last = null;
+		while ( node ) {
+			last = node;
+			node = node.parentElement && node.parentElement.closest
+				? node.parentElement.closest( '[data-ve-block]' )
+				: null;
+		}
+		if ( ! last || ! /^\d+$/.test( last.getAttribute( 'data-ve-block' ) || '' ) ) {
+			return null;
+		}
+		return last;
+	}
+
+	// Where the server writes a block's class and style — the block's own
+	// outermost element, except a button, which carries everything on its <a>.
+	// Reading anywhere else opens the panel blank on a block that is styled.
+	function styledElementOf( el ) {
+		var block = stampedBlockOf( el );
+		if ( ! block ) {
+			return el;
+		}
+		if ( 'button' === block.getAttribute( 'data-ve-edit' ) ) {
+			return block.querySelector( 'a' ) || block;
+		}
+		return block;
+	}
+
+	function sectionAddressOf( el ) {
+		var section = sectionOf( el );
+		return section ? section.getAttribute( 'data-ve-block' ) : null;
+	}
+
+	function sectionNameOf( el ) {
+		var section = sectionOf( el );
+		return section ? section.getAttribute( 'data-ve-name' ) : null;
+	}
+
+	function responsiveOn( el ) {
+		var block = stampedBlockOf( el );
+		var raw = block && block.getAttribute( 'data-ve-responsive' );
+		if ( ! raw ) {
+			return {};
+		}
+		try {
+			return JSON.parse( raw ) || {};
+		} catch ( e ) {
+			return {};
+		}
+	}
+
+	function blockClassesOf( el ) {
+		var block = stampedBlockOf( el );
+		return block ? ( block.getAttribute( 'class' ) || '' ) : '';
+	}
+
+	function blockNameOf( el ) {
+		var block = stampedBlockOf( el );
+		return block ? block.getAttribute( 'data-ve-name' ) : null;
+	}
+
+	function capabilityOf( el ) {
+		var block = stampedBlockOf( el );
+		return block ? block.getAttribute( 'data-ve-edit' ) : null;
+	}
+
+	function headingLevelOf( el ) {
+		var match = /^h([1-6])$/i.exec( el.tagName || '' );
+		return match ? parseInt( match[ 1 ], 10 ) : null;
+	}
+
+	function blockPresetsOn( el ) {
+		var out = {};
+		var classes = ( el.className || '' ).split( /\s+/ );
+		for ( var i = 0; i < classes.length; i++ ) {
+			var name = classes[ i ];
+			var match;
+			if ( ( match = /^has-(.+)-background-color$/.exec( name ) ) ) {
+				out.backgroundColor = match[ 1 ];
+			} else if ( ( match = /^has-(.+)-font-size$/.exec( name ) ) ) {
+				out.fontSize = match[ 1 ];
+			} else if ( ( match = /^has-(.+)-font-family$/.exec( name ) ) ) {
+				out.fontFamily = match[ 1 ];
+			} else if ( ( match = /^has-text-align-(.+)$/.exec( name ) ) ) {
+				out.textAlign = match[ 1 ];
+			} else if ( ( match = /^has-(.+)-color$/.exec( name ) ) && 'text' !== match[ 1 ] ) {
+				// After the background rule, or "has-band-background-color"
+				// would be read as a text colour called "band-background".
+				out.textColor = match[ 1 ];
+			}
+		}
+		return out;
+	}
+
+	// Mirrors the server's own class rules. `owns` has to be careful: three
+	// different presets end in "-color", and a text colour that also stripped
+	// the border's would take the wrong one off.
+	var PRESET_CLASSES = {
+		fontFamily: {
+			owns: function ( c ) { return /^has-.+-font-family$/.test( c ); },
+			make: function ( s ) { return 'has-' + s + '-font-family'; },
+		},
+		fontSize: {
+			owns: function ( c ) { return /^has-.+-font-size$/.test( c ) && 'has-custom-font-size' !== c; },
+			make: function ( s ) { return 'has-' + s + '-font-size'; },
+		},
+		textColor: {
+			owns: function ( c ) {
+				return /^has-.+-color$/.test( c )
+					&& ! /-background-color$/.test( c )
+					&& ! /-border-color$/.test( c )
+					&& 'has-text-color' !== c;
+			},
+			make: function ( s ) { return 'has-' + s + '-color'; },
+			generic: 'has-text-color',
+		},
+		backgroundColor: {
+			owns: function ( c ) { return /^has-.+-background-color$/.test( c ); },
+			make: function ( s ) { return 'has-' + s + '-background-color'; },
+			generic: 'has-background',
+		},
+		borderColor: {
+			owns: function ( c ) { return /^has-.+-border-color$/.test( c ); },
+			make: function ( s ) { return 'has-' + s + '-border-color'; },
+			generic: 'has-border-color',
+		},
+		gradient: {
+			owns: function ( c ) { return /^has-.+-gradient-background$/.test( c ); },
+			make: function ( s ) { return 'has-' + s + '-gradient-background'; },
+			generic: 'has-background',
+		},
+	};
 
 	function post( message ) {
 		window.parent.postMessage( Object.assign( { ns: 'clara-ve' }, message ), '*' );
@@ -1212,7 +1724,100 @@
 		return editableFrom( ev.target ) || containerFrom( ev.target );
 	}
 
+	/**
+	 * Drag the padding of a selected block, on the block itself.
+	 *
+	 * The panel can already set padding, and typing 48 into a field is
+	 * perfectly precise — it is just not how anybody decides how much space a
+	 * band of a page wants. That decision is made by looking. So the top and
+	 * bottom edges of a selected section grow a handle, and dragging one moves
+	 * the padding while the page reflows underneath.
+	 *
+	 * Nothing new is stored: a drag ends by sending the same style change the
+	 * panel's own field sends. If this never ran, the field would still be
+	 * there.
+	 */
+	var HANDLE_ATTR = 'data-cve-handle';
+
+	function clearHandles() {
+		var old = document.querySelectorAll( '[' + HANDLE_ATTR + ']' );
+		for ( var i = 0; i < old.length; i++ ) {
+			old[ i ].parentNode.removeChild( old[ i ] );
+		}
+	}
+
+	/**
+	 * @param {string} id The addressed block's path, as the host knows it.
+	 */
+	function showHandles( id ) {
+		clearHandles();
+		if ( ! config.blockMode ) {
+			return;
+		}
+		// The HOST decides whether to ask for these. Whether a block's padding
+		// is its own is a question about the block registry, and the registry
+		// is what the panel is built from — asking it here would mean keeping
+		// a second copy of that knowledge in the canvas, where it could
+		// quietly disagree.
+		var block = findById( id );
+		block = block ? ( block.closest( '[data-ve-block]' ) || block ) : null;
+		if ( ! block ) {
+			return;
+		}
+
+		[ 'top', 'bottom' ].forEach( function ( side ) {
+			var handle = document.createElement( 'div' );
+			handle.setAttribute( HANDLE_ATTR, side );
+			handle.setAttribute( 'aria-hidden', 'true' );
+			handle.title = 'Drag to change the ' + side + ' padding';
+			block.appendChild( handle );
+			handle.addEventListener( 'pointerdown', function ( ev ) {
+				startDrag( ev, block, side, handle );
+			} );
+		} );
+	}
+
+	function startDrag( ev, block, side, handle ) {
+		ev.preventDefault();
+		ev.stopPropagation();
+
+		var property = 'padding' + side.charAt( 0 ).toUpperCase() + side.slice( 1 );
+		var startY   = ev.clientY;
+		var startPx  = parseFloat( getComputedStyle( block )[ property ] ) || 0;
+		var current  = startPx;
+
+		handle.setPointerCapture( ev.pointerId );
+		document.documentElement.setAttribute( 'data-cve-dragging', '1' );
+
+		function move( e ) {
+			// Dragging the bottom handle DOWNWARD should add space, and the
+			// top handle downward should too — both grow the band away from
+			// its own edge.
+			var delta = ( 'top' === side ) ? ( e.clientY - startY ) : ( startY - e.clientY );
+			current = Math.max( 0, Math.round( startPx + delta ) );
+			block.style[ property ] = current + 'px';
+		}
+
+		function end() {
+			handle.removeEventListener( 'pointermove', move );
+			handle.removeEventListener( 'pointerup', end );
+			document.documentElement.removeAttribute( 'data-cve-dragging' );
+			// The same change the panel's own field would send, so it lands in
+			// the same queue and is saved by the same path.
+			post( {
+				type: 'handle-drag',
+				id: pathOf( block ),
+				path: 'spacing.padding.' + side,
+				value: current + 'px',
+			} );
+		}
+
+		handle.addEventListener( 'pointermove', move );
+		handle.addEventListener( 'pointerup', end );
+	}
+
 	function clearSelected() {
+		clearHandles();
 		var selected = document.querySelectorAll( '[data-cve-selected]' );
 		for ( var i = 0; i < selected.length; i++ ) {
 			selected[ i ].removeAttribute( 'data-cve-selected' );
@@ -1262,6 +1867,18 @@
 
 	function applyImageFields( el, src, alt ) {
 		el.setAttribute( 'src', src );
+		// srcset OUTRANKS src. WordPress renders a picture with a set of
+		// candidate files and a sizes hint, and the browser picks from those —
+		// so changing src alone leaves the OLD picture on screen, and the
+		// change appears not to have happened until a save reloads the page
+		// with a fresh srcset. Both go, and the browser is left with the one
+		// address it has been given.
+		el.removeAttribute( 'srcset' );
+		el.removeAttribute( 'sizes' );
+		// The old file's dimensions would letterbox the new one while the
+		// preview is up.
+		el.removeAttribute( 'width' );
+		el.removeAttribute( 'height' );
 		if ( typeof alt === 'string' ) {
 			el.setAttribute( 'alt', alt );
 		}
@@ -1706,6 +2323,52 @@
 			}
 			return;
 		}
+		/**
+		 * Swap a preset CLASS in the preview, not just the inline style.
+		 *
+		 * WordPress writes its preset rules with !important —
+		 * `.has-display-font-family { font-family: …!important }` — so a block
+		 * that already carries one cannot be previewed by setting an inline
+		 * style: the old class beats it. The change appeared to do nothing
+		 * until the page was saved and the class was rewritten, which is
+		 * exactly how somebody reports that changing the font does not work.
+		 *
+		 * The naming rules here mirror Clara_VE_Block_Supports::rewrite_classes,
+		 * because this is the one place that has the element in hand and has
+		 * to take the old class off it.
+		 */
+		if ( data.type === 'preview-class' ) {
+			el = findById( data.id );
+			var rule = PRESET_CLASSES[ data.kind ];
+			if ( el && rule ) {
+				Array.prototype.slice.call( el.classList ).forEach( function ( cls ) {
+					if ( rule.owns( cls ) ) {
+						el.classList.remove( cls );
+					}
+				} );
+				if ( rule.generic ) {
+					el.classList.remove( rule.generic );
+				}
+				if ( data.slug ) {
+					el.classList.add( rule.make( data.slug ) );
+					if ( rule.generic ) {
+						el.classList.add( rule.generic );
+					}
+				} else if ( data.custom && rule.generic ) {
+					// A custom value keeps the generic marker — that is what
+					// tells the stylesheet something was set at all — and
+					// loses only the preset's own class.
+					el.classList.add( rule.generic );
+				}
+			}
+			return;
+		}
+
+		if ( data.type === 'show-handles' ) {
+			showHandles( data.id );
+			return;
+		}
+
 		if ( data.type === 'preview-style' ) {
 			el = findById( data.id );
 			if ( el ) {
@@ -1770,9 +2433,7 @@
 			el = findById( data.id );
 			if ( el && el.tagName === 'IMG' ) {
 				applyImageFields( el, data.src, data.alt );
-				// Undefined means "this message is not about the link" (the
-				// media picker) — only an explicit value, empty string
-				// included, changes where the picture points.
+				// Undefined means "this message is not about the link".
 				if ( typeof data.link === 'string' ) {
 					applyImageLink( el, data.link, data.linkTarget );
 				}
@@ -1788,9 +2449,10 @@
 		}
 		if ( data.type === 'convert-to-video' ) {
 			// An <img> becomes a real <video> at the same tree position — not
-			// an attribute change like set-image/set-video, an actual tag swap.
-			// The element is found by its own stamped path, not by "current
-			// selection".
+			// an attribute change like set-image/set-video, an actual tag
+			// swap. The element is found by its own stamped path rather than
+			// by "current selection", because the swap may land while
+			// something else is selected.
 			el = findById( data.id );
 			if ( el && el.tagName === 'IMG' ) {
 				var video = document.createElement( 'video' );
@@ -2078,6 +2740,37 @@
 					node.remove();
 				}
 			} );
+
+			// A punctuated list (word · word · word) has separator nodes the
+			// member moves above just left stranded at the front — the strip
+			// would render as all its dots, then all its words. Re-weave them:
+			// members are already in final order at the end of the parent, so
+			// walk them and move one separator after each, honouring whether
+			// the original pattern ended with one. Leftover separators (after
+			// removals) go away with their members.
+			var sepPool = collectionSeparators( el, keptItems );
+			if ( sepPool && keptItems.length ) {
+				// Whether the pattern ends with a separator cannot be read off
+				// the DOM any more — the member moves above already happened —
+				// but the COUNT still says it: n members with n separators is
+				// a trailing pattern, n-1 is not. Removed members donate their
+				// separators to the leftover pool either way.
+				var trailing = sepPool.length >= keptItems.length;
+				for ( var wi = 0; wi < keptItems.length; wi++ ) {
+					var isLast = wi === keptItems.length - 1;
+					if ( isLast && ! trailing ) {
+						break;
+					}
+					var sep = sepPool.shift();
+					if ( ! sep ) {
+						break;
+					}
+					keptItems[ wi ].after( sep );
+				}
+				sepPool.forEach( function ( leftover ) {
+					leftover.remove();
+				} );
+			}
 
 			applyKind( el );
 			stampSubtree( el, basePathOf( el ) );

@@ -258,8 +258,9 @@
 	line-height: 1.5;
 }
 
-/* This toolbar control sets `display`, which beats the UA stylesheet's
-   `[hidden] { display: none }` — so hiding it from JS needs saying here. */
+/* These toolbar controls set `display`, which beats the UA stylesheet's
+   `[hidden] { display: none }` — so hiding them from JS needs saying here,
+   or a feature switched off by a missing API key stays on screen. */
 .clara-ve-history-btn[hidden] {
 	display: none;
 }
@@ -487,6 +488,21 @@
 	outline: none;
 	border-color: #6a6a78;
 	box-shadow: 0 0 0 1px #6a6a78;
+}
+
+/* Duplicate page. The fields borrow .cve-seo-field above; only the standing
+   room around the button is its own, so the explanation and the thing that
+   acts on it are not touching. */
+.clara-ve-duplicate-panel .cve-note {
+	margin: 0 0 16px;
+}
+
+.clara-ve-duplicate-panel .cve-note + .cve-seo-field {
+	margin-top: 0;
+}
+
+.clara-ve-duplicate-panel .cve-btn-save {
+	margin-top: 18px;
 }
 
 /* Character budget. Not a hard limit — Google truncates by pixel width, not
@@ -814,292 +830,6 @@
 	cursor: default;
 }
 
-/* ---- Floating inspector panel (open-design dark look) ---- */
-
-.cve-panel {
-	position: absolute;
-	z-index: 100;
-	width: 340px;
-	max-height: calc( 100% - 24px );
-	overflow-y: auto;
-	padding: 14px 16px 12px;
-	border-radius: 16px;
-	background: #202024;
-	color: #f5f5f7;
-	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-	font-size: 13px;
-}
-
-.cve-head {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-bottom: 10px;
-	cursor: grab;
-	user-select: none;
-}
-
-/* While dragging a panel: no accidental text selection anywhere, and a
-   consistent grabbing cursor even when the pointer outruns the handle. */
-body.cve-dragging,
-body.cve-dragging * {
-	user-select: none !important;
-	cursor: grabbing !important;
-}
-
-.cve-grip {
-	color: #8e8e93;
-	font-size: 14px;
-	letter-spacing: 2px;
-}
-
-.cve-title {
-	flex: 1;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-size: 15px;
-}
-
-.cve-close {
-	width: 30px;
-	height: 30px;
-	border: 1px solid #3a3a3f;
-	border-radius: 9px;
-	background: transparent;
-	color: #f5f5f7;
-	cursor: pointer;
-}
-
-.cve-section {
-	margin: 14px 0 8px;
-	color: #8e8e93;
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.12em;
-}
-
-.cve-grid {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 8px;
-}
-
-.cve-field {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin: 4px 0;
-	padding: 7px 10px;
-	border-radius: 9px;
-	background: #2c2c31;
-	min-width: 0;
-}
-
-.cve-field-label {
-	color: #8e8e93;
-	flex: 0 0 auto;
-}
-
-.cve-select,
-.cve-num,
-.cve-text,
-.cve-hex {
-	flex: 1;
-	min-width: 0;
-	border: 0 !important;
-	background: transparent !important;
-	color: #f5f5f7 !important;
-	font-size: 13px;
-	box-shadow: none !important;
-	text-align: right;
-	padding: 0 !important;
-	min-height: 0 !important;
-}
-
-.cve-select {
-	appearance: auto;
-}
-
-.cve-select option {
-	background: #2c2c31;
-	color: #f5f5f7;
-}
-
-.cve-num {
-	width: 54px;
-	flex: 0 1 auto;
-}
-
-.cve-unit {
-	color: #8e8e93;
-}
-
-.cve-step {
-	flex: 0 0 auto;
-	width: 20px;
-	border: 0;
-	background: transparent;
-	color: #8e8e93;
-	cursor: pointer;
-	font-size: 14px;
-}
-
-.cve-step:hover {
-	color: #fff;
-}
-
-.cve-color {
-	flex: 0 0 auto;
-	width: 26px;
-	height: 22px;
-	padding: 0 !important;
-	border: 0 !important;
-	background: transparent !important;
-	cursor: pointer;
-}
-
-.cve-checkrow {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin: 8px 0;
-	color: #d5d5da;
-}
-
-.cve-img {
-	display: block;
-	width: 100%;
-	height: auto;
-	max-height: 140px;
-	object-fit: cover;
-	border-radius: 10px;
-	margin-bottom: 8px;
-}
-
-.cve-video-preview {
-	display: block;
-	width: 100%;
-	height: auto;
-	max-height: 160px;
-	object-fit: cover;
-	border-radius: 10px;
-	margin-bottom: 8px;
-	background: #000;
-}
-
-/* One row per <source> — format fallbacks or responsive breakpoints, each
-   replaced independently so swapping one never collapses the others. */
-.cve-sources {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	margin-bottom: 8px;
-}
-
-.cve-source-row {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 6px 8px;
-	border-radius: 8px;
-	background: rgba( 255, 255, 255, 0.05 );
-}
-
-.cve-source-label {
-	flex: 1;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	color: #d5d5da;
-	font-size: 12px;
-}
-
-.cve-source-replace {
-	flex: 0 0 auto;
-	padding: 5px 12px;
-	font-size: 12px;
-}
-
-.cve-note {
-	margin: 10px 0 4px;
-	color: #8e8e93;
-	font-size: 12px;
-}
-
-.cve-foot {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-top: 14px;
-	padding-top: 12px;
-	border-top: 1px solid #3a3a3f;
-}
-
-.cve-flex {
-	flex: 1;
-}
-
-.cve-icon {
-	width: 32px;
-	height: 32px;
-	border: 0;
-	border-radius: 8px;
-	background: transparent;
-	color: #d5d5da;
-	font-size: 15px;
-	cursor: pointer;
-}
-
-.cve-icon:hover {
-	background: #2c2c31;
-}
-
-.cve-btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 8px 16px;
-	border: 0;
-	border-radius: 999px;
-	background: #2c2c31;
-	color: #f5f5f7;
-	font-size: 13px;
-	font-weight: 600;
-	cursor: pointer;
-	text-decoration: none;
-}
-
-.cve-btn-light {
-	background: transparent;
-	border: 1px solid #3a3a3f;
-}
-
-.cve-btn-save {
-	background: #f5f0e6;
-	color: #1c1c1e;
-}
-
-/* Ornament Symbol field: preview the glyph in the ornament's real font. */
-.cve-symbol {
-	font-size: 22px !important;
-	text-align: center !important;
-	line-height: 1.2;
-}
-
-/* Full-width panel buttons (ornament convert, video/poster pickers). */
-.cve-btn-block {
-	display: flex;
-	width: 100%;
-	margin: 2px 0 6px;
-}
-
-.cve-btn:disabled {
-	opacity: 0.5;
-	cursor: default;
-}
-
 .cve-textarea {
 	display: block;
 	width: 100%;
@@ -1241,4 +971,109 @@ body.cve-dragging * {
 	background: #f5f0e6;
 	border-color: #f5f0e6;
 	color: #1c1c1e;
+}
+
+/* ---- Sections: the structural toolbar and the "Add a section" browser ---- */
+
+/* The bin removes a whole band of the page, which is usually more than what
+   was clicked. It is the one button here that reads differently from the
+   others on purpose. */
+.cve-fmt-danger {
+	margin-inline-start: auto;
+	border-color: #6b3a3a;
+	color: #e8a9a9;
+}
+.cve-fmt-danger:hover {
+	background: #6b3a3a;
+	color: #fff;
+}
+.cve-structure {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+}
+
+/* The font picker's box is absolutely positioned so it can be dragged, and
+   openFontPicker() gives it a left/top in pixels. This one is not dragged, so
+   it centres itself instead — and it has to say so, or it lands in the
+   corner. */
+.cve-sectionpicker {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	overflow: auto;
+}
+.cve-sectionpicker[hidden] {
+	display: none;
+}
+.cve-sectionpicker .cve-fontpicker-box {
+	position: relative;
+	margin: 5vh 0;
+	width: min(720px, 94vw);
+}
+.cve-sectionlist {
+	overflow-y: auto;
+	margin-top: 10px;
+	display: grid;
+	gap: 14px;
+}
+.cve-sectioncard {
+	padding: 12px;
+	border: 1px solid #3a3a40;
+	border-radius: 12px;
+}
+/* Scaled down rather than cropped: what matters is recognising the section,
+   and a pattern designed for a full page is unreadable at panel width
+   otherwise. A transform does not change the room an element takes up, so
+   the wrapper is what actually gives the card its height. */
+.cve-sectionpreview-wrap {
+	height: 170px;
+	overflow: hidden;
+	margin: 8px 0;
+	border-radius: 8px;
+	background: #fff;
+}
+.cve-sectionpreview {
+	display: block;
+	width: 200%;
+	height: 340px;
+	border: 0;
+	background: #fff;
+	transform: scale(0.5);
+	transform-origin: top left;
+	pointer-events: none;
+}
+
+/* ---- Different values on smaller screens ---- */
+
+.cve-screens {
+	display: flex;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+.cve-screen {
+	flex: 1;
+	height: 28px;
+	border: 1px solid #3a3a40;
+	border-radius: 7px;
+	background: transparent;
+	color: #d5d5da;
+	font-size: 12px;
+	cursor: pointer;
+}
+.cve-screen:hover {
+	background: #3a3a40;
+}
+.cve-screen.on {
+	background: #f5f0e6;
+	border-color: #f5f0e6;
+	color: #1c1c1e;
+}
+/* A quiet label for a group of rows that shares one meaning. */
+.cve-sublabel {
+	margin: 8px 0 4px;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #8b8b93;
 }

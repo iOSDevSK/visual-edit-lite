@@ -83,5 +83,4 @@ somewhere arbitrary.
 ## Related
 
 - [SEO](seo.md) — the metadata that also carried over from the original site
-- [Import and export](../guide/import-export.md) — the map travels with a
-  content package
+- [Import](../guide/import-export.md) — the map travels with a content package

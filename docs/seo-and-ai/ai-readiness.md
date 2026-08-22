@@ -192,4 +192,3 @@ Results are cached for 15 minutes and refresh when you edit a page. There is a
 
 - [SEO](seo.md) — titles, descriptions, sharing images
 - [Repeating items](../guide/repeating-items.md) — the FAQ editor
-  entirely

@@ -5,7 +5,9 @@ hand-written or AI-generated HTML. It edits the raw markup the theme already
 carries, in place, so the page a visitor sees stays identical to the design it
 came from.
 
-**It needs a theme produced by the converter.** See
+**It needs a theme whose pages are raw HTML and which declares the
+`clara_ve_theme_contract` filter.** That contract is open and documented, so
+any theme can satisfy it. See
 [Requirements](getting-started/requirements.md) for what that means and what
 still works without one.
 
@@ -55,8 +57,8 @@ still works without one.
   card, the article template, and "load more".
 - **[Dynamic tokens](guide/dynamic-tokens.md)** — the four tokens that let a
   static design show live WordPress content.
-- **[Import and export](guide/import-export.md)** — moving a site, the three
-  export packages, and why an import never overwrites your work.
+- **[Import](guide/import-export.md)** — bringing a converted site's content
+  in, moving a site, and why an import never overwrites your work.
 
 ## Search and AI
 

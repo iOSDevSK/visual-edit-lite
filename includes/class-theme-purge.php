@@ -180,7 +180,12 @@ class Clara_VE_Theme_Purge {
 					$files[] = $one;
 					// The theme-namespaced variant apply_media() writes when a
 					// filename collides with another theme's.
-					$files[] = 'clara-ve-import/' . $slug . '/' . preg_replace( '#^clara-ve-import/#', '', $one );
+					// Both import folder names: a site converted before the
+					// rename keeps its media under the old one, and a purge
+					// that only knew the new name would leave it behind.
+					foreach ( clara_ve_import_dirs() as $dir ) {
+						$files[] = $dir . '/' . $slug . '/' . clara_ve_strip_import_dir( $one );
+					}
 				}
 			}
 		}

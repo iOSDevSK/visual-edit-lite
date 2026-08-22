@@ -182,7 +182,7 @@ See [Security](../reference/security.md).
 
 | | |
 |---|---|
-| `visual-edit.php` | Bootstrap, constants, key resolution, render filters, lifecycle |
+| `visual-edit-lite.php` | Bootstrap, constants, key resolution, render filters, lifecycle |
 | `includes/class-source-store.php` | The source of truth: storage, sync, shape validation |
 | `includes/class-history.php` | Versioning |
 | `includes/class-tokens.php` | Token hydration |
@@ -191,7 +191,6 @@ See [Security](../reference/security.md).
 | `includes/class-mailer.php` | SMTP and provider APIs |
 | `includes/class-seo*.php` | SEO record, emitter, settings |
 | `includes/class-geo*.php` | Structured data, llms.txt, readiness audit |
-| `includes/class-ai-*.php` | Chat, image, video, job queue, settings |
 | `includes/class-bundle-*.php`, `class-import-*.php` | Content packaging |
 | `assets/bridge.js` | Runs inside the page: stamping, selection, live editing |
 | `assets/editor.js` | Runs in the admin: panels, patches, saving |

@@ -16,11 +16,6 @@ class Clara_VE_Editor_Page {
 	}
 
 	public static function register_page() {
-		// Named for the PRODUCT, not the screen. Pro names this menu
-		// 'Visual Editor' and puts its edition only in the admin bar, which
-		// leaves someone with both editions installed unable to tell from
-		// wp-admin which one is running. Every surface that names this plugin
-		// names it the same way; see tools/verify.sh, which reads both back.
 		add_menu_page(
 			__( 'Visual Edit Lite', 'visual-edit-lite' ),
 			__( 'Visual Edit Lite', 'visual-edit-lite' ),
@@ -29,6 +24,184 @@ class Clara_VE_Editor_Page {
 			array( __CLASS__, 'render' ),
 			'dashicons-welcome-view-site',
 			59
+		);
+	}
+
+	/**
+	 * Which key the editor opens on when nothing else says.
+	 *
+	 * On a raw-HTML site that is the front-page key, as it has always been.
+	 * On a block site the front page is an ordinary WordPress page, so its
+	 * block key is the answer — and when the site has no static front page,
+	 * the first page the picker would list, because opening on a canvas that
+	 * cannot exist is how Phase 0's empty-canvas bug looked from the outside.
+	 *
+	 * @return string
+	 */
+	private static function default_key() {
+		if ( clara_ve_active_theme_is_ours() ) {
+			return CLARA_VE_DEFAULT_KEY;
+		}
+		$front = Clara_VE_Source_Store::block_key( (int) get_option( 'page_on_front' ) );
+		if ( '' !== $front ) {
+			return $front;
+		}
+		foreach ( get_posts( array( 'post_type' => 'page', 'post_status' => 'publish', 'numberposts' => 20, 'orderby' => 'ID' ) ) as $page ) {
+			$key = Clara_VE_Source_Store::block_key( $page );
+			if ( '' !== $key ) {
+				return $key;
+			}
+		}
+		return CLARA_VE_DEFAULT_KEY;
+	}
+
+	/**
+	 * The theme's own design tokens, as the styling panel's choices.
+	 *
+	 * Each entry carries the VALUE as well as the slug, because the panel
+	 * previews a change live in the frame before anything is saved, and a
+	 * preview needs a colour rather than the name of one. What is stored is
+	 * always the slug: a block attribute naming a preset follows the theme
+	 * when the theme's palette changes, which a copied hex does not.
+	 *
+	 * @return array
+	 */
+	/**
+	 * What each editable block type can actually be styled for.
+	 *
+	 * The panel is built from this rather than from a list written by hand,
+	 * so a control is never offered for something the server would refuse:
+	 * core/column has padding but no margin, core/spacer has neither colour
+	 * nor typography. One source of truth — the block registry — read once
+	 * here and once in Clara_VE_Block_Supports when the change comes back.
+	 *
+	 * @return array block name => list of style paths it supports.
+	 */
+	private static function block_supports() {
+		if ( clara_ve_active_theme_is_ours() || ! class_exists( 'Clara_VE_Block_Supports' ) ) {
+			return array();
+		}
+		$paths = array(
+			'typography.fontSize', 'typography.lineHeight', 'typography.textAlign',
+			'typography.fontFamily', 'typography.fontWeight', 'typography.fontStyle',
+			'typography.textTransform', 'typography.textDecoration', 'typography.letterSpacing',
+			'color.text', 'color.background', 'color.gradient',
+			'spacing.padding', 'spacing.margin', 'spacing.blockGap',
+			'border.radius', 'border.width', 'border.style', 'border.color',
+			'shadow',
+			'dimensions.minHeight', 'dimensions.aspectRatio',
+			'position.type',
+		);
+		$out = array();
+		foreach ( array_keys( Clara_VE_Block_Stamp::CAPABILITY ) as $name ) {
+			$supported = array();
+			foreach ( $paths as $path ) {
+				// The support for a spacing side is declared one level up, so
+				// asking about `.top` answers for the whole group.
+				// A spacing support is declared for the box, not per side.
+				$probe = ( 0 === strpos( $path, 'spacing.p' ) || 0 === strpos( $path, 'spacing.m' ) )
+					? $path . '.top'
+					: $path;
+				if ( Clara_VE_Block_Supports::supports( $name, $probe ) ) {
+					$supported[] = $path;
+				}
+			}
+			$out[ $name ] = $supported;
+		}
+		return $out;
+	}
+
+	private static function block_presets() {
+		if ( clara_ve_active_theme_is_ours() || ! function_exists( 'wp_get_global_settings' ) ) {
+			return array();
+		}
+		$settings = wp_get_global_settings();
+
+		/**
+		 * Presets from the theme AND from the owner's own additions.
+		 *
+		 * wp_get_global_settings() returns each group keyed by origin —
+		 * `default` (WordPress's factory presets), `theme` (theme.json), and
+		 * `custom` (the user layer). Two of those three are wanted:
+		 *
+		 * `custom` is where a Google font kept in this plugin lands, because
+		 * Clara_VE_Fonts merges through wp_theme_json_data_user — which is
+		 * why the font picker's families never reached this panel while it
+		 * read `theme` alone. It is also where Global Styles edits live, and
+		 * those are the owner's design decisions too.
+		 *
+		 * `default` is deliberately left out: WordPress's own palette and
+		 * type scale belong to no design in particular, and offering them
+		 * here is how a site stops looking like itself.
+		 *
+		 * @param string[] $path      Settings path WITHOUT the origin key.
+		 * @param string   $value_key Which field carries the CSS value.
+		 * @return array
+		 */
+		$read = static function ( $path, $value_key ) use ( $settings ) {
+			$group = $settings;
+			foreach ( $path as $step ) {
+				$group = isset( $group[ $step ] ) ? $group[ $step ] : array();
+			}
+
+			$out  = array();
+			$seen = array();
+			foreach ( array( 'theme', 'custom' ) as $origin ) {
+				foreach ( (array) ( isset( $group[ $origin ] ) ? $group[ $origin ] : array() ) as $preset ) {
+					if ( empty( $preset['slug'] ) || isset( $seen[ $preset['slug'] ] ) ) {
+						continue;
+					}
+					$seen[ $preset['slug'] ] = true;
+					$out[]                   = array(
+						'slug'  => (string) $preset['slug'],
+						'name'  => isset( $preset['name'] ) ? (string) $preset['name'] : (string) $preset['slug'],
+						'value' => isset( $preset[ $value_key ] ) ? (string) $preset[ $value_key ] : '',
+					);
+				}
+			}
+			return $out;
+		};
+
+		/** As $read, but including WordPress's own defaults. */
+		$read_with_default = static function ( $path, $value_key ) use ( $settings ) {
+			$group = $settings;
+			foreach ( $path as $step ) {
+				$group = isset( $group[ $step ] ) ? $group[ $step ] : array();
+			}
+			$out  = array();
+			$seen = array();
+			foreach ( array( 'default', 'theme', 'custom' ) as $origin ) {
+				foreach ( (array) ( isset( $group[ $origin ] ) ? $group[ $origin ] : array() ) as $preset ) {
+					if ( empty( $preset['slug'] ) || isset( $seen[ $preset['slug'] ] ) ) {
+						continue;
+					}
+					$seen[ $preset['slug'] ] = true;
+					$out[]                   = array(
+						'slug'  => (string) $preset['slug'],
+						'name'  => isset( $preset['name'] ) ? (string) $preset['name'] : (string) $preset['slug'],
+						'value' => isset( $preset[ $value_key ] ) ? (string) $preset[ $value_key ] : '',
+					);
+				}
+			}
+			return $out;
+		};
+
+		return array(
+			'colors'     => $read( array( 'color', 'palette' ), 'color' ),
+			'fontSizes'  => $read( array( 'typography', 'fontSizes' ), 'size' ),
+			'fontFamily' => $read( array( 'typography', 'fontFamilies' ), 'fontFamily' ),
+			'gradients'  => $read( array( 'color', 'gradients' ), 'gradient' ),
+			// The one place `default` is read, and deliberately. WordPress's
+			// five shadows are not a palette that makes a site look like
+			// nothing in particular — they ARE the shadows Gutenberg's own
+			// panel offers, and almost no theme declares its own. Excluding
+			// them the way colours are excluded would leave the control
+			// permanently empty.
+			'shadow'     => $read_with_default( array( 'shadow', 'presets' ), 'shadow' ),
+			// Spacing has no slug attribute of its own on a block — presets
+			// and hand-typed values both live in style.spacing.* — so the
+			// panel needs the steps in order to offer them at all.
+			'spacing'    => $read( array( 'spacing', 'spacingSizes' ), 'size' ),
 		);
 	}
 
@@ -74,25 +247,46 @@ class Clara_VE_Editor_Page {
 				// server scoped nothing, and the editor stamped the page's
 				// own content while smoke tests reported the variant
 				// editable (school-007, mc-011).
+				// Filtered through the same availability test list_keys() uses,
+				// or the editor would keep building preview URLs for keys the
+				// picker no longer offers on a theme that has no such parts.
 				'chromeKeys'      => array_merge(
-					array( CLARA_VE_HEADER_KEY, CLARA_VE_FOOTER_KEY, CLARA_VE_ARTICLE_KEY, CLARA_VE_404_KEY ),
+					array_values(
+						array_filter(
+							array( CLARA_VE_HEADER_KEY, CLARA_VE_FOOTER_KEY, CLARA_VE_ARTICLE_KEY, CLARA_VE_404_KEY ),
+							array( 'Clara_VE_Source_Store', 'chrome_key_available' )
+						)
+					),
 					array_map(
 						static function ( $part ) { return $part['key']; },
 						clara_ve_theme_contract()['parts']
 					)
 				),
+				// On a block site nothing is saved as a document: the editor
+				// sends addressed patches instead, and several panels that
+				// describe raw HTML have nothing to describe.
+				'blockMode'       => ! clara_ve_active_theme_is_ours(),
+				// What the theme actually offers. In block mode the styling
+				// controls pick from these instead of writing arbitrary CSS —
+				// the site keeps one type scale and one palette, and the
+				// client cannot leave the brand by accident.
+				'blockPresets'    => self::block_presets(),
+				'blockSupports'   => self::block_supports(),
 				// Lets the Pages-list "Visual Editor" column link straight into
-				// editing that specific page.
-				'initialKey'      => isset( $_GET['key'] ) ? sanitize_key( wp_unslash( $_GET['key'] ) ) : CLARA_VE_DEFAULT_KEY, // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				// Where a contact form goes when it carries no per-form "to".
-				// Shown as the placeholder in the FORM ZONE "Send to" box so an
-				// empty box reads as "the site address" instead of "nowhere".
+				// editing that specific page. On a block site the front page's
+				// own block key is where the editor opens — the raw-HTML front
+				// key names a canvas such a theme does not have.
+				'initialKey'      => isset( $_GET['key'] ) ? sanitize_key( wp_unslash( $_GET['key'] ) ) : self::default_key(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'formRecipient'   => Clara_VE_Form_Settings::recipient( '' ),
 				// Google fonts the owner has kept, so the picker can offer them
 				// immediately (see includes/class-fonts.php).
 				'googleFonts'     => Clara_VE_Fonts::selected(),
 				'googleFontsCss'  => Clara_VE_Fonts::css_url(),
 				'googleFontsMax'  => Clara_VE_Fonts::MAX_FONTS,
+				// Empty when unlicensed — the AI Settings page is not
+				// registered then, and a link to a page WordPress refuses to
+				// serve reads as a bug, not as an upsell. The editor shows a
+				// licence hint instead of a dead link when this is ''.
 			)
 		);
 	}
@@ -104,7 +298,7 @@ class Clara_VE_Editor_Page {
 		?>
 		<div id="clara-ve-app" class="clara-ve-app">
 			<div class="clara-ve-toolbar">
-				<strong><?php esc_html_e( 'Visual Edit Lite — Front Page', 'visual-edit-lite' ); ?></strong>
+				<strong><?php esc_html_e( 'Visual Editor — Front Page', 'visual-edit-lite' ); ?></strong>
 				<select id="clara-ve-page-picker" class="clara-ve-page-picker" title="<?php esc_attr_e( 'Switch page', 'visual-edit-lite' ); ?>"></select>
 				<button type="button" id="clara-ve-preview" class="clara-ve-preview-btn" title="<?php esc_attr_e( 'Preview live page in a new tab', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-external"></span></button>
 				<button type="button" id="clara-ve-toggle" class="clara-ve-toggle is-off" aria-pressed="false" title="<?php esc_attr_e( 'Toggle edit mode', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-edit"></span></button>
@@ -117,6 +311,8 @@ class Clara_VE_Editor_Page {
 				<span id="clara-ve-status" class="clara-ve-status" aria-live="polite"></span>
 				<button type="button" id="clara-ve-seo-toggle" class="clara-ve-history-btn" aria-pressed="false" title="<?php esc_attr_e( 'Search appearance', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-search"></span></button>
 					<button type="button" id="clara-ve-history-toggle" class="clara-ve-history-btn" aria-pressed="false" title="<?php esc_attr_e( 'History', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-backup"></span></button>
+					<button type="button" id="clara-ve-duplicate" class="clara-ve-history-btn" title="<?php esc_attr_e( 'Duplicate this page', 'visual-edit-lite' ); ?>" disabled><span class="dashicons dashicons-admin-page"></span></button>
+					<button type="button" id="clara-ve-trash" class="clara-ve-history-btn" title="<?php esc_attr_e( 'Move this page to the trash', 'visual-edit-lite' ); ?>" disabled><span class="dashicons dashicons-trash"></span></button>
 				<button type="button" class="button" id="clara-ve-discard" disabled><?php esc_html_e( 'Discard changes', 'visual-edit-lite' ); ?></button>
 				<button type="button" class="button button-primary" id="clara-ve-save" disabled><?php esc_html_e( 'Save', 'visual-edit-lite' ); ?></button>
 			</div>
@@ -152,6 +348,37 @@ class Clara_VE_Editor_Page {
 					</div>
 					<div class="cve-seo-body" id="clara-ve-seo-body">
 						<p class="cve-note"><?php esc_html_e( 'Loading…', 'visual-edit-lite' ); ?></p>
+					</div>
+				</aside>
+				<?php
+				// Copying a page. Two fields because a copy with no address of
+				// its own is not much use — WordPress would hand it `about-2`
+				// and you would find out later. Prefilled from the original so
+				// the common case is still one click and Enter.
+				?>
+				<aside id="clara-ve-duplicate-panel" class="clara-ve-history clara-ve-duplicate-panel">
+					<div class="cve-history-head">
+						<strong><?php esc_html_e( 'Duplicate page', 'visual-edit-lite' ); ?></strong>
+						<button type="button" class="cve-close" id="clara-ve-duplicate-close">✕</button>
+					</div>
+					<div class="cve-seo-body">
+						<p class="cve-note" id="clara-ve-duplicate-note"></p>
+						<?php
+						// .cve-seo-field, NOT the block panel's .cve-field-label +
+						// .cve-text: those are built for an inline row — label left,
+						// borderless control right — and standalone they run the
+						// label and the box together on one line.
+						?>
+						<div class="cve-seo-field">
+							<label for="clara-ve-duplicate-title"><?php esc_html_e( 'Title', 'visual-edit-lite' ); ?></label>
+							<input type="text" id="clara-ve-duplicate-title" />
+						</div>
+						<div class="cve-seo-field">
+							<label for="clara-ve-duplicate-slug"><?php esc_html_e( 'Address (slug)', 'visual-edit-lite' ); ?></label>
+							<input type="text" id="clara-ve-duplicate-slug" />
+						</div>
+						<p class="cve-note"><?php esc_html_e( 'The copy is created as a draft, so it is not live until you publish it. Everything on the page comes with it — pictures, settings and search appearance.', 'visual-edit-lite' ); ?></p>
+						<button type="button" id="clara-ve-duplicate-go" class="cve-btn cve-btn-save"><?php esc_html_e( 'Duplicate', 'visual-edit-lite' ); ?></button>
 					</div>
 				</aside>
 			</div>

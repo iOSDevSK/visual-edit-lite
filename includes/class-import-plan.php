@@ -236,8 +236,8 @@ class Clara_VE_Import_Plan {
 				if ( '' === $safe ) {
 					continue;
 				}
-				$remap[ $safe ] = 'clara-ve-import/' . sanitize_key( get_stylesheet() ) . '/'
-					. preg_replace( '#^clara-ve-import/#', '', $safe );
+				$remap[ $safe ] = CLARA_VE_IMPORT_DIR . '/' . sanitize_key( get_stylesheet() ) . '/'
+					. clara_ve_strip_import_dir( $safe );
 			}
 		}
 		return $remap;
@@ -249,7 +249,7 @@ class Clara_VE_Import_Plan {
 	 * alike — they used to reach the same conclusion by separate reasoning,
 	 * which is only ever true until it isn't.
 	 *
-	 * The bundle names files `clara-ve-import/{page-key}/{basename}`, which is
+	 * The bundle names files `ve-import/{page-key}/{basename}`, which is
 	 * not unique across converted themes: two sites both having front-page
 	 * images called 1.webp is what export tooling produces, not a coincidence.
 	 * Content decides what that means.
@@ -291,8 +291,8 @@ class Clara_VE_Import_Plan {
 
 		// Different bytes under the same name. Nothing is overwritten; this
 		// theme gets its own folder and every reference follows (set_media_remap).
-		$scoped = 'clara-ve-import/' . sanitize_key( get_stylesheet() ) . '/'
-			. preg_replace( '#^clara-ve-import/#', '', $relative );
+		$scoped = CLARA_VE_IMPORT_DIR . '/' . sanitize_key( get_stylesheet() ) . '/'
+			. clara_ve_strip_import_dir( $relative );
 		if ( ! file_exists( $basedir . '/' . $scoped ) ) {
 			return array( 'path' => $scoped, 'status' => 'new', 'scoped' => true, 'media_state' => 'missing_file' );
 		}
@@ -369,7 +369,7 @@ class Clara_VE_Import_Plan {
 			// left the incoming page pointing at the other file, which is only
 			// harmless when that file is a replacement the OWNER made. Across
 			// two converted themes it is not: the bundle stores images as
-			// `clara-ve-import/{page-key}/{basename}`, and two sites both
+			// `ve-import/{page-key}/{basename}`, and two sites both
 			// having 1.webp, 2.webp, 3.webp on their front page is ordinary.
 			// The result was one theme's pages rendering another's
 			// photographs, at its own URLs, with an identical DOM.
@@ -457,8 +457,8 @@ class Clara_VE_Import_Plan {
 		}
 
 		global $wpdb;
-		$existing = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
-			$wpdb->prepare( 'SELECT status FROM ' . Clara_VE_Optin::table() . ' WHERE email = %s', $email ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		$existing = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( 'SELECT status FROM ' . Clara_VE_Optin::table() . ' WHERE email = %s', $email ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		);
 		if ( $existing ) {
 			$same             = isset( $subscriber['status'] ) && $existing->status === $subscriber['status'];
@@ -561,6 +561,7 @@ class Clara_VE_Import_Plan {
 		self::apply_terms( $bundle, $allowed, $lines );
 		self::apply_posts( $bundle, $allowed, $media_map, $lines );
 		self::apply_sources( $bundle, $allowed, $lines );
+		self::repair_blank_pages( $bundle, $lines );
 		self::apply_menus( $bundle, $allowed, $lines );
 		self::apply_options( $bundle, $allowed, $lines );
 		self::apply_settings( $bundle, $lines );
@@ -647,8 +648,8 @@ class Clara_VE_Import_Plan {
 				if ( $safe === $original ) {
 					$dest = $relative;
 				} elseif ( $disposition['scoped'] ) {
-					$dest = 'clara-ve-import/' . sanitize_key( get_stylesheet() ) . '/'
-						. preg_replace( '#^clara-ve-import/#', '', $safe );
+					$dest = CLARA_VE_IMPORT_DIR . '/' . sanitize_key( get_stylesheet() ) . '/'
+						. clara_ve_strip_import_dir( $safe );
 					$remap[ $safe ] = $dest;
 				} else {
 					$dest = $safe;
@@ -909,9 +910,66 @@ class Clara_VE_Import_Plan {
 	 * @param string[] $lines
 	 * @return void
 	 */
+	/**
+	 * Fill any page that is bound to a key, has a stored source, and is EMPTY.
+	 *
+	 * A page in that state cannot be anything an owner made: the import created
+	 * it, and something stopped the markup landing — before 1.20.7, an import
+	 * with no current user, whose page mirror was refused by a capability check
+	 * meant for hand-typed HTML. The plan classifies such a source as already
+	 * applied (the option matches the bundle), so apply_sources() rightly skips
+	 * it and the site stays broken through every re-import. Emptiness is the
+	 * whole condition — a page with anything in it is left alone.
+	 *
+	 * @param array    $bundle
+	 * @param string[] $lines
+	 * @return void
+	 */
+	private static function repair_blank_pages( array $bundle, array &$lines ) {
+		$filled = 0;
+		Clara_VE_Source_Store::$trusted_write = true;
+		foreach ( $bundle['sources'] as $source ) {
+			$key = isset( $source['key'] ) ? $source['key'] : '';
+			// The front page renders from the pattern override and chrome keys
+			// from template parts; neither has a bound Page, which is exactly
+			// what find_page_by_key() answers below.
+			if ( '' === $key || CLARA_VE_DEFAULT_KEY === $key ) {
+				continue;
+			}
+			$page = Clara_VE_Source_Store::find_page_by_key( $key );
+			if ( ! $page || '' !== trim( (string) $page->post_content ) ) {
+				continue;
+			}
+			$stored = Clara_VE_Source_Store::get_resolved_source( $key );
+			if ( ! is_string( $stored ) || '' === trim( $stored ) ) {
+				continue;
+			}
+			Clara_VE_Source_Store::save_source( $key, $stored );
+			$page = Clara_VE_Source_Store::find_page_by_key( $key );
+			if ( $page && '' !== trim( (string) $page->post_content ) ) {
+				++$filled;
+			}
+		}
+		Clara_VE_Source_Store::$trusted_write = false;
+		if ( $filled ) {
+			$lines[] = sprintf(
+				/* translators: %d: number of pages */
+				_n( '%d page was empty and has been filled from its stored content.', '%d pages were empty and have been filled from their stored content.', $filled, 'visual-edit-lite' ),
+				$filled
+			);
+		}
+	}
+
 	private static function apply_sources( array $bundle, array $allowed, array &$lines ) {
 		$done    = array();
 		$refused = array();
+
+		// This markup is the theme's own bundle, not something a visitor typed,
+		// and applying it must land the same way whoever started the run — the
+		// admin screen, wp-cli, a provisioning script. Without this the page
+		// mirror is skipped for a run with no current user, and the site comes
+		// up with every source stored and every page blank.
+		Clara_VE_Source_Store::$trusted_write = true;
 
 		foreach ( $bundle['sources'] as $source ) {
 			$key = $source['key'];
@@ -989,6 +1047,7 @@ class Clara_VE_Import_Plan {
 			);
 			$done[] = $key;
 		}
+		Clara_VE_Source_Store::$trusted_write = false;
 
 		if ( $done ) {
 			/* translators: %d: number of pages */
@@ -1280,10 +1339,17 @@ class Clara_VE_Import_Plan {
 		// the FRONT page instead. Every subpage appears to load and shows the
 		// wrong content.
 		//
-		// Only ever applied when the target's structure is empty, i.e. the
-		// default nobody has chosen. A site that already has a structure keeps
-		// it, like everything else here.
-		if ( ! empty( $settings['permalink_structure'] ) && '' === (string) get_option( 'permalink_structure' ) ) {
+		// Only ever applied when the target still carries a structure NOBODY
+		// CHOSE. That used to mean empty, and stopped meaning it in WordPress
+		// 6.7: a fresh install now arrives already set to the dated default, so
+		// testing for empty alone quietly never fired again — every site
+		// imported onto a current WordPress served its articles at
+		// /2026/03/12/slug/ while the design's links and its redirect map
+		// pointed at /slug/. Both of WordPress's own defaults count as
+		// unchosen; any other structure is the owner's and is left alone.
+		$wp_default_permalinks = array( '', '/%year%/%monthnum%/%day%/%postname%/' );
+		if ( ! empty( $settings['permalink_structure'] )
+			&& in_array( (string) get_option( 'permalink_structure' ), $wp_default_permalinks, true ) ) {
 			global $wp_rewrite;
 			update_option( 'permalink_structure', $settings['permalink_structure'] );
 			if ( $wp_rewrite instanceof WP_Rewrite ) {

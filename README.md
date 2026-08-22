@@ -28,12 +28,18 @@ Install the plugin on a theme that declares the contract and everything below
 works. Install it on one that does not and the editing screens still load, but
 the canvas has nothing it recognises to edit.
 
-**It is not a page builder and does not work with one.** It is not for
-Gutenberg block themes, Elementor, Divi, Beaver Builder, or ordinary
-WordPress themes. Those store your page as their own data structure — blocks,
-widgets, shortcodes — and render markup from it. This plugin does the
-opposite: it edits the raw HTML the theme already carries, in place. A theme
-that has no raw HTML to edit gives it nothing to work on.
+**It is not a page builder and does not work with one.** Elementor, Divi and
+Beaver Builder store your page as their own data structure and render markup
+from it; this plugin does the opposite, editing the markup the theme already
+carries, in place. A page built by one of those gives it nothing to work on.
+
+**Gutenberg block themes are supported**, through a second editing mode. On a
+block theme the editor works on core block markup rather than raw HTML: whole
+sections can be added, copied, moved and removed, the block supports panel is
+available, and every write passes a validation gate — because block markup
+fails silently at parse time in ways HTML does not, and only after WordPress
+has already stored it. The raw-HTML mode is for themes that declare the
+contract; the block mode needs no contract at all.
 
 Parts of the plugin that do **not** depend on the theme — forms, email
 delivery, mailing lists, the SEO record and emitter, redirects, structured
@@ -102,7 +108,9 @@ not have, it does not contain.
 
 Visual Edit **Pro** adds an AI assistant that edits pages conversationally, AI
 image editing and video generation, Cloudflare Turnstile, one-click theme
-export, and a 300-entry visible save history. It is sold separately and is not
+export, and a save history that lists all 300 recorded entries rather
+than the ten most recent plus the Original. Both editions RECORD the same
+300 — the difference is how many the list shows. It is sold separately and is not
 required for anything Lite does. Both editions store their data under the same
 names, so either one reads what the other wrote — and they cannot run at the
 same time: with Pro active, Lite switches itself off and says so.

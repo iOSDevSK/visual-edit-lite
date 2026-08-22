@@ -122,8 +122,8 @@ class Clara_VE_Forms {
 		// no session to ride and nothing to protect in that sense. It is a
 		// cost signal that cheaply rejects spray bots, and it is the same
 		// value for every visitor, so one can be scraped and reused. The
-		// honeypot, time-trap, rate limit and Akismet layers are what actually
-		// stop spam. See origin_field() for why it is
+		// honeypot, time-trap, rate limit and Akismet layers are
+		// what actually stop spam. See origin_field() for why it is
 		// site-scoped rather than a WP nonce.
 		//
 		// This check is unconditional and never combined with the timestamp
@@ -143,6 +143,8 @@ class Clara_VE_Forms {
 		// failure (same reasoning as the honeypot). Skipped when the setting
 		// is 0. NOTE: on a fully page-cached form this is weaker (the stamp is
 		// baked into the cache) — the honeypot/Akismet layers still apply.
+		// Read once: the same signed field carries the fill delay AND whether
+		// this particular form asked for a challenge.
 		$stamp       = self::verify_timestamp( isset( $params['cve_ts'] ) ? (string) $params['cve_ts'] : '' );
 		$min_seconds = Clara_VE_Form_Settings::min_seconds();
 		if ( $min_seconds > 0 ) {
@@ -185,8 +187,8 @@ class Clara_VE_Forms {
 			// a string, not an array), so the selected values are sanitized
 			// individually and joined, same as a person would read them off a
 			// paper form. Only a genuinely FLAT array is trusted: anything
-			// nested (`x[][y]=1`, not a shape this UI would ever produce) is
-			// silently skipped exactly like before, rather than
+			// nested (`x[][y]=1`, not a shape this UI or the AI would ever
+			// produce) is silently skipped exactly like before, rather than
 			// risking an unexpected structure in stored data.
 			if ( is_array( $value ) && array_reduce( $value, function ( $flat, $item ) {
 				return $flat && is_scalar( $item );
@@ -286,8 +288,8 @@ class Clara_VE_Forms {
 	 * for logged-out visitors — every real visitor — WordPress already issued
 	 * the identical nonce to everyone, so the per-user binding was never doing
 	 * any work here. Its job is and was "this came from a form on this site",
-	 * a light CSRF/hotlink signal. The honeypot, signed time-trap, rate limit
-	 * and Akismet layers are what actually stop spam.
+	 * a light CSRF/hotlink signal. The honeypot, signed time-trap, rate limit,
+	 * the rate limit and Akismet are what actually stop spam.
 	 *
 	 * Same two-tick window as a WP nonce (a full nonce_life, in two halves) so
 	 * a form left open stays valid exactly as long as it used to.
@@ -363,6 +365,14 @@ class Clara_VE_Forms {
 	 * a bot from forging an old timestamp to fake a human fill delay. Public
 	 * because class-tokens.php injects it into every rendered [wp-form].
 	 *
+	 * KNOWN GAP, not yet closed: the signature does not bind the form it was
+	 * issued for. A bot can lift a stamp from a form with the challenge off
+	 * and replay it against one with the challenge on, so the least protected
+	 * form on a site sets the floor for all of them. Closing it means folding
+	 * the form ID into this HMAC and checking the flag against the signed
+	 * value rather than the submitted form_id. Predates the per-form switch
+	 * only in the sense that there was nothing to downgrade to before it.
+	 *
 	 * @return string
 	 */
 	public static function timestamp_field() {
@@ -375,8 +385,7 @@ class Clara_VE_Forms {
 	/**
 	 * @param string $value The submitted cve_ts field.
 	 * @return array{elapsed:int}|false Seconds since the form was rendered, or
-	 *                   false if the value is missing or the signature doesn't
-	 *                   verify.
+	 *                   false if the value is missing or does not verify.
 	 */
 	private static function verify_timestamp( $value ) {
 		$parts = explode( '.', (string) $value );
@@ -529,10 +538,6 @@ class Clara_VE_Forms {
 		return is_array( $response ) && isset( $response[1] ) && 'true' === trim( (string) $response[1] );
 	}
 
-	/**
-	 * @param string $redirect
-	 * @return WP_REST_Response
-	 */
 	private static function respond( $redirect ) {
 		// A fetch submit gets the answer as data and stays put; a plain form
 		// POST — no JavaScript, or the script failed to load — gets the

@@ -783,9 +783,7 @@ class Clara_VE_Tokens {
 		$hidden .= '<input type="hidden" name="list_id" value="' . esc_attr( isset( $atts['list'] ) ? $atts['list'] : '' ) . '">';
 		// Honeypot: real visitors never see or fill this field.
 		$hidden .= '<input type="text" name="cve_hp" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">';
-		// Time-trap: a signed page-render timestamp. handle_submit() rejects a
-		// submission that arrives implausibly fast (a bot posting instantly).
-		// Signed so a bot can't forge an old timestamp to look human.
+		// Signed render time, for the time-trap in Clara_VE_Forms::handle_submit().
 		$hidden .= Clara_VE_Forms::timestamp_field();
 
 		$form_html = preg_replace( '/(<form\b[^>]*>)/i', '$1' . $hidden, $form_html, 1 );

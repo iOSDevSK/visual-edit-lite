@@ -83,6 +83,43 @@ class Clara_VE_REST {
 			)
 		);
 
+		// Copying and removing a page, from the editor rather than the Pages
+		// list. Both are per-post writes, so both ask can_edit_target_post()
+		// rather than "may this person use the editor at all".
+		register_rest_route(
+			'clara-ve/v1',
+			'/pages/duplicate',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'duplicate_page' ),
+				'permission_callback' => array( __CLASS__, 'can_edit_target_post' ),
+				'args'                => array(
+					'post'  => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+					'title' => array( 'type' => 'string' ),
+					'slug'  => array( 'type' => 'string' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			'clara-ve/v1',
+			'/pages/trash',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'trash_page' ),
+				'permission_callback' => array( __CLASS__, 'can_edit_target_post' ),
+				'args'                => array(
+					'post' => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+				),
+			)
+		);
+
 		register_rest_route(
 			'clara-ve/v1',
 			'/reset',
@@ -93,28 +130,88 @@ class Clara_VE_REST {
 			)
 		);
 
+		// Block pages are saved as a queue of addressed changes, never as a
+		// document. The browser round-trips HTML through DOMParser, which
+		// normalises entities, void elements and attribute order — and
+		// Gutenberg calls a block invalid on exactly that drift.
+		register_rest_route(
+			'clara-ve/v1',
+			'/block-patches',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'save_block_patches' ),
+				// Per-post, not site-wide. clara_ve_user_can_edit() asks
+				// whether somebody may use this editor at all, which is the
+				// right question for a theme's own source and the wrong one
+				// for a write to one particular page.
+				'permission_callback' => array( __CLASS__, 'can_edit_target_post' ),
+				'args'                => array(
+					'post'    => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+					'patches' => array(
+						'type'     => 'array',
+						'required' => true,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			'clara-ve/v1',
+			'/block-structure',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'save_block_structure' ),
+				'permission_callback' => array( __CLASS__, 'can_edit_target_post' ),
+				'args'                => array(
+					'post' => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+					'op'   => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			'clara-ve/v1',
+			'/block-patterns',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( __CLASS__, 'block_patterns' ),
+				'permission_callback' => 'clara_ve_user_can_edit',
+			)
+		);
+
 		// The only PUBLIC route in this file, and deliberately so: it serves the
 		// next page of a listing to any visitor who presses "Load more", the
 		// same published posts the page below the fold would have shown anyway.
 		// Nothing about the response is caller-controlled except which stored
 		// page and which page number — the card markup comes from the site's
 		// own source (see Clara_VE_Tokens::render_posts_page).
-		register_rest_route(
-			'clara-ve/v1',
-			'/posts',
-			array(
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( __CLASS__, 'get_posts_page' ),
-				'permission_callback' => '__return_true',
-				'args'                => array(
-					'key'  => $key_arg,
-					'page' => array(
-						'type'     => 'integer',
-						'required' => true,
+		if ( ! function_exists( 'clara_ve_theme_owns_public_runtime' ) || ! clara_ve_theme_owns_public_runtime() ) {
+			register_rest_route(
+				'clara-ve/v1',
+				'/posts',
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'get_posts_page' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'key'  => $key_arg,
+						'page' => array(
+							'type'     => 'integer',
+							'required' => true,
+						),
 					),
-				),
-			)
-		);
+				)
+			);
+		}
 
 		// Editor-only: the mailing lists the connected provider offers, for the
 		// FORM panel's picker. Behind the edit capability, not public — a list
@@ -215,14 +312,17 @@ class Clara_VE_REST {
 	 * Copy an image the design points at on SOMEONE ELSE'S server into this
 	 * site's Media Library, and hand back the local URL.
 	 *
-	 * A converted design routinely references a CDN or a stock-photo host, so
-	 * the site depends on someone else's server staying up and serving the
-	 * picture. One click copies it into this site's own Media Library and
-	 * repoints the markup.
+	 * A converted design routinely references a CDN or a stock-photo host, and
+	 * the AI image and video tools refuse such a source outright — they only
+	 * read files this site serves itself, because an endpoint that fetches
+	 * whatever URL a caller supplies is a way to read arbitrary files and to
+	 * probe the network from inside the server (see
+	 * Clara_VE_Media::resolve_local_image). That refusal is right, and it
+	 * left the owner with no way forward: the fix is mechanical, so the plugin
+	 * does it here instead of explaining it.
 	 *
-	 * This endpoint fetches a caller-supplied remote URL, which is a way to
-	 * read arbitrary files and to probe the network from inside the server, so
-	 * the difference has to be paid for:
+	 * This endpoint DOES fetch a remote URL, which is exactly what the other
+	 * one will not do, so the difference has to be paid for:
 	 *
 	 *  - it is capability-gated to someone who may already edit raw theme HTML;
 	 *  - wp_http_validate_url() rejects a private, loopback or non-HTTP target,
@@ -233,7 +333,7 @@ class Clara_VE_REST {
 	 *    wp_check_filetype_and_ext() on the downloaded bytes rather than by the
 	 *    URL's extension or the server's content-type, both of which the remote
 	 *    host controls;
-	 *  - and the size ceiling is 16 MB.
+	 *  - and the size ceiling is the same 16 MB the AI tools use.
 	 *
 	 * The remote copy is left alone; the markup is repointed by the editor's
 	 * ordinary set-image patch, so the change is one the owner can undo.
@@ -433,6 +533,15 @@ class Clara_VE_REST {
 	 * for the Visual Editor's page picker.
 	 */
 	public static function list_visual_pages() {
+		// On a block site the picker lists WordPress's own pages and posts,
+		// each addressed by its block key. Built here rather than in
+		// list_keys() on purpose: Clara_VE_Bundle_Writer walks list_keys() to
+		// decide what goes into a theme's export, and a block page is the
+		// SITE's content, not the theme's — it must never travel in a bundle.
+		if ( ! clara_ve_active_theme_is_ours() ) {
+			return rest_ensure_response( self::list_block_pages() );
+		}
+
 		// The enumeration itself lives in Clara_VE_Source_Store::list_keys();
 		// everything this method adds on top is preview-URL resolution, which
 		// is the picker's own concern and nothing else's.
@@ -501,10 +610,76 @@ class Clara_VE_REST {
 				'key'   => $entry['key'],
 				'label' => $entry['title'],
 				'url'   => $url,
+				// Which post this entry IS, so the toolbar can copy or remove
+				// it. Zero for the chrome parts, which have no post of their
+				// own — the buttons stay off for those.
+				'post'  => isset( $entry['post_id'] ) ? (int) $entry['post_id'] : 0,
+				// Removing the site's front page would leave the home page
+				// rendering nothing, so the button is off rather than inviting
+				// an action the server is only going to refuse.
+				'front' => isset( $entry['post_id'] ) && (int) get_option( 'page_on_front' ) === (int) $entry['post_id'],
+				// Read from the post, never guessed from the URL. The front
+				// page's permalink is the site root, so pulling the last path
+				// segment out of it produced a slug of `127.0.0.1:8899` — and
+				// plain permalinks would have given `?page_id=12` instead.
+				'slug'  => ! empty( $entry['post_id'] ) ? (string) get_post_field( 'post_name', (int) $entry['post_id'] ) : '',
 			);
 		}
 
 		return rest_ensure_response( $out );
+	}
+
+	/**
+	 * The site's own block pages and posts, as the picker's entries.
+	 *
+	 * The front page first, because that is where somebody opening the editor
+	 * expects to land, and because on a raw-HTML site the front page is
+	 * always the first entry too — the picker should not reorder itself
+	 * depending on what kind of theme is installed.
+	 *
+	 * Classic (non-block) content is left out rather than listed and then
+	 * refused on click: nothing here can address it.
+	 *
+	 * @return array[] key, label, url.
+	 */
+	private static function list_block_pages() {
+		$front = (int) get_option( 'page_on_front' );
+		$posts = get_posts(
+			array(
+				'post_type'        => array( 'page', 'post' ),
+				'post_status'      => array( 'publish', 'draft', 'private' ),
+				'numberposts'      => 200,
+				'orderby'          => 'title',
+				'order'            => 'ASC',
+				'suppress_filters' => false,
+			)
+		);
+
+		$out = array();
+		foreach ( $posts as $post ) {
+			$key = Clara_VE_Source_Store::block_key( $post );
+			if ( '' === $key ) {
+				continue;
+			}
+			$entry = array(
+				'key'   => $key,
+				'label' => html_entity_decode( get_the_title( $post ), ENT_QUOTES, get_bloginfo( 'charset' ) ),
+				'url'   => get_permalink( $post ),
+				// Same fields the legacy list carries, so the toolbar's copy and
+				// remove buttons work the same on both. Derivable from the key
+				// here, but deriving it in the browser would mean two ways of
+				// answering one question and one of them going stale.
+				'post'  => (int) $post->ID,
+				'front' => (bool) ( $front && $front === (int) $post->ID ),
+				'slug'  => (string) $post->post_name,
+			);
+			if ( $front && $front === (int) $post->ID ) {
+				array_unshift( $out, $entry );
+			} else {
+				$out[] = $entry;
+			}
+		}
+		return $out;
 	}
 
 	public static function get_source( WP_REST_Request $request ) {
@@ -743,14 +918,204 @@ class Clara_VE_REST {
 		return rest_ensure_response( array( 'renamed' => true ) );
 	}
 
+	/**
+	 * May this user edit the exact page this request targets?
+	 *
+	 * Both halves matter. `edit_post` is the per-post question WordPress
+	 * itself asks, so a contributor cannot reach a page they could not open
+	 * in the block editor; `clara_ve_user_can_edit` keeps the plugin's own
+	 * floor, including unfiltered_html, since a patch carries HTML.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return bool|WP_Error
+	 */
+	public static function can_edit_target_post( WP_REST_Request $request ) {
+		if ( ! clara_ve_user_can_edit() ) {
+			return false;
+		}
+		$post_id = (int) $request->get_param( 'post' );
+		if ( ! $post_id || ! get_post( $post_id ) ) {
+			return new WP_Error( 'clara_ve_no_post', __( 'That page no longer exists.', 'visual-edit-lite' ), array( 'status' => 404 ) );
+		}
+		return current_user_can( 'edit_post', $post_id );
+	}
+
+	/**
+	 * Copy a page, with everything hanging off it.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function duplicate_page( WP_REST_Request $request ) {
+		$out = Clara_VE_Page_Actions::duplicate(
+			(int) $request->get_param( 'post' ),
+			(string) $request->get_param( 'title' ),
+			(string) $request->get_param( 'slug' )
+		);
+		if ( is_wp_error( $out ) ) {
+			return $out;
+		}
+		return rest_ensure_response( $out );
+	}
+
+	/**
+	 * Move a page to the trash, where WordPress can give it back.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function trash_page( WP_REST_Request $request ) {
+		$out = Clara_VE_Page_Actions::trash( (int) $request->get_param( 'post' ) );
+		if ( is_wp_error( $out ) ) {
+			return $out;
+		}
+		return rest_ensure_response( $out );
+	}
+
+	/**
+	 * Apply a queue of block patches and save, recording a history entry so
+	 * the change can be taken back.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function save_block_patches( WP_REST_Request $request ) {
+		$post_id = (int) $request->get_param( 'post' );
+		$key     = Clara_VE_Source_Store::block_key( $post_id );
+		if ( '' === $key ) {
+			return new WP_Error(
+				'clara_ve_not_block',
+				__( 'This page is not edited as blocks.', 'visual-edit-lite' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$content = Clara_VE_Block_Patch::apply( $post_id, (array) $request->get_param( 'patches' ) );
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+
+		return self::store_block_content( $post_id, $key, $content );
+	}
+
+	/**
+	 * A structural change to a page: add a section, copy one, move it, remove
+	 * it.
+	 *
+	 * Its own route and its own request because every one of these renumbers
+	 * the page — addresses are positions, and an ordinary patch queued
+	 * alongside a removal would land on whatever slid into the gap. The client
+	 * flushes its queue first, waits for that to land, and reloads afterwards.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function save_block_structure( WP_REST_Request $request ) {
+		$post_id = (int) $request->get_param( 'post' );
+		$key     = Clara_VE_Source_Store::block_key( $post_id );
+		if ( '' === $key ) {
+			return new WP_Error(
+				'clara_ve_not_block',
+				__( 'This page is not edited as blocks.', 'visual-edit-lite' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$content = Clara_VE_Block_Patch::apply_structure(
+			$post_id,
+			array(
+				'op'        => (string) $request->get_param( 'op' ),
+				'block'     => (string) $request->get_param( 'block' ),
+				'expect'    => (string) $request->get_param( 'expect' ),
+				'direction' => (string) $request->get_param( 'direction' ),
+				'pattern'   => (string) $request->get_param( 'pattern' ),
+				'position'  => (string) $request->get_param( 'position' ),
+			)
+		);
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+
+		return self::store_block_content( $post_id, $key, $content );
+	}
+
+	/**
+	 * Gate, store and log rewritten block content.
+	 *
+	 * Shared by the two routes that produce it, so an ordinary edit and a
+	 * structural one are recorded identically — a page restored from history
+	 * should not depend on which of the two put it there.
+	 *
+	 * @param int    $post_id
+	 * @param string $key
+	 * @param string $content
+	 * @return WP_REST_Response|WP_Error
+	 */
+	private static function store_block_content( $post_id, $key, $content ) {
+		// Before the write, or the "baseline" captures the edit it exists to
+		// undo.
+		Clara_VE_History::ensure_baseline( $key );
+
+		$shape = Clara_VE_Source_Store::validate_shape( $key, $content );
+		if ( true !== $shape ) {
+			return new WP_Error( 'clara_ve_block_gate', $shape, array( 'status' => 422 ) );
+		}
+
+		$saved = Clara_VE_Source_Store::save_source( $key, $content );
+		if ( $saved ) {
+			Clara_VE_History::record(
+				Clara_VE_Source_Store::tokenize( Clara_VE_Source_Store::get_current_source( $key ) ),
+				array(),
+				'save',
+				null,
+				null,
+				$key,
+				// The page's small-screen rules belong to this version of it.
+				Clara_VE_Responsive::rules( $post_id )
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'saved'   => (bool) $saved,
+				'post'    => $post_id,
+				'key'     => $key,
+				'history' => Clara_VE_History::visible_entries( $key ),
+			)
+		);
+	}
+
+	/**
+	 * The sections this theme offers, for the "Add section" browser.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public static function block_patterns( WP_REST_Request $request ) {
+		$out = array();
+		foreach ( Clara_VE_Patterns::composable() as $pattern ) {
+			$out[] = array(
+				'name'        => $pattern['name'],
+				'title'       => $pattern['title'],
+				'description' => $pattern['description'],
+				'preview'     => $pattern['preview'],
+				// Rendered, so the browser can show the section as it will
+				// look rather than as a paragraph of its words. It goes into a
+				// sandboxed frame on the other side: a theme's pattern may
+				// carry markup that has no business executing in wp-admin.
+				'rendered'    => do_blocks( (string) $pattern['content'] ),
+			);
+		}
+		return rest_ensure_response( array( 'patterns' => $out ) );
+	}
+
 	public static function restore_history( WP_REST_Request $request ) {
 		$key = sanitize_key( (string) $request->get_param( 'key' ) ) ?: CLARA_VE_DEFAULT_KEY;
 		$id  = (int) $request->get_param( 'id' );
-		// Enforced on the wire, not just in the panel: the history panel offers
-		// the newest ten saves and the Original, and restore accepts exactly
-		// those — an id from further back is refused rather than served.
+		// Licence gate on the wire, not just in the panel: unlicensed installs
+		// may restore the newest ten and the Original, nothing between.
 		if ( ! Clara_VE_History::may_restore( $id, $key ) ) {
-			return new WP_Error( 'clara_ve_history_out_of_range', __( 'That save is outside the history this editor keeps. The last ten saves and the Original remain available.', 'visual-edit-lite' ), array( 'status' => 403 ) );
+			return new WP_Error( 'clara_ve_license_required', __( 'Restoring older saves requires an activated licence key. The last ten saves and the Original remain available.', 'visual-edit-lite' ), array( 'status' => 403 ) );
 		}
 		$entry = Clara_VE_History::get( $id, $key );
 		if ( ! $entry ) {
@@ -766,6 +1131,18 @@ class Clara_VE_REST {
 		// was appended.
 		Clara_VE_Source_Store::save_source( $key, Clara_VE_Source_Store::untokenize( $entry['source'] ) );
 		Clara_VE_Pseudo_Store::save( $key, is_array( $entry['pseudo'] ) ? $entry['pseudo'] : array() );
+
+		// And the small-screen rules that belonged to this version. Without
+		// this a restore would put the sections back and leave the page tuned
+		// for a layout that no longer exists — worse than not restoring, since
+		// it looks like it worked.
+		$restored_post = Clara_VE_Source_Store::block_key_post_id( $key );
+		if ( $restored_post && class_exists( 'Clara_VE_Responsive' ) ) {
+			Clara_VE_Responsive::save_rules(
+				$restored_post,
+				is_array( $entry['responsive'] ) ? $entry['responsive'] : array()
+			);
+		}
 
 		return rest_ensure_response(
 			array(

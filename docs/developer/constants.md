@@ -71,12 +71,10 @@ Not constants you can set, but numbers worth knowing:
 | Collection editor fields | 8 |
 | `llms.txt` entries per section | 200 |
 | Readiness report posts | 200 |
-| AI tool calls per chat turn | 10 |
 | Form rate limit | 1 per IP per 60 s |
 | Unconfirmed subscriber retention | 14 days |
-| AI job lifetime | 2 hours |
 
 ## Related
 
-- [Import and export](../guide/import-export.md)
+- [Import](../guide/import-export.md)
 - [Data model](data-model.md)

@@ -2,9 +2,9 @@
 Contributors: filipdvoran
 Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.19.8
+Stable tag: 1.25.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,11 @@ source, unminified and uncompiled.
 
 * **Point-and-click editing** of text, links, images and video, directly on
   the live page, with a git-like per-page edit history.
+* **Gutenberg block themes too.** On a block theme the editor works on core
+  block markup instead of raw HTML: whole sections can be added, copied, moved
+  and removed, the block supports panel is available, and every write passes a
+  validation gate first — block markup fails silently at parse time in ways
+  HTML does not.
 * **Repeating content** (FAQ lists, service cards, team members, portfolio
   tiles) managed as a list: reorder, edit, add and remove items together.
 * **Forms** — a designed HTML form is connected by clicking, never rebuilt.
@@ -198,6 +203,23 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.1 =
+This edition is derived from Visual Edit Pro 1.25.1, and brings across
+everything Pro added since the last Lite release — none of it licence-gated,
+so all of it ships here:
+* Block mode: on a block theme, whole sections can be added, copied, moved and
+  removed, and the block supports panel is available.
+* Movement: scroll and hover animation stored as a class, costing nothing on
+  pages that do not use it.
+* Different values on smaller screens — padding and the rest can now differ per
+  breakpoint, and padding can be dragged on the section itself.
+* Copy a page, or remove one, without leaving the editor.
+* Typeface handling reworked: a font of your own is kept, a chosen Google font
+  actually loads, and added typefaces reach the WordPress editor canvas too.
+* Search appearance now works on a block theme.
+* Fixes to the picture panel — a new picture appears without saving first, and
+  three controls that had never been driven now work.
 
 = 1.19.8 =
 * Staggered and carousel lists are collections again. A reveal library's

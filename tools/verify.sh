@@ -184,6 +184,15 @@ ob_start(); Clara_VE_Editor_Page::render(); $html = ob_get_clean();
 $out[] = array( "editor renders", 500 < strlen( $html ) );
 $out[] = array( "no AI chat panel in the DOM", false === strpos( $html, "clara-ve-ai-chat" ) );
 
+// Block mode is the reason Lite is worth installing on a Gutenberg theme:
+// whole sections can be added, copied, moved and removed there. None of it is
+// licence-gated in Pro, so all of it belongs here -- and nothing else in this
+// script would notice if a future derivation dropped the classes.
+$out[] = array( "block mode ships", class_exists( "Clara_VE_Block_Gate" ) && class_exists( "Clara_VE_Block_Supports" ) );
+$out[] = array( "block editing helpers ship", class_exists( "Clara_VE_Block_Stamp" ) && class_exists( "Clara_VE_Block_Patch" ) );
+$out[] = array( "motion, patterns and responsive ship", class_exists( "Clara_VE_Motion" ) && class_exists( "Clara_VE_Patterns" ) && class_exists( "Clara_VE_Responsive" ) );
+$out[] = array( "the active block theme is recognised as a block theme", function_exists( "wp_is_block_theme" ) && wp_is_block_theme() );
+
 // The product name as a USER sees it. Pro hardcodes "Visual Edit Pro" into
 // the admin-bar node, and it shipped that way in Lite because no gate looked
 // at a product name and nobody re-rendered the bar after the derivation.
@@ -214,7 +223,11 @@ $out[] = array( "sidebar menu says \"Visual Edit Lite\" (got: " . $sidebar . ")"
 set_current_screen( "toplevel_page_visual-edit" );
 wp_set_current_user( 1 );
 ob_start(); clara_ve_contract_notice(); $notice = ob_get_clean();
-$out[] = array( "no-contract notice reaches the plugin screen", false !== strpos( $notice, "notice-warning" ) );
+// Which notice depends on the theme: a block theme that keeps menus in
+// navigation blocks gets the informational one, a non-contract theme of
+// ours gets the warning. What is being protected here is neither -- it is
+// that the SCREEN GATE still matches, so any notice at all proves it.
+$out[] = array( "no-contract notice reaches the plugin screen", false !== strpos( $notice, "notice-" ) );
 
 foreach ( $out as $row ) { echo ( $row[1] ? "OK|" : "FAIL|" ), $row[0], "\n"; }
 ')

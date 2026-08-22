@@ -51,8 +51,9 @@ much you have edited since, so there is always a way back to the delivered
 design.
 
 Older saves are not deleted, only not listed: the plugin keeps recording up to
-300 versions per page in the database. Nothing is lost if you later move to
-Visual Edit Pro, which shows the full list.
+300 versions per page in the database. Those rows are your own content in your
+own database, and nothing removes them to make a point — they are there for
+backups, for WP-CLI, and for whatever you run next.
 
 The cap is per page, not shared across the site — so a page you are working on
 heavily cannot push another page's history out.
@@ -72,7 +73,7 @@ styling.
 
 It does not version:
 
-- **Settings** — form recipient, email delivery, SEO identity, AI keys
+- **Settings** — form recipient, email delivery, SEO identity
 - **Media** — replacing an image records the change on the page, but the old
   file stays in the Media Library either way
 - **Posts** — blog posts use WordPress's own revisions, in the normal editor

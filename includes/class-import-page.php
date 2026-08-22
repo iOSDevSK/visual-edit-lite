@@ -253,7 +253,7 @@ class Clara_VE_Import_Page {
 			self::fail( $upload['error'] );
 		}
 
-		$extract = Clara_VE_Zip::scratch_dir( 'clara-ve-import-tmp' );
+		$extract = Clara_VE_Zip::scratch_dir( CLARA_VE_IMPORT_DIR . '-tmp' );
 		if ( is_wp_error( $extract ) ) {
 			wp_delete_file( $upload['file'] );
 			self::fail( $extract->get_error_message() );
@@ -338,11 +338,7 @@ class Clara_VE_Import_Page {
 		$plan_id = isset( $_POST['plan_id'] ) ? sanitize_key( wp_unslash( $_POST['plan_id'] ) ) : '';
 		check_admin_referer( 'clara_ve_import_apply_' . $plan_id );
 
-		// Applying a plan writes every page, menu and media item a theme bundle
-		// carries; on a large site that outlasts the default limit, and a
-		// half-applied import is worse than a slow one. Nonce- and
-		// capability-checked above, so this cannot be triggered by a visitor.
-		set_time_limit( 0 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors, Squiz.PHP.DiscouragedFunctions
+		set_time_limit( 0 );
 		$result = Clara_VE_Import_Plan::apply( $plan_id );
 
 		$scrap = get_transient( 'clara_ve_import_scrap_' . $plan_id );

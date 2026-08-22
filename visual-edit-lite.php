@@ -3,7 +3,7 @@
  * Plugin Name: Visual Edit Lite
  * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
  * Description: Point-and-click visual editing for raw-HTML theme pages — text, links, images, forms, menus, SEO and AI-readiness — keeping the page markup 1:1 with the original design. No builder re-structuring.
- * Version: 1.19.8
+ * Version: 1.25.1
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Filip Dvoran
@@ -19,18 +19,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Whether Visual Edit Pro is active on this install.
  *
- * Lite is a derivation of Pro and deliberately keeps its class, function,
- * constant and option names, so a site that stores content under one can move
- * to the other without migrating anything. The price is that both loading at
- * once is a fatal redeclare — and `visual-edit-lite/` sorts BEFORE
- * `visual-edit/`, so Lite is the one that gets to decide.
- *
- * It decides to yield: with Pro present this file defines nothing at all and
- * returns, leaving the paid plugin the whole namespace and the site working.
- * The prefix here is `clara_ve_lite_` precisely because Pro has no such
- * function — the check itself must not be the collision.
- *
- * @return bool
+ * Lite and Pro share every class, option and REST namespace, and
+ * `visual-edit-lite/` sorts BEFORE `visual-edit/`, so Lite loads first and
+ * would win a collision it has no business winning. Lite is therefore the one
+ * that stands down. The function name carries the `lite` infix deliberately:
+ * Pro has no such symbol, so this check cannot collide with the thing it is
+ * checking for.
  */
 function clara_ve_lite_pro_active() {
 	$active = (array) get_option( 'active_plugins', array() );
@@ -63,9 +57,36 @@ if ( clara_ve_lite_pro_active() ) {
 	return;
 }
 
-define( 'CLARA_VE_VERSION', '1.19.8' );
+define( 'CLARA_VE_VERSION', '1.25.1' );
+// Signals schema-1 generated themes that this plugin delegates every public
+// rendering concern to them. Themes generated before that contract ignore the
+// signal and continue to receive the complete legacy runtime below.
+define( 'CLARA_VE_THEME_RUNTIME_DELEGATION', 1 );
 define( 'CLARA_VE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CLARA_VE_URL', plugin_dir_url( __FILE__ ) );
+
+/**
+ * Whether the active theme declares the standalone html2wp runtime contract.
+ *
+ * get_theme_support() returns an outer list of argument sets. Be deliberately
+ * tolerant here: schema is the discriminator, not the exact PHP nesting a
+ * particular WordPress version chooses to preserve.
+ */
+function clara_ve_theme_owns_public_runtime() {
+	$support = get_theme_support( 'html2wp-runtime' );
+	if ( false === $support ) {
+		return false;
+	}
+	foreach ( (array) $support as $entry ) {
+		if ( is_array( $entry ) && isset( $entry['schema'] ) && (int) $entry['schema'] >= 1 ) {
+			return true;
+		}
+		if ( is_array( $entry ) && isset( $entry[0] ) && is_array( $entry[0] ) && isset( $entry[0]['schema'] ) && (int) $entry[0]['schema'] >= 1 ) {
+			return true;
+		}
+	}
+	return false;
+}
 
 /*
  * No licensing, no self-updater.
@@ -78,11 +99,13 @@ define( 'CLARA_VE_URL', plugin_dir_url( __FILE__ ) );
  *
  * What Lite therefore does NOT contain, rather than merely hiding it: the AI
  * Assistant and AI image/video tools, the AI Settings screen, Cloudflare
- * Turnstile on forms, and Theme Export. History keeps the last ten saves plus
- * the Original, which is exactly what an unregistered Pro install sees.
+ * Turnstile on forms, and Theme Export. History lists the last ten saves plus
+ * the Original, which is exactly what an unregistered Pro install shows; the
+ * saves themselves are recorded to the same depth either way.
  *
  * Everything else — editing, saving, forms, menus, dynamic tokens, SEO,
- * redirects, AI-readiness/llms.txt, import — is the full Pro behaviour.
+ * redirects, AI-readiness/llms.txt, block mode, motion, import — is the full
+ * Pro behaviour.
  */
 
 // The unqualified name of the pattern whose rendered HTML is the editable
@@ -94,6 +117,48 @@ define( 'CLARA_VE_OPTION', 'clara_ve_front_source' );
 define( 'CLARA_VE_THEME_URI_TOKEN', '__CLARA_THEME_URI__' );
 define( 'CLARA_VE_NAV_LOCATION', 'clara_ve_front_nav' );
 define( 'CLARA_VE_PSEUDO_OPTION', 'clara_ve_pseudo_css' );
+
+/**
+ * The folder under uploads/ that every imported media file lands in.
+ *
+ * It is the one internal name a site's VISITORS read: it sits in the address
+ * of every photograph on a converted site, and the themes this pipeline builds
+ * are sold to people with no connection to the site it was first written for.
+ * `ve-import` says which plugin put the file there and nothing else.
+ *
+ * The old name is still read, and that is not tidiness — it is every site
+ * already running. `clara_ve_import_dirs()` is what anything SCANNING must
+ * use; only new writes take the constant. An install that migrated years of
+ * media under the old prefix keeps managing it, and the same media library can
+ * hold both without either half going unrecognised.
+ */
+define( 'CLARA_VE_IMPORT_DIR', 've-import' );
+define( 'CLARA_VE_IMPORT_DIR_LEGACY', 'clara-ve-import' );
+
+/** Every prefix an imported attachment may live under, newest first. */
+function clara_ve_import_dirs() {
+	return array( CLARA_VE_IMPORT_DIR, CLARA_VE_IMPORT_DIR_LEGACY );
+}
+
+/** True when a stored path is one this plugin imported, under either name. */
+function clara_ve_is_import_path( $relative ) {
+	foreach ( clara_ve_import_dirs() as $dir ) {
+		if ( 0 === strpos( (string) $relative, $dir . '/' ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/** A stored path with whichever import prefix it carries taken off. */
+function clara_ve_strip_import_dir( $relative ) {
+	foreach ( clara_ve_import_dirs() as $dir ) {
+		if ( 0 === strpos( (string) $relative, $dir . '/' ) ) {
+			return substr( (string) $relative, strlen( $dir ) + 1 );
+		}
+	}
+	return (string) $relative;
+}
 
 // Which theme the stored editable content belongs to. Everything this plugin
 // persists — page sources, pseudo styles, history, the page bindings — is
@@ -188,6 +253,13 @@ define( 'CLARA_VE_404_KEY', '404' );
 define( 'CLARA_VE_SPECIMEN_START', '<!-- cve-specimen-start -->' );
 define( 'CLARA_VE_SPECIMEN_END', '<!-- cve-specimen-end -->' );
 
+require_once CLARA_VE_DIR . 'includes/class-block-gate.php';
+require_once CLARA_VE_DIR . 'includes/class-block-supports.php';
+require_once CLARA_VE_DIR . 'includes/class-patterns.php';
+require_once CLARA_VE_DIR . 'includes/class-motion.php';
+require_once CLARA_VE_DIR . 'includes/class-responsive.php';
+require_once CLARA_VE_DIR . 'includes/class-block-stamp.php';
+require_once CLARA_VE_DIR . 'includes/class-block-patch.php';
 require_once CLARA_VE_DIR . 'includes/class-source-store.php';
 require_once CLARA_VE_DIR . 'includes/class-pseudo-store.php';
 require_once CLARA_VE_DIR . 'includes/class-history.php';
@@ -201,8 +273,8 @@ require_once CLARA_VE_DIR . 'includes/class-lists.php';
 require_once CLARA_VE_DIR . 'includes/class-optin.php';
 require_once CLARA_VE_DIR . 'includes/class-tokens.php';
 require_once CLARA_VE_DIR . 'includes/class-fonts.php';
-require_once CLARA_VE_DIR . 'includes/class-media.php';
 require_once CLARA_VE_DIR . 'includes/class-editor-page.php';
+require_once CLARA_VE_DIR . 'includes/class-media.php';
 require_once CLARA_VE_DIR . 'includes/class-form-settings.php';
 require_once CLARA_VE_DIR . 'includes/class-mailer.php';
 require_once CLARA_VE_DIR . 'includes/class-bundle-format.php';
@@ -220,22 +292,11 @@ require_once CLARA_VE_DIR . 'includes/class-import-legacy.php';
 require_once CLARA_VE_DIR . 'includes/class-import-plan.php';
 require_once CLARA_VE_DIR . 'includes/class-import-page.php';
 require_once CLARA_VE_DIR . 'includes/class-parked-page.php';
+require_once CLARA_VE_DIR . 'includes/class-page-actions.php';
 
 // Create the history table on the site's first request after install/update —
 // dbDelta is idempotent, so this is a cheap no-op once the schema is current.
 add_action( 'init', array( 'Clara_VE_History', 'maybe_install' ), 1 );
-
-/*
- * No load_plugin_textdomain() call.
- *
- * Pro needed one: it is distributed privately, so its translations travel
- * inside the ZIP or nowhere. Lite ships through WordPress.org, where
- * WordPress loads a plugin's translations just in time from
- * wp-content/languages/plugins/ and, failing that, from this plugin's own
- * Domain Path — and calling the function anyway is on Plugin Check's
- * discouraged list. languages/visual-edit-lite.pot is still shipped as the
- * template translators start from (regenerate with tools/make-pot.php).
- */
 
 /**
  * Editing requires theme-level trust: raw HTML round-trips through the editor.
@@ -442,6 +503,14 @@ function clara_ve_theme_post_scope() {
  * @param WP_Query $query
  */
 function clara_ve_scope_posts_to_theme( $query ) {
+	// Not this plugin's theme, not this plugin's query. The scope exists to
+	// stop one converted theme's imported articles surfacing in another's
+	// listings; on a theme the plugin does not run, it can only subtract —
+	// hiding published posts from a blog page for a reason the owner has no
+	// way to see, and adding a meta_query to every archive to do it.
+	if ( ! clara_ve_active_theme_is_ours() ) {
+		return;
+	}
 	if ( is_admin() || ! $query->is_main_query() ) {
 		return;
 	}
@@ -722,6 +791,58 @@ function clara_ve_theme_is_converted( $slug ) {
 		}
 	}
 	return false;
+}
+
+/**
+ * Whether the ACTIVE theme is one this plugin is the editor FOR.
+ *
+ * Everything the plugin does to the public site — the four chrome keys, the
+ * SEO head, the meta_query on every archive, the activation menu seed — was
+ * written for a theme the html2wp converter built, whose pages are raw HTML
+ * this plugin owns end to end. A native block theme asked for none of it and
+ * got it anyway: every og:* tag and the JSON-LD emitted twice, header and
+ * footer canvases that loaded empty and wrote a template-part override the
+ * first time they were saved, an extra meta_query on listings it does not
+ * need. Measured on amanda-rose-blocks with 1.20.7.
+ *
+ * This is NOT an on/off switch for the plugin. On a foreign theme it remains
+ * a fully working editor, AI chat, history and export; it simply stops
+ * behaving like that theme's runtime.
+ *
+ * Three signals, cheapest first, any one of which is enough:
+ *   - the theme declares a contract (anchors, menus or variant parts);
+ *   - converter artifacts on disk — the same probe used to judge a theme
+ *     that is not active;
+ *   - a source row already stored for it, so an install that predates both
+ *     of the above keeps every behavior it has today.
+ *
+ * @return bool
+ */
+function clara_ve_active_theme_is_ours() {
+	static $cache = array();
+
+	$slug = get_stylesheet();
+
+	// The contract arrives from the theme's own functions.php, so an answer
+	// taken before the theme has booted would cache "declares nothing" for
+	// the rest of the request. Answer early if asked, but only remember once
+	// there is something settled to remember.
+	$settled = did_action( 'after_setup_theme' ) > 0;
+	if ( $settled && isset( $cache[ $slug ] ) ) {
+		return $cache[ $slug ];
+	}
+
+	$contract = clara_ve_theme_contract();
+	$ours     = ! empty( $contract['anchors'] )
+		|| ! empty( $contract['menus'] )
+		|| ! empty( $contract['parts'] )
+		|| clara_ve_theme_is_converted( $slug )
+		|| ( class_exists( 'Clara_VE_Source_Store' ) && Clara_VE_Source_Store::theme_has_stored_source() );
+
+	if ( $settled ) {
+		$cache[ $slug ] = $ours;
+	}
+	return $ours;
 }
 
 /**
@@ -1112,7 +1233,8 @@ function clara_ve_sole_claimant( array $claims, $id ) {
  * settles the question exactly rather than plausibly. Where a filename check
  * would have to guess about `1.webp`, identical bytes are identical bytes.
  *
- * The scan is confined to attachments under `clara-ve-import/`, for two
+ * The scan is confined to attachments under the import folder — either name,
+ * see `clara_ve_import_dirs()` — for two
  * reasons: it is where every import writes, and it keeps a one-time migration
  * from hashing a media library of thousands of the owner's own photographs to
  * conclude, correctly, that none of them belong to a theme. An owner's upload
@@ -1161,12 +1283,12 @@ function clara_ve_stamp_legacy_media_and_pages() {
 				continue;
 			}
 			$relative = (string) get_post_meta( $id, '_wp_attached_file', true );
-			if ( 0 !== strpos( $relative, 'clara-ve-import/' ) ) {
+			if ( ! clara_ve_is_import_path( $relative ) ) {
 				continue;
 			}
 			$theme = clara_ve_sole_claimant( $by_path, $relative );
 			if ( '' === $theme ) {
-				// A theme-namespaced path (clara-ve-import/{theme}/…) never
+				// A theme-namespaced path (ve-import/{theme}/…) never
 				// matches the bundle's own name for the file, which is exactly
 				// the collision case — so ask the bytes.
 				$full = $base . '/' . $relative;
@@ -1530,11 +1652,6 @@ function clara_ve_contract_notice() {
 	$screen_id = (string) $screen->id;
 	$relevant  = 'nav-menus' === $screen_id
 		|| 'themes' === $screen_id
-		// The ADMIN PAGE SLUG, which stays 'visual-edit' — it is not the text
-		// domain and not the plugin slug. The screen id is
-		// toplevel_page_visual-edit, so matching 'visual-edit-lite' here
-		// silently matched nothing and this notice stopped reaching the one
-		// person it is for.
 		|| false !== strpos( $screen_id, 'visual-edit' )
 		|| false !== strpos( $screen_id, '-setup' );
 	if ( ! $relevant || ! current_user_can( 'edit_theme_options' ) ) {
@@ -1543,6 +1660,28 @@ function clara_ve_contract_notice() {
 	if ( clara_ve_theme_contract()['menus'] ) {
 		return;
 	}
+
+	// On a block theme this is not a misconfiguration, it is the correct
+	// state: menus there are core/navigation blocks, edited in the Site
+	// Editor, and this plugin deliberately does not touch them — navigation
+	// is one of the block types it refuses to address at all. Warning about a
+	// filter such a theme has no reason to implement sends the owner to fix
+	// something that is not broken, and hides where menus actually live. So
+	// the block-theme message points at the Site Editor and does not shout.
+	if ( ! clara_ve_active_theme_is_ours() ) {
+		if ( false === strpos( $screen_id, 'visual-edit' ) ) {
+			return;
+		}
+		printf(
+			'<div class="notice notice-info"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+			esc_html__( 'Menus are part of this theme.', 'visual-edit-lite' ),
+			esc_html__( 'This theme keeps its navigation in WordPress\'s own navigation blocks rather than in markup this editor owns, so menus are edited alongside the rest of the theme.', 'visual-edit-lite' ),
+			esc_url( admin_url( 'site-editor.php' ) ),
+			esc_html__( 'Open the Site Editor', 'visual-edit-lite' )
+		);
+		return;
+	}
+
 	printf(
 		'<div class="notice notice-warning"><p><strong>%s</strong> %s</p></div>',
 		esc_html__( 'Visual Edit: menu management is off.', 'visual-edit-lite' ),
@@ -1689,7 +1828,21 @@ add_action( 'init', 'clara_ve_register_page_key_meta' );
  * @return string|null
  */
 function clara_ve_current_key() {
-	if ( clara_ve_is_edit_preview() && isset( $_GET['clara_ve_key'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	// Block mode: the key IS the post. None of the raw-HTML keys below exists
+	// on such a theme — the front-page pattern is not registered, there is no
+	// article template and no 404 canvas — and answering with one anyway is
+	// what used to put an empty canvas in front of an owner on a page where
+	// nothing could ever have been saved to it.
+	if ( ! clara_ve_active_theme_is_ours() ) {
+		$queried = get_queried_object();
+		if ( ! ( $queried instanceof WP_Post ) ) {
+			return null;
+		}
+		$block_key = Clara_VE_Source_Store::block_key( $queried );
+		return '' !== $block_key ? $block_key : null;
+	}
+
+	if ( clara_ve_is_edit_preview() && isset( $_GET['clara_ve_key'] ) ) {
 		$override = sanitize_key( wp_unslash( $_GET['clara_ve_key'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( in_array( $override, array( CLARA_VE_HEADER_KEY, CLARA_VE_FOOTER_KEY, CLARA_VE_ARTICLE_KEY, CLARA_VE_404_KEY ), true )
 			|| clara_ve_contract_part( $override ) ) {
@@ -1857,6 +2010,8 @@ function clara_ve_enqueue_bridge() {
 			);
 		}
 	}
+	$block_post = Clara_VE_Source_Store::block_key_post_id( $key );
+
 	wp_add_inline_script(
 		'clara-ve-bridge',
 		'window.claraVeBridgeConfig = ' . wp_json_encode(
@@ -1865,6 +2020,13 @@ function clara_ve_enqueue_bridge() {
 				'menuZones'    => $menu_zones,
 				'pageKey'      => $key,
 				'rootSelector' => clara_ve_root_selector_for_key( $key ),
+				// On a block page the bridge must not stamp positional paths
+				// of its own: the addresses are already on the elements, put
+				// there by the server, and an element the server did not stamp
+				// is one no patch can reach. Telling the bridge which mode it
+				// is in is what stops it inventing addresses for the rest.
+				'blockMode'    => (bool) $block_post,
+				'blockPost'    => $block_post ? $block_post : null,
 			)
 		) . ';',
 		'before'
@@ -1985,10 +2147,8 @@ function clara_ve_print_pseudo_css() {
 		}
 	}
 	if ( $css ) {
-		// wp_strip_all_tags(), not esc_html(): this is a <style> body, where
-		// HTML entities are NOT decoded, so escaping would turn a `>` child
-		// selector into literal `&gt;` and break the rule. Stripping tags is
-		// what actually prevents breaking out of the element.
+		// Not esc_html(): entities are not decoded inside <style>, so a `>`
+		// child selector would render as a literal &gt; and stop matching.
 		echo '<style id="clara-ve-pseudo-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
@@ -2041,7 +2201,7 @@ function clara_ve_print_article_css() {
 	}
 
 	if ( '' !== $css ) {
-		// See clara_ve_print_pseudo_css() for why this is stripped, not escaped.
+		// See the note above: escaping would break selectors inside <style>.
 		echo '<style id="clara-ve-article-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
@@ -2225,6 +2385,25 @@ function clara_ve_maybe_takeover_editor( $replace_editor, $post ) {
 	if ( isset( $_GET['clara_ve_bypass'] ) && '1' === $_GET['clara_ve_bypass'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return $replace_editor;
 	}
+
+	// Only the request that actually RENDERS the editor. `replace_editor` is
+	// applied twice: once by post.php inside `case 'edit'`, and once by
+	// WP_Screen::get() for EVERY post.php request carrying ?post=ID, whatever
+	// its action. Redirecting on the second swallowed the ones that are not
+	// about editing at all — Trash, Restore and Delete Permanently returned
+	// this editor instead of doing anything, so a page could only be removed
+	// by switching the plugin off. `action=editpost` went the same way, which
+	// is the save the "Edit HTML block" row action posts, so that door opened
+	// and would not shut.
+	//
+	// post.php:130 is the only case that renders an editor; every other action
+	// has to reach its own. An absent action is left alone deliberately:
+	// post-new.php applies this filter with none, and a new page has no key.
+	$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	if ( '' !== $action && 'edit' !== $action ) {
+		return $replace_editor;
+	}
+
 	$key = get_post_meta( $post->ID, CLARA_VE_PAGE_KEY_META, true );
 	if ( ! $key ) {
 		return $replace_editor;
@@ -2233,6 +2412,171 @@ function clara_ve_maybe_takeover_editor( $replace_editor, $post ) {
 	exit;
 }
 add_filter( 'replace_editor', 'clara_ve_maybe_takeover_editor', 10, 2 );
+
+/**
+ * On standalone generated themes this plugin is an editor, not a runtime.
+ * Remove only public delivery hooks; source/history/REST editing, the preview
+ * bridge and every admin surface stay active. Old themes declare no support,
+ * so their established behavior is byte-for-byte unchanged.
+ */
+function clara_ve_delegate_public_runtime_to_theme() {
+	if ( ! clara_ve_theme_owns_public_runtime() ) {
+		return;
+	}
+
+	remove_filter( 'render_block_core/html', array( 'Clara_VE_Front_Nav', 'maybe_apply_to_block' ), 9 );
+	remove_filter( 'render_block_core/html', array( 'Clara_VE_Tokens', 'maybe_hydrate_block' ), 10 );
+	remove_filter( 'render_block_core/html', 'clara_ve_strip_specimen', 8 );
+	remove_action( 'rest_api_init', array( 'Clara_VE_Forms', 'register_routes' ) );
+	remove_action( 'after_setup_theme', 'clara_ve_register_nav_location', 11 );
+	remove_action( 'init', 'clara_ve_override_front_pattern', 20 );
+	remove_action( 'pre_get_posts', 'clara_ve_scope_posts_to_theme' );
+	remove_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_scroll_video', 5 );
+	remove_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_load_more', 5 );
+	remove_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_form_submit', 5 );
+	// NOT the Google fonts. Everything else on this list is delivery the theme
+	// does for itself — its own stylesheets, its own scripts, its own
+	// metadata — so the plugin standing down prevents a double emission. A
+	// typeface added through this plugin's picker is the opposite case: the
+	// theme has never heard of it and cannot possibly load it. Removing this
+	// left the family registered in theme.json, so it appeared in the Font
+	// menu and put its class on the block, while the font FILE was never
+	// requested and every browser quietly fell back to sans-serif. The font
+	// looked chosen and was not there.
+	remove_action( 'wp_head', 'clara_ve_print_pseudo_css', 60 );
+	remove_action( 'wp_head', 'clara_ve_print_article_css', 61 );
+	remove_action( 'template_redirect', array( 'Clara_VE_Redirects', 'maybe_redirect' ), 0 );
+	remove_action( 'wp_head', array( 'Clara_VE_SEO', 'emit' ), 1 );
+	remove_filter( 'pre_get_document_title', array( 'Clara_VE_SEO', 'filter_document_title' ) );
+	remove_action( 'wp_head', array( 'Clara_VE_SEO', 'drop_duplicate_core_title' ), 0 );
+	remove_filter( 'wp_robots', array( 'Clara_VE_SEO', 'filter_robots' ) );
+}
+add_action( 'after_setup_theme', 'clara_ve_delegate_public_runtime_to_theme', 12 );
+
+/**
+ * Has anyone deliberately configured the site-level SEO/GEO identity?
+ *
+ * The stand-down below removes DEFAULT output, never explicit configuration.
+ * Per-page SEO cannot exist on a contract-less theme — it keys off
+ * _clara_ve_key, which such a theme's pages never carry — but the SEO and GEO
+ * settings screens register on every theme, so somebody may have filled them
+ * in on purpose and expects the tags.
+ *
+ * Judged on non-DEFAULT rather than non-empty. Opening either screen and
+ * pressing Save writes every registered field at once, so entity_type lands
+ * as 'Organization', the separator as an en dash and ai_crawlers as 'on'
+ * whether or not the owner touched them; treating those as configuration
+ * would grandfather the duplicate tags back in after a single stray save.
+ *
+ * @return bool
+ */
+function clara_ve_public_seo_is_configured() {
+	$fields = array(
+		Clara_VE_SEO::OPT_ENTITY_NAME     => '',
+		Clara_VE_SEO::OPT_ENTITY_LOGO     => '',
+		Clara_VE_SEO::OPT_DEFAULT_OG      => '',
+		Clara_VE_SEO::OPT_ENTITY_TYPE     => 'Organization',
+		Clara_VE_SEO::OPT_TITLE_SEPARATOR => '–',
+		Clara_VE_GEO::OPT_AI_CRAWLERS     => 'on',
+	);
+	foreach ( $fields as $option => $default ) {
+		$value = trim( (string) get_option( $option, $default ) );
+		if ( '' !== $value && $value !== $default ) {
+			return true;
+		}
+	}
+	// sameAs is the one list; any surviving entry is an address somebody typed.
+	return array() !== array_filter( array_map( 'trim', array_map( 'strval', (array) get_option( Clara_VE_SEO::OPT_SAME_AS, array() ) ) ) );
+}
+
+/**
+ * A theme that never asked for a public runtime does not get one.
+ *
+ * clara_ve_delegate_public_runtime_to_theme() above stands the same delivery
+ * down for a theme that OPTS OUT by declaring html2wp-runtime. This handles
+ * the other half of the problem: a theme that declares nothing at all, has no
+ * converter artifacts and has never been edited here — an ordinary WordPress
+ * theme somebody activated with the plugin still installed. It emits its own
+ * <title>, description and og:* tags, and so did this plugin, on top: measured
+ * as two of every tag and two JSON-LD graphs on the same page.
+ *
+ * Kept deliberately narrow. Only public metadata delivery stands down; the
+ * editor, the AI, history, export, redirects and the admin screens are
+ * untouched, and a converted theme reaches none of this code.
+ */
+function clara_ve_stand_down_public_seo_on_foreign_theme() {
+	if ( clara_ve_active_theme_is_ours() ) {
+		return;
+	}
+	// A theme that declares html2wp-runtime has said, in so many words, that
+	// it renders its own public metadata. That declaration outranks a stored
+	// option: measured on the reference block theme, an install carrying SEO
+	// settings from a PREVIOUS theme's import got two schema.org entities for
+	// the same business — the theme's, inside its own graph, and this
+	// plugin's beside it. The grandfather clause exists so nobody loses
+	// output they configured, not so a theme's own declaration can be
+	// overridden by a row it never wrote.
+	//
+	// Unreachable for a converted theme, which is always "ours" above.
+	if ( ! clara_ve_theme_owns_public_runtime() && clara_ve_public_seo_is_configured() ) {
+		return;
+	}
+
+	remove_action( 'wp_head', array( 'Clara_VE_SEO', 'emit' ), 1 );
+	remove_filter( 'pre_get_document_title', array( 'Clara_VE_SEO', 'filter_document_title' ) );
+	remove_action( 'wp_head', array( 'Clara_VE_SEO', 'drop_duplicate_core_title' ), 0 );
+	remove_filter( 'wp_robots', array( 'Clara_VE_SEO', 'filter_robots' ) );
+
+	// All three of GEO's mutually exclusive emission paths, since which one
+	// would have run is decided per request rather than here.
+	remove_action( 'wp_head', array( 'Clara_VE_GEO', 'emit_standalone' ), 2 );
+	remove_filter( 'wpseo_schema_graph', array( 'Clara_VE_GEO', 'extend_yoast_graph' ), 10 );
+	remove_filter( 'rank_math/json_ld', array( 'Clara_VE_GEO', 'extend_rankmath_graph' ), 10 );
+
+	// llms.txt: the ROUTE stays registered on purpose. Its rewrite rule is
+	// cached in the rewrite_rules option and outlives this decision by however
+	// long it takes something to flush it, so unregistering the rule or its
+	// query var would not make the URL disappear. Serving is replaced rather
+	// than merely removed for the same reason: with the rule still matching
+	// and nothing answering it, /llms.txt renders the FRONT PAGE at 200 —
+	// measured, and worse than what it replaced. robots.txt stops advertising
+	// a file that is no longer there.
+	remove_action( 'template_redirect', array( 'Clara_VE_GEO', 'maybe_serve_llms_txt' ), 1 );
+	add_action( 'template_redirect', 'clara_ve_404_stood_down_llms_txt', 1 );
+	remove_filter( 'robots_txt', array( 'Clara_VE_GEO', 'filter_robots_txt' ), 10 );
+}
+add_action( 'after_setup_theme', 'clara_ve_stand_down_public_seo_on_foreign_theme', 12 );
+
+/**
+ * Answer the still-cached /llms.txt rewrite rule with a real 404 while the
+ * feature is stood down, so the address behaves like the missing file it is
+ * instead of quietly serving the site's front page under a .txt name.
+ */
+function clara_ve_404_stood_down_llms_txt() {
+	if ( ! get_query_var( 'clara_ve_llms' ) ) {
+		return;
+	}
+	global $wp_query;
+	$wp_query->set_404();
+	status_header( 404 );
+	nocache_headers();
+}
+
+/**
+ * Preserve the plugin's optional form archive, provider, anti-spam and mailer
+ * features without making the public form depend on them. The theme validates
+ * and provides wp_mail first; returning a response here opts into the richer
+ * plugin path when the editor is active.
+ */
+function clara_ve_enhance_theme_form( $handled, $context ) {
+	if ( ! clara_ve_theme_owns_public_runtime() || ! class_exists( 'Clara_VE_Forms' ) || ! is_array( $context ) || empty( $context['params'] ) ) {
+		return $handled;
+	}
+	$request = new WP_REST_Request( 'POST', '/clara-ve/v1/submit' );
+	$request->set_body_params( (array) $context['params'] );
+	return Clara_VE_Forms::handle_submit( $request );
+}
+add_filter( 'html2wp_theme_form_handle', 'clara_ve_enhance_theme_form', 10, 2 );
 
 /**
  * Activation: seed whatever menus the THEME declares via clara_ve_seed_menus
@@ -2257,13 +2601,22 @@ function clara_ve_activate() {
 	if ( Clara_VE_Bundle_Reader::theme_bundle_dir() ) {
 		return;
 	}
+	// And don't scaffold one into a theme this plugin is not the editor for
+	// at all. Empirically this was already a no-op on a native block theme —
+	// the seed claims a nav location such a theme does not register — but a
+	// no-op by accident is one register_nav_menus() call away from an
+	// unexplained menu appearing in somebody's site.
+	if ( ! clara_ve_active_theme_is_ours() ) {
+		return;
+	}
 	Clara_VE_Front_Nav::seed_menu();
 }
 register_activation_hook( __FILE__, 'clara_ve_activate' );
 
 /**
- * Deactivation: drop cached rewrite rules so the /llms.txt route disappears
- * with the plugin instead of 404-ing oddly.
+ * Deactivation: unschedule the AI-job cron events (their args vary per job,
+ * so the hook is cleared wholesale) and drop cached rewrite rules so the
+ * /llms.txt route disappears with the plugin instead of 404-ing oddly.
  * Data — options, tables, submissions — is deliberately untouched here;
  * deactivate/reactivate must round-trip losslessly. Deletion is handled by
  * uninstall.php, on its own terms.

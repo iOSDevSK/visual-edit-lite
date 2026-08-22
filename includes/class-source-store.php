@@ -160,6 +160,16 @@ class Clara_VE_Source_Store {
 	 * @return string|null
 	 */
 	public static function get_resolved_source( $key = CLARA_VE_DEFAULT_KEY ) {
+		// A block page's content is never "not saved yet" — it is whatever
+		// post_content holds. This has to answer for block keys or the
+		// History panel loses its place: list_entries() finds HEAD by hashing
+		// what this returns and comparing it against the stored rows.
+		$block_post = self::block_key_post_id( $key );
+		if ( $block_post ) {
+			$post = get_post( $block_post );
+			return $post ? (string) $post->post_content : null;
+		}
+
 		// Content stored for a DIFFERENT theme is not this theme's content.
 		// Serving it renders one design's markup through another's CSS and
 		// template — the single most visible symptom of two converted themes
@@ -190,6 +200,26 @@ class Clara_VE_Source_Store {
 	 */
 	public static function save_source( $key, $source ) {
 		$key = sanitize_key( $key );
+
+		// Block driver. Everything below this line — the option row, the
+		// tokenizing, the template-part and Page mirrors, the foreign-data
+		// guard — describes raw HTML stored beside WordPress. A block page's
+		// content IS WordPress's, so its whole save path is different.
+		$block_post = self::block_key_post_id( $key );
+		if ( $block_post ) {
+			return self::save_block_source( $block_post, $source );
+		}
+
+		// A chrome key the active theme does not actually have is refused
+		// HERE, before the option row is written, not further down in
+		// sync_to_template_part(). Refusing only the sync would still leave a
+		// stored row behind — and a stored row is itself proof of editing, so
+		// chrome_key_available() would hand the phantom key back on the next
+		// request and the two halves would disagree forever. Nothing written,
+		// nothing to resurrect.
+		if ( self::is_chrome_key( $key ) && ! self::chrome_key_available( $key ) ) {
+			return false;
+		}
 		// Refuse to write while the stored content belongs to another theme.
 		// Both directions are destructive: the incoming markup is the ACTIVE
 		// theme's (get_resolved_source() reports nothing saved, so the editor
@@ -210,9 +240,17 @@ class Clara_VE_Source_Store {
 		// (clara_ve_data_theme_verdict) or an explicit act, never from the fact
 		// that somebody pressed Save.
 		$saved = update_option( self::option_name( $key ), self::tokenize( $source ), false );
-		if ( $saved && self::is_chrome_key( $key ) ) {
-			self::sync_to_template_part( $key, $source );
-		} elseif ( $saved && CLARA_VE_DEFAULT_KEY !== $key ) {
+		// `update_option` answers "did the row change", which is not the same
+		// question as "does the page agree with it". A re-save of identical
+		// markup returns false — and if the bound page is EMPTY, as it is after
+		// an import that could not write it, that false skipped the one call
+		// that would have filled it, on every subsequent attempt. So the mirror
+		// runs when the row changed OR when what it mirrors into disagrees.
+		if ( self::is_chrome_key( $key ) ) {
+			if ( $saved ) {
+				self::sync_to_template_part( $key, $source );
+			}
+		} elseif ( CLARA_VE_DEFAULT_KEY !== $key && ( $saved || self::page_is_out_of_sync( $key, $source ) ) ) {
 			self::sync_to_page( $key, $source );
 		}
 		if ( $saved ) {
@@ -307,6 +345,234 @@ class Clara_VE_Source_Store {
 	}
 
 	/**
+	 * The prefix marking a key as addressing a BLOCK page rather than a
+	 * raw-HTML one.
+	 *
+	 * Deliberately carries no theme, and Clara_VE_History::scoped_key() knows
+	 * to leave it alone. A block page's content lives in post_content and
+	 * survives a theme switch, so its history has to survive one too — a
+	 * {theme}__ prefix would strand the log of a page whose content never
+	 * moved anywhere.
+	 */
+	const BLOCK_KEY_PREFIX = 'block__page-';
+
+	/**
+	 * This post's key for every keyed surface in the plugin — source, history,
+	 * pseudo — or '' when the block driver does not own it.
+	 *
+	 * Returning '' rather than a key for content the driver does not claim is
+	 * what makes `if ( $key = block_key( $post ) )` a correct routing test at
+	 * every call site, instead of each one repeating the ownership rule.
+	 *
+	 * @param WP_Post|int|null $post
+	 * @return string
+	 */
+	public static function block_key( $post ) {
+		$post = get_post( $post );
+		if ( ! $post || ! self::block_driver_owns( $post ) ) {
+			return '';
+		}
+		return self::BLOCK_KEY_PREFIX . $post->ID;
+	}
+
+	/**
+	 * @param string $key
+	 * @return int The post ID a block key addresses, or 0 if it is not one.
+	 */
+	public static function block_key_post_id( $key ) {
+		$key = (string) $key;
+		if ( 0 !== strpos( $key, self::BLOCK_KEY_PREFIX ) ) {
+			return 0;
+		}
+		return (int) substr( $key, strlen( self::BLOCK_KEY_PREFIX ) );
+	}
+
+	/**
+	 * Does the block driver own this post's content?
+	 *
+	 * The theme question is here and nowhere else. Per §2.2 of the block-mode
+	 * plan, ordinary pages on a CONVERTED theme stay as invisible to this
+	 * plugin as they are today: claiming them would put a second editor, with
+	 * its own history, on content the owner already edits in WordPress —
+	 * and would do it on every paying install at once.
+	 *
+	 * @param WP_Post|int|null $post
+	 * @return bool
+	 */
+	public static function block_driver_owns( $post ) {
+		return 'block' === self::content_kind( $post ) && ! clara_ve_active_theme_is_ours();
+	}
+
+	/**
+	 * What KIND of content a post holds, and therefore which code owns it.
+	 *
+	 * One predicate, because "is this raw HTML this plugin mirrors, or block
+	 * markup, or neither" is asked by the validation gate now and by the
+	 * storage driver later, and two answers that drift apart would put a
+	 * write through one set of rules and store it under another.
+	 *
+	 *   legacy  — bound to a visual-edit key. Raw HTML this plugin mirrors,
+	 *             on any theme. Never gated, never rewritten: Invariant 0.
+	 *   block   — ordinary post_content made of blocks.
+	 *   classic — ordinary post_content with no blocks in it at all.
+	 *
+	 * Note what this deliberately does NOT decide: whether the block DRIVER
+	 * may claim a 'block' post. That needs the theme question too — on a
+	 * converted theme untagged pages stay as invisible to the plugin as they
+	 * are today — and belongs where the driver is selected, not here.
+	 *
+	 * @param WP_Post|int|null $post
+	 * @return string 'legacy'|'block'|'classic'|'none'
+	 */
+	public static function content_kind( $post ) {
+		$post = get_post( $post );
+		if ( ! $post ) {
+			return 'none';
+		}
+		if ( '' !== (string) get_post_meta( $post->ID, CLARA_VE_PAGE_KEY_META, true ) ) {
+			return 'legacy';
+		}
+		return has_blocks( $post ) ? 'block' : 'classic';
+	}
+
+	/**
+	 * Has any source ever been stored for the active theme?
+	 *
+	 * The last of the three signals clara_ve_active_theme_is_ours() weighs,
+	 * and the one that makes adding the other two safe: an install that has
+	 * been editing its theme since before either signal existed keeps every
+	 * key and every hook it has today. The front page and the header are the
+	 * two keys any converted theme ends up with, so a theme with neither has
+	 * never been edited through this plugin.
+	 *
+	 * get_stored() rather than a raw read, because it already applies the
+	 * foreign-data gate: a legacy unscoped row belonging to a theme that is
+	 * now parked must not make the theme that replaced it look like ours.
+	 *
+	 * @return bool
+	 */
+	public static function theme_has_stored_source() {
+		foreach ( array( CLARA_VE_DEFAULT_KEY, CLARA_VE_HEADER_KEY ) as $key ) {
+			if ( null !== self::get_stored( $key ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Whether a chrome key names a real, editable thing on the ACTIVE theme.
+	 *
+	 * The four standard keys used to be offered to every theme unconditionally.
+	 * On a native block theme none of them exists: the canvas loads empty
+	 * because no template part carries the key's marker, and saving that empty
+	 * canvas APPENDS a fresh core/html block and writes a wp_template_part row
+	 * that then shadows the theme's own parts/header.html for good. One click
+	 * on Save and the theme is permanently altered, by a plugin that had
+	 * nothing to put there.
+	 *
+	 * @param string $key
+	 * @return bool
+	 */
+	public static function chrome_key_available( $key ) {
+		$key = sanitize_key( $key );
+		if ( ! self::is_chrome_key( $key ) ) {
+			return false;
+		}
+		// A theme this plugin is the editor for keeps its established
+		// behavior exactly, including the append-on-first-save bootstrap for
+		// a part that ships without a marker. Every converted theme in fact
+		// ships one for all four keys, so this branch is belt and braces —
+		// deliberately, because "byte-identical on the old themes" is the
+		// constraint this release is built around.
+		if ( clara_ve_active_theme_is_ours() ) {
+			return true;
+		}
+		// Already edited on this theme — including by a version that let the
+		// save through. Hiding the key now would strand that content.
+		if ( null !== self::get_stored( $key ) ) {
+			return true;
+		}
+		return self::part_carries_marker( $key );
+	}
+
+	/**
+	 * Does the template part behind this key actually carry the key's marker?
+	 * get_block_template() answers for the DB override and the theme file
+	 * alike, which is the same resolution get_current_source() relies on.
+	 *
+	 * @param string $key
+	 * @return bool
+	 */
+	private static function part_carries_marker( $key ) {
+		$template = get_block_template( get_stylesheet() . '//' . $key, 'wp_template_part' );
+		if ( ! $template || ! is_string( $template->content ) ) {
+			return false;
+		}
+		return false !== strpos( $template->content, '<!-- clara-ve-key: ' . $key . ' -->' );
+	}
+
+	/**
+	 * The block driver's `save`.
+	 *
+	 * Two things it does that the raw-HTML path does not, both learned the
+	 * hard way from the gate this write goes through:
+	 *
+	 * The content is CANONICALIZED before it is judged. Restore hands back a
+	 * snapshot of whatever was live when it was taken, and on a converted or
+	 * imported site that is hand-authored markup which was never serializer
+	 * output — so judging it for idempotency first would refuse to restore
+	 * exactly the content worth restoring. Canonicalizing re-encodes the
+	 * delimiter JSON and re-emits innerHTML byte for byte, and innerHTML is
+	 * what Gutenberg validates, so nothing the editor cares about moves.
+	 *
+	 * And the grammar check runs BEFORE the canonicalization, or markup whose
+	 * delimiters do not parse would be laundered into a shape that no longer
+	 * looks broken.
+	 *
+	 * @param int    $post_id
+	 * @param string $source Serialized block markup.
+	 * @return bool
+	 */
+	private static function save_block_source( $post_id, $source ) {
+		$post = get_post( $post_id );
+		if ( ! $post || ! self::block_driver_owns( $post ) ) {
+			return false;
+		}
+
+		$source = (string) $source;
+		if ( is_wp_error( Clara_VE_Block_Gate::check( $source, null, array( 'context' => 'create' ) ) ) ) {
+			return false;
+		}
+		$source = Clara_VE_Block_Gate::canonicalize( $source );
+		if ( is_wp_error( Clara_VE_Block_Gate::check( $source, (string) $post->post_content, array( 'context' => 'restore' ) ) ) ) {
+			return false;
+		}
+
+		if ( $source === (string) $post->post_content ) {
+			// Nothing changed. Reported the same way the option path reports
+			// an unchanged row, so callers that branch on "did anything
+			// happen" keep behaving identically.
+			return false;
+		}
+
+		$updated = wp_update_post(
+			array(
+				'ID'           => $post->ID,
+				'post_content' => $source,
+			),
+			true
+		);
+		if ( is_wp_error( $updated ) ) {
+			return false;
+		}
+
+		/** This fires for block pages too — see the raw-HTML branch below. */
+		do_action( 'clara_ve_source_saved', self::BLOCK_KEY_PREFIX . $post->ID, $source );
+		return true;
+	}
+
+	/**
 	 * @param string $key
 	 * @return bool True for the shared template-part keys (header, footer,
 	 *              and the single-post article layout).
@@ -333,7 +599,19 @@ class Clara_VE_Source_Store {
 	 * @return string
 	 */
 	public static function get_current_source( $key = CLARA_VE_DEFAULT_KEY ) {
-		$key   = sanitize_key( $key );
+		$key = sanitize_key( $key );
+
+		// Block driver. Its `get` is simply post_content — there is no option
+		// row, no bound page to look up and no theme file to fall back to,
+		// because the content is already where WordPress keeps it. Everything
+		// keyed in this plugin — history, baselines, restore — reaches block
+		// pages through this one branch.
+		$block_post = self::block_key_post_id( $key );
+		if ( $block_post ) {
+			$post = get_post( $block_post );
+			return $post ? (string) $post->post_content : '';
+		}
+
 		$saved = self::get_resolved_source( $key );
 		if ( null !== $saved ) {
 			return $saved;
@@ -439,6 +717,28 @@ class Clara_VE_Source_Store {
 			return 'Refusing to save an empty page.';
 		}
 		$key = sanitize_key( $key );
+
+		// Block pages are judged by the block gate instead. None of what
+		// follows means anything for them: the 90%-deletion heuristic
+		// compares against raw HTML, and required anchors are substrings a
+		// converted theme declares about markup this page does not have.
+		$block_post = self::block_key_post_id( $key );
+		if ( $block_post ) {
+			$existing = get_post( $block_post );
+			$verdict  = Clara_VE_Block_Gate::check(
+				$source,
+				$existing ? (string) $existing->post_content : null,
+				array(
+					'context'                => 'edit',
+					// A whole-document write through this facade — the History
+					// panel's restore, or an editor save — replaces the page
+					// rather than patching one block, so it is restructuring
+					// by definition. Grammar, balance and schema still apply.
+					'allow_structure_change' => true,
+				)
+			);
+			return is_wp_error( $verdict ) ? $verdict->get_error_message() : true;
+		}
 
 		// --- layer 1: the theme-agnostic floor ------------------------------
 		// Markup with no element at all is text that lost its structure, not a
@@ -564,7 +864,8 @@ class Clara_VE_Source_Store {
 				// The active theme's own page, still put away. Restoring it
 				// properly — status, slug and the bookkeeping — rather than
 				// just publishing it, or it would come back at the parked
-				// address `about--ve-sonic` and stay there.
+				// address `about-ve-sonic` and stay there. (Built as
+				// `about--ve-sonic`; sanitize_title collapses the pair.)
 				Clara_VE_Theme_Park::restore( get_stylesheet() );
 				$page = self::find_page_by_key( $key );
 				if ( ! $page ) {
@@ -688,12 +989,22 @@ class Clara_VE_Source_Store {
 			);
 		}
 
-		$parts = array(
+		// Only the standard keys the active theme actually has. Offering all
+		// four to every theme is what let a native block theme be handed an
+		// empty header canvas whose first save overwrote its real one; see
+		// chrome_key_available(). A converted theme is unaffected — it ships
+		// a marked block for each of the four.
+		$parts = array();
+		foreach ( array(
 			CLARA_VE_HEADER_KEY  => __( 'Header', 'visual-edit-lite' ),
 			CLARA_VE_FOOTER_KEY  => __( 'Footer', 'visual-edit-lite' ),
 			CLARA_VE_ARTICLE_KEY => __( 'Article template', 'visual-edit-lite' ),
 			CLARA_VE_404_KEY     => __( 'Page not found (404)', 'visual-edit-lite' ),
-		);
+		) as $standard => $standard_label ) {
+			if ( self::chrome_key_available( (string) $standard ) ) {
+				$parts[ $standard ] = $standard_label;
+			}
+		}
 		// Chrome variant parts the theme declares (a site whose pages use
 		// several header/footer designs keeps them all) — every one is an
 		// editable key with its own canvas, listed after the standard four.
@@ -799,8 +1110,46 @@ class Clara_VE_Source_Store {
 	 * @param string $source
 	 * @return void
 	 */
+	/**
+	 * Whether the page bound to this key holds something other than what the
+	 * stored source says it should. Used so a repeat save can still repair a
+	 * page the first one failed to write.
+	 *
+	 * @param string $key
+	 * @param string $source
+	 * @return bool
+	 */
+	private static function page_is_out_of_sync( $key, $source ) {
+		$page = self::find_page_by_key( $key );
+		return $page && trim( (string) $page->post_content ) !== trim( self::page_content_for( $key, $source ) );
+	}
+
+	/**
+	 * @param string $key
+	 * @param string $source
+	 * @return string
+	 */
+	private static function page_content_for( $key, $source ) {
+		return "<!-- wp:html -->\n<!-- clara-ve-key: {$key} -->\n{$source}\n<!-- /wp:html -->";
+	}
+
+	/**
+	 * Set while a bundle import is applying: its markup is the theme's own and
+	 * is trusted regardless of who started the run.
+	 *
+	 * @var bool
+	 */
+	public static $trusted_write = false;
+
 	private static function sync_to_page( $key, $source ) {
-		if ( ! current_user_can( 'unfiltered_html' ) ) {
+		// Capability-gated because this writes raw HTML verbatim — except when
+		// the writer is an IMPORT, whose HTML is the theme's own bundle and was
+		// never typed by anyone. An import has no current user when it runs
+		// from wp-cli or cron, so the check quietly skipped every page: the
+		// sources landed, the pages stayed empty, and each subpage of the site
+		// rendered a header and a footer around nothing. Measured on a live
+		// site: 8 of 9 pages blank, all returning 200.
+		if ( ! self::$trusted_write && ! current_user_can( 'unfiltered_html' ) ) {
 			return;
 		}
 		$page = self::find_page_by_key( $key );
@@ -808,7 +1157,7 @@ class Clara_VE_Source_Store {
 			return;
 		}
 
-		$content = "<!-- wp:html -->\n<!-- clara-ve-key: {$key} -->\n{$source}\n<!-- /wp:html -->";
+		$content = self::page_content_for( $key, $source );
 
 		// Plugin-driven saves (including every AI Assistant edit) shouldn't
 		// spam WordPress's native Revisions UI with internal churn — the
@@ -842,6 +1191,15 @@ class Clara_VE_Source_Store {
 	 */
 	private static function sync_to_template_part( $key, $source ) {
 		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			return;
+		}
+		// Defence in depth behind the same rule save_source() enforces: never
+		// bring a wp_template_part override into existence for a part that
+		// never carried this key. The override wins over the theme file from
+		// then on, so getting this wrong does not show up as a failed save —
+		// it shows up as a theme that has quietly stopped rendering its own
+		// header. On a theme the plugin owns, unchanged.
+		if ( ! clara_ve_active_theme_is_ours() && ! self::part_carries_marker( $key ) ) {
 			return;
 		}
 		$theme    = get_stylesheet();

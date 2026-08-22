@@ -30,16 +30,15 @@ class Clara_VE_History {
 	// stays a few MB at most.
 	const MAX_ENTRIES = 300;
 
-	// How many entries Lite may see and restore (plus the Original, which is
-	// always offered — see visible_entries()). Storage is NOT trimmed to this:
-	// the full log keeps accumulating up to MAX_ENTRIES, so a site that later
-	// moves to Visual Edit Pro finds the history that was recorded all along
-	// rather than a hole. Deliberately the same depth an unregistered Pro
-	// install shows.
-	const VISIBLE_ENTRIES = 10;
+	// How many entries an UNLICENSED install may see and restore (plus the
+	// Original, which is always offered — see visible_entries()). Storage is
+	// NOT trimmed to this: the full log keeps accumulating up to MAX_ENTRIES,
+	// so activating a licence later reveals the history that was recorded all
+	// along rather than a hole.
+	const VISIBLE_ENTRIES = 10;   // How many saves the list shows. Everything is still recorded to MAX_ENTRIES.
 
 	const DB_VERSION_OPTION = 'clara_ve_history_db_version';
-	const DB_VERSION        = '2';
+	const DB_VERSION        = '3';
 
 	/**
 	 * @return string Fully-qualified table name (respects the site's prefix).
@@ -75,6 +74,7 @@ class Clara_VE_History {
 			content LONGBLOB NOT NULL,
 			content_hash CHAR(64) NOT NULL,
 			pseudo LONGTEXT NULL,
+			responsive LONGTEXT NULL,
 			message VARCHAR(255) NULL,
 			kind VARCHAR(20) NOT NULL DEFAULT 'save',
 			restored_from_id BIGINT UNSIGNED NULL,
@@ -123,6 +123,14 @@ class Clara_VE_History {
 	private static function scoped_key( $page_key ) {
 		$theme = sanitize_key( get_stylesheet() );
 		$key   = sanitize_key( $page_key );
+		// A block page's content lives in post_content and survives a theme
+		// switch; its log has to survive one too. Scoping it by theme would
+		// hide every revision of a page whose content never moved anywhere
+		// the moment somebody changed themes — and the page would still be
+		// sitting there, apparently never edited.
+		if ( 0 === strpos( $key, Clara_VE_Source_Store::BLOCK_KEY_PREFIX ) ) {
+			return $key;
+		}
 		// Idempotent on purpose. ensure_baseline() used to scope the key and
 		// then hand it to record(), which scoped it AGAIN — every "Original"
 		// landed under {theme}__{theme}__{key}, a bucket the history panel
@@ -183,14 +191,23 @@ class Clara_VE_History {
 		}
 	}
 
-	public static function record( $tokenized_source, $pseudo, $kind = 'save', $message = null, $restored_from_id = null, $page_key = CLARA_VE_DEFAULT_KEY ) {
+	public static function record( $tokenized_source, $pseudo, $kind = 'save', $message = null, $restored_from_id = null, $page_key = CLARA_VE_DEFAULT_KEY, $responsive = null ) {
 		global $wpdb;
 		self::maybe_install();
 
 		$page_key = self::scoped_key( $page_key );
 		$hash     = hash( 'sha256', $tokenized_source );
 		$head     = self::head( $page_key );
-		if ( $head && $head->content_hash === $hash && 'restore' !== $kind ) {
+		$rules    = ( is_array( $responsive ) && $responsive ) ? wp_json_encode( $responsive ) : null;
+
+		// Identical content is normally nothing to record. But a page's
+		// small-screen rules live outside its content, so changing only those
+		// — giving a section less padding on a phone and saving — leaves the
+		// markup byte-identical. Skipping on the hash alone would mean that
+		// edit was never versioned, and the owner would find nothing to go
+		// back to for a change they definitely made.
+		$same_rules = ( ( $head && isset( $head->responsive ) ? $head->responsive : null ) === $rules );
+		if ( $head && $head->content_hash === $hash && $same_rules && 'restore' !== $kind ) {
 			return null;
 		}
 
@@ -201,13 +218,18 @@ class Clara_VE_History {
 				'content'          => gzcompress( $tokenized_source, 6 ),
 				'content_hash'     => $hash,
 				'pseudo'           => ( is_array( $pseudo ) && $pseudo ) ? wp_json_encode( $pseudo ) : null,
+				// Small-screen rules travel WITH the version they belong to.
+				// A restore that brought a section back without the padding it
+				// was given for phones would be telling the owner it had put
+				// the page back when it had not.
+				'responsive'       => $rules,
 				'message'          => $message ? sanitize_text_field( $message ) : null,
 				'kind'             => ( 'restore' === $kind ) ? 'restore' : 'save',
 				'restored_from_id' => $restored_from_id ? (int) $restored_from_id : null,
 				'author'           => get_current_user_id(),
 				'created_at'       => current_time( 'mysql' ),
 			),
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s' )
 		);
 
 		$id = $wpdb->insert_id;
@@ -241,7 +263,9 @@ class Clara_VE_History {
 		// The RAW key from here on: get_current_source, the pseudo store and
 		// record() all scope for themselves — handing them the scoped key is
 		// exactly the bug this function shipped with.
-		$raw     = preg_replace( '/^' . preg_quote( sanitize_key( get_stylesheet() ), '/' ) . '__/', '', $page_key );
+		$raw = ( 0 === strpos( $page_key, Clara_VE_Source_Store::BLOCK_KEY_PREFIX ) )
+			? $page_key
+			: preg_replace( '/^' . preg_quote( sanitize_key( get_stylesheet() ), '/' ) . '__/', '', $page_key );
 		$current = Clara_VE_Source_Store::get_current_source( $raw );
 		if ( '' === trim( (string) $current ) ) {
 			return; // nothing to seed yet (e.g. the pattern isn't registered)
@@ -257,7 +281,7 @@ class Clara_VE_History {
 		global $wpdb;
 		self::maybe_install();
 		$page_key = self::scoped_key( $page_key );
-		return $wpdb->get_row( $wpdb->prepare( 'SELECT id, content_hash FROM ' . self::table() . ' WHERE page_key = %s ORDER BY id DESC LIMIT 1', $page_key ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		return $wpdb->get_row( $wpdb->prepare( 'SELECT id, content_hash, responsive FROM ' . self::table() . ' WHERE page_key = %s ORDER BY id DESC LIMIT 1', $page_key ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 
 	/**
@@ -280,9 +304,14 @@ class Clara_VE_History {
 			return null;
 		}
 		return array(
-			'id'     => (int) $row->id,
-			'source' => gzuncompress( $row->content ),
-			'pseudo' => $row->pseudo ? json_decode( $row->pseudo, true ) : array(),
+			'id'         => (int) $row->id,
+			'source'     => gzuncompress( $row->content ),
+			'pseudo'     => $row->pseudo ? json_decode( $row->pseudo, true ) : array(),
+			// Null on every row written before this column existed, which is
+			// the honest answer for them: those versions predate the feature.
+			'responsive' => isset( $row->responsive ) && $row->responsive
+				? json_decode( $row->responsive, true )
+				: array(),
 		);
 	}
 
@@ -330,7 +359,7 @@ class Clara_VE_History {
 		if ( $source_ids ) {
 			$placeholders = implode( ',', array_fill( 0, count( $source_ids ), '%d' ) );
 			$found        = $wpdb->get_results(
-				$wpdb->prepare( "SELECT id, content_hash FROM {$table} WHERE id IN ({$placeholders})", $source_ids ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				$wpdb->prepare( "SELECT id, content_hash FROM {$table} WHERE id IN ({$placeholders})", $source_ids ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 			);
 			foreach ( $found as $f ) {
 				$restore_sources[ (int) $f->id ] = $f->content_hash;
@@ -360,12 +389,13 @@ class Clara_VE_History {
 	}
 
 	/**
-	 * What the history panel shows and what restore accepts.
+	 * What the history panel shows and what restore accepts, licence-aware.
 	 *
-	 * The newest VISIBLE_ENTRIES plus — always — the oldest entry, because the
-	 * Original must stay restorable. list_entries() returns newest-first, so
-	 * the Original lands at the tail of the panel, where the oldest entry
-	 * belongs visually anyway.
+	 * Licensed: the full list (up to MAX_ENTRIES). Unlicensed: the newest
+	 * VISIBLE_ENTRIES plus — always — the oldest entry, because the
+	 * Original must stay restorable at every tier. list_entries() returns
+	 * newest-first, so the Original lands at the tail of the panel, where
+	 * the oldest entry belongs visually anyway.
 	 *
 	 * This is also the server-side authority for restores: restore goes
 	 * through an id allow-list derived from the same function, so hiding
@@ -392,7 +422,7 @@ class Clara_VE_History {
 	}
 
 	/**
-	 * Whether the given entry may be restored.
+	 * Whether the given entry may be restored under the current licence.
 	 *
 	 * @param int    $id
 	 * @param string $page_key

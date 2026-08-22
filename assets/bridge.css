@@ -92,3 +92,42 @@ html[data-cve-edit-mode] .hero-actions {
 [data-cve-zone][data-cve-skip] {
 	display: contents;
 }
+
+/* ---- Dragging a section's padding on the section itself ---- */
+
+/* Only ever inside the editor, and only on a selected block. The bar sits
+   just inside the edge it changes, so what is being dragged is the space
+   itself rather than an abstraction of it. */
+html[data-cve-edit-mode] [data-cve-handle] {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 56px;
+	height: 10px;
+	border-radius: 5px;
+	background: rgba(37, 99, 235, 0.55);
+	cursor: ns-resize;
+	z-index: 2147483000;
+	touch-action: none;
+}
+html[data-cve-edit-mode] [data-cve-handle]:hover,
+html[data-cve-edit-mode][data-cve-dragging] [data-cve-handle] {
+	background: rgba(37, 99, 235, 0.95);
+}
+html[data-cve-edit-mode] [data-cve-handle='top'] {
+	top: 3px;
+}
+html[data-cve-edit-mode] [data-cve-handle='bottom'] {
+	bottom: 3px;
+}
+/* The block has to be a positioning context for the handles, and almost none
+   of them are by default. `relative` changes nothing visually. */
+html[data-cve-edit-mode] [data-cve-selected]:has([data-cve-handle]) {
+	position: relative;
+}
+/* While a drag is in progress nothing else should react to the pointer —
+   text selection least of all. */
+html[data-cve-edit-mode][data-cve-dragging] {
+	user-select: none;
+	cursor: ns-resize;
+}

@@ -218,7 +218,7 @@ class Clara_VE_Import_Legacy {
 
 	/**
 	 * Copies in-fragment media (img/video/source src, poster) referenced by a
-	 * relative path into uploads/clara-ve-import/{key}/ and rewrites the
+	 * relative path into uploads/ve-import/{key}/ and rewrites the
 	 * reference. External/absolute/data: URLs are left untouched.
 	 *
 	 * @param string $html
@@ -258,7 +258,7 @@ class Clara_VE_Import_Legacy {
 		}
 
 		$upload_dir = wp_upload_dir();
-		$target_dir = trailingslashit( $upload_dir['basedir'] ) . 'clara-ve-import/' . $key;
+		$target_dir = trailingslashit( $upload_dir['basedir'] ) . CLARA_VE_IMPORT_DIR . '/' . $key;
 		wp_mkdir_p( $target_dir );
 
 		// Re-importing the same file should be idempotent (no new copy, same
@@ -267,7 +267,7 @@ class Clara_VE_Import_Legacy {
 		// "-1"/"-2" suffixed copy via wp_unique_filename().
 		$same_name_path = trailingslashit( $target_dir ) . basename( $rel_path );
 		if ( file_exists( $same_name_path ) && md5_file( $same_name_path ) === md5_file( $source_path ) ) {
-			$url = trailingslashit( $upload_dir['baseurl'] ) . 'clara-ve-import/' . $key . '/' . basename( $rel_path );
+			$url = trailingslashit( $upload_dir['baseurl'] ) . CLARA_VE_IMPORT_DIR . '/' . $key . '/' . basename( $rel_path );
 			self::ensure_attachment( $url, $same_name_path );
 			return $url;
 		}
@@ -279,7 +279,7 @@ class Clara_VE_Import_Legacy {
 			return null;
 		}
 
-		$url = trailingslashit( $upload_dir['baseurl'] ) . 'clara-ve-import/' . $key . '/' . $filename;
+		$url = trailingslashit( $upload_dir['baseurl'] ) . CLARA_VE_IMPORT_DIR . '/' . $key . '/' . $filename;
 		self::ensure_attachment( $url, $target_path );
 		return $url;
 	}

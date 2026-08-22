@@ -5,10 +5,11 @@ later.
 
 ## What you should have
 
-Two separate files:
+Two things:
 
 - **the theme ZIP** — your converted site's design, with its content inside it
-- **`visual-edit.zip`** — this plugin
+- **the plugin** — installed from the wordpress.org directory, or from
+  `visual-edit-lite.zip` if you were handed one
 
 A theme ZIP never contains the plugin. WordPress has no way for a theme to
 declare that it needs a plugin, so the two always travel separately and the
@@ -31,11 +32,11 @@ but has none of its content yet, so pages will be missing. That is expected.
 
 ### 2. Install the plugin
 
-**Plugins → Add New → Upload Plugin** → choose `visual-edit.zip` →
-**Install Now** → **Activate**.
+**Plugins → Add New** → search for **Visual Edit Lite** → **Install Now** →
+**Activate**.
 
-If you got here from the theme's setup screen, its "Upload the plugin ZIP"
-button takes you straight to the right place.
+If you were handed a ZIP instead, **Plugins → Add New → Upload Plugin** takes
+it. The theme's setup screen has a button that goes straight there.
 
 ### 3. Import the content
 
@@ -47,12 +48,12 @@ understanding what it will and will not touch before you click it.
 
 ## Where things appear
 
-After activating the plugin you get a new top-level admin menu, **Visual
-Edit**, with:
+After activating the plugin you get a new top-level admin menu, **Visual Edit
+Lite**, with:
 
 | Item | What it is |
 |---|---|
-| Visual Edit | the editor itself |
+| Visual Edit Lite | the editor itself |
 | Form Submissions | everything visitors have sent |
 | Form Settings | recipient, anti-spam, email delivery, mailing list |
 | Subscribers | mailing-list signups and their consent record |
@@ -60,17 +61,15 @@ Edit**, with:
 | SEO & Sharing | site-wide identity and sharing defaults |
 | Import Content | bring content in from a ZIP |
 
-There is also a **Visual Edit** link in the admin bar on the front end, and a
-**Visual Editor** column on the Pages list showing which pages are editable.
+There is also a **Visual Edit Lite** link in the admin bar on the front end,
+and a **Visual Edit Lite** column on the Pages list showing which pages are
+editable.
 
 ## Updating
 
-The plugin is not on wordpress.org, so WordPress will never offer an update
-for it. Updating is the same route as installing:
-
-**Plugins → Add New → Upload Plugin** → choose the newer `visual-edit.zip` →
-**Install Now** → WordPress notices a copy is already there and asks →
-**Replace current with uploaded**.
+Updates arrive the way every other directory plugin's do: **Dashboard →
+Updates**, or the Plugins screen. If you installed from a ZIP, upload the newer
+one the same way and confirm **Replace current with uploaded**.
 
 Your data is untouched by this. Options, page sources, history, submissions
 and subscribers all live in the database, not in the plugin folder.
@@ -111,5 +110,6 @@ tier removes.
 ## Installing manually over SFTP
 
 If the ZIP is larger than your server's upload limit, unzip it locally and
-upload the `visual-edit` folder into `wp-content/plugins/`, then activate it
-from the Plugins screen. The folder name matters — keep it `visual-edit`.
+upload the `visual-edit-lite` folder into `wp-content/plugins/`, then activate
+it from the Plugins screen. The folder name matters — keep it
+`visual-edit-lite`.

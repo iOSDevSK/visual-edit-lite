@@ -1,5 +1,5 @@
 /**
- * Visual editor host — the open-design manual-edit UX:
+ * Visual editor host — the open-design manual-edit UX, minus AI:
  * permanent dashed guides in the canvas, a draggable dark floating inspector
  * anchored to the selection with TYPOGRAPHY controls (font, size, weight,
  * color, align, line, tracking), image swap via the WP Media Library, link
@@ -30,7 +30,7 @@
 	// DEFAULT_KEY mirrors CLARA_VE_DEFAULT_KEY (PHP) — the front page, which
 	// isn't a real WP Page but the plugin's original pattern-override
 	// mechanism. Any other key is a WP Page tagged via the Pages-list
-	// "Visual Editor" column.
+	// "Visual Editor" column / the AI Assistant's create_visual_page tool.
 
 	var DEFAULT_KEY = 'front-page';
 	// The header/footer template parts have no page/URL of their own — they
@@ -89,7 +89,7 @@
 	}
 
 	// Switch the editor onto a key the FRAME has already navigated to. Same
-	// bookkeeping as switchToKey (source, history, toolbar) minus
+	// bookkeeping as switchToKey (source, history, AI thread, toolbar) minus
 	// the navigation — the frame is already showing the right page, and
 	// re-pointing it would throw away the very article the user clicked.
 	function adoptKey( key ) {
@@ -167,7 +167,10 @@
 		var match = visualPages.filter( function ( p ) {
 			return p.key === currentKey;
 		} )[ 0 ];
-		toolbarTitle.textContent = 'Visual Edit Lite — ' + ( match ? match.label : currentKey );
+		toolbarTitle.textContent = 'Visual Editor — ' + ( match ? match.label : currentKey );
+		// Both places that change which page is open come through here, so the
+		// copy and remove buttons follow along without a second listener.
+		refreshPageButtons();
 	}
 
 	function switchToKey( key ) {
@@ -209,7 +212,10 @@
 	}
 
 	function loadVisualPages() {
-		window.wp.apiFetch( { path: '/clara-ve/v1/pages' } ).then( function ( pages ) {
+		// Returns the promise: copying a page has to switch to the copy, and it
+		// cannot do that until the list knows the copy exists. A fixed delay
+		// was a guess that happened to be wrong often enough to matter.
+		return window.wp.apiFetch( { path: '/clara-ve/v1/pages' } ).then( function ( pages ) {
 			visualPages = pages || [];
 			if ( pagePicker ) {
 				pagePicker.innerHTML = '';
@@ -252,7 +258,12 @@
 	var clip = document.getElementById( 'clara-ve-clip' );
 	var shell = document.getElementById( 'clara-ve-shell' );
 	var deviceBtns = document.querySelectorAll( '.clara-ve-device' );
-	var DEVICE_PRESETS = { desktop: null, tablet: { w: 820, h: 1180 }, mobile: { w: 390, h: 844 } };
+	// 768 rather than a specific tablet's 820, so the preview and the
+	// small-screen rules agree: those apply below 781px, and a canvas 820px
+	// wide would show the desktop layout under a button labelled Tablet.
+	// Somebody checking their phone layout has to be able to trust the
+	// picture.
+	var DEVICE_PRESETS = { desktop: null, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 844 } };
 	var currentDevice = 'desktop';
 
 	function applyDevice( device ) {
@@ -460,14 +471,97 @@
 	// because patch.shape was computed by the bridge and must match here for
 	// membership re-derivation to find the same elements.
 
-	function collectionShapeSignature( el ) {
+	// These are the source-document twin of bridge.js's shapeSignature(). The
+	// preview bridge compares pristine classes and treats a table body with a
+	// variable number of rows as one shape (`tr*`). The host applies the same
+	// patch to a freshly parsed source document, so it must use the same key or
+	// it cannot find the bodies that the popup just offered for editing.
+	function collectionClassBaseForShape( cls ) {
+		var base = cls;
+		var start = 0;
+		while ( start < base.length ) {
+			var depth = 0;
+			var separator = -1;
+			for ( var i = 0; i < base.length; i++ ) {
+				if ( '[' === base[ i ] ) {
+					depth++;
+				} else if ( ']' === base[ i ] && depth > 0 ) {
+					depth--;
+				} else if ( ':' === base[ i ] && 0 === depth ) {
+					separator = i;
+					break;
+				}
+			}
+			if ( separator < 0 ) {
+				break;
+			}
+			base = base.slice( separator + 1 );
+			start++;
+		}
+		return base;
+	}
+
+	function collectionIsPositionUtility( cls ) {
+		var base = collectionClassBaseForShape( cls ).replace( /!$/, '' );
+		return /^-?(?:col|row)-(?:span|start|end)(?:-|$)/.test( base )
+			|| /^-?order(?:-|$)/.test( base )
+			|| /^z-(?:auto|0|10|20|30|40|50)(?:-|$)/.test( base )
+			|| /^overflow-(?:auto|hidden|clip|visible|scroll)(?:-|$)/.test( base )
+			|| /^rounded-(?:t|r|b|l|s|e|tl|tr|br|bl|ss|se|ee|es)(?:-|$)/.test( base )
+			|| /^border(?:-|$)/.test( base )
+			|| /^p(?:t|r|b|l|s|e)(?:-|$)/.test( base )
+			|| /^\[(?:animation-delay|animation-duration):[^\]]+\]$/.test( base );
+	}
+
+	function collectionShapeClassList( el ) {
 		var classes = el.className && 'string' === typeof el.className ? el.className.trim() : '';
-		var sortedClasses = classes ? classes.split( /\s+/ ).sort().join( ',' ) : '';
+		if ( ! classes ) {
+			return [];
+		}
+		return classes.split( /\s+/ ).filter( function ( cls ) {
+			return ! /^swiper-slide-(active|prev|next|duplicate)/.test( cls )
+				&& ! collectionIsPositionUtility( cls );
+		} ).sort();
+	}
+
+	function collectionShapeChildTags( el ) {
 		var childTags = [];
 		for ( var i = 0; i < el.children.length; i++ ) {
 			childTags.push( el.children[ i ].tagName.toLowerCase() );
 		}
-		return el.tagName.toLowerCase() + '|' + sortedClasses + '|' + childTags.join( ',' );
+		if ( 'TBODY' === el.tagName && childTags.length && childTags.every( function ( tag ) {
+			return 'tr' === tag;
+		} ) ) {
+			return [ 'tr*' ];
+		}
+		return childTags;
+	}
+
+	function collectionShapeSignature( el ) {
+		return el.tagName.toLowerCase() + '|' + collectionShapeClassList( el ).join( ',' )
+			+ '|' + collectionShapeChildTags( el ).join( ',' );
+	}
+
+	// A text-own slot is the direct text beside an icon or another child. Keep
+	// those children in place when the host writes the saved source, just as
+	// bridge.js does in the preview frame. Writing textContent here would erase
+	// the authored child markup on every collection save.
+	function setCollectionOwnText( el, value ) {
+		var first = null;
+		for ( var i = el.childNodes.length - 1; i >= 0; i-- ) {
+			if ( 3 === el.childNodes[ i ].nodeType ) {
+				if ( first ) {
+					el.removeChild( el.childNodes[ i ] );
+				} else {
+					first = el.childNodes[ i ];
+				}
+			}
+		}
+		if ( first ) {
+			first.nodeValue = value;
+		} else if ( value ) {
+			el.insertBefore( el.ownerDocument.createTextNode( value ), el.firstChild );
+		}
 	}
 
 	function resolveCollectionSlotPath( root, path ) {
@@ -605,7 +699,7 @@
 				el.insertBefore( frag, el.firstChild ); // sources before any <track>
 			}
 		} else if ( patch.kind === 'convert-to-video' ) {
-			// Video replacement, source-side: swap the <img> for a
+			// "Generate video (AI)" result, source-side: swap the <img> for a
 			// real <video> at the same tree position — mirrors bridge.js's
 			// live-DOM version of this same conversion exactly.
 			var video = doc.createElement( 'video' );
@@ -805,12 +899,58 @@
 							if ( null != v.text ) { slotNode.textContent = v.text; }
 							if ( null != v.href ) { slotNode.setAttribute( 'href', v.href ); }
 						}
+					} else if ( 'text-own' === slot.type ) {
+						setCollectionOwnText( slotNode, null == v ? '' : v );
 					} else {
 						slotNode.textContent = null == v ? '' : v;
 					}
 				} );
 				builtItems.push( madeItem );
 			}
+			// A punctuated list (word · word · word) carries decorative
+			// separator nodes between its members. Rebuilding members alone
+			// leaves every separator stranded where it sat — the saved source
+			// then renders all its dots in a clump. Mirror of the bridge's own
+			// re-weave: identify one-shape, contentless non-member children,
+			// note whether the pattern trails with one, drop them all, and lay
+			// them back one-per-member from a clone template.
+			var sepTemplate = null;
+			var sepTrailing = false;
+			{
+				var seps = [];
+				var sepShape = null;
+				var sepOk = false;
+				for ( var sc = 0; sc < el.children.length; sc++ ) {
+					var kid = el.children[ sc ];
+					if ( collectionShapeSignature( kid ) === patch.shape ) {
+						continue;
+					}
+					var decorative = ! kid.children.length
+						&& ! ( kid.textContent || '' ).trim()
+						&& ! /^(IMG|VIDEO|IFRAME|EMBED|OBJECT|INPUT|SVG|PICTURE|SOURCE|CANVAS)$/.test( kid.tagName )
+						&& ! kid.hasAttribute( 'src' ) && ! kid.hasAttribute( 'href' );
+					if ( ! decorative ) {
+						seps = [];
+						break;
+					}
+					if ( null === sepShape ) {
+						sepShape = collectionShapeSignature( kid );
+					} else if ( collectionShapeSignature( kid ) !== sepShape ) {
+						seps = [];
+						break;
+					}
+					seps.push( kid );
+				}
+				sepOk = seps.length > 0;
+				if ( sepOk ) {
+					sepTemplate = seps[ 0 ].cloneNode( true );
+					sepTrailing = seps.length >= origItems.length;
+					for ( var sr = 0; sr < seps.length; sr++ ) {
+						seps[ sr ].remove();
+					}
+				}
+			}
+
 			var anchorItem = origItems[ 0 ];
 			for ( var oo = 0; oo < origItems.length; oo++ ) {
 				if ( origItems[ oo ] !== anchorItem ) {
@@ -819,6 +959,9 @@
 			}
 			for ( var bb = 0; bb < builtItems.length; bb++ ) {
 				anchorItem.parentNode.insertBefore( builtItems[ bb ], anchorItem );
+				if ( sepTemplate && ( bb < builtItems.length - 1 || sepTrailing ) ) {
+					anchorItem.parentNode.insertBefore( sepTemplate.cloneNode( true ), anchorItem );
+				}
 			}
 			anchorItem.remove();
 		}
@@ -1705,7 +1848,7 @@
 				if ( patch.kind === 'set-style' || patch.kind === 'set-pseudo' ) {
 					patch.styles = Object.assign( {}, patches[ i ].styles, patch.styles );
 				}
-				// Swapping the picture — from the Media Library, an
+				// Swapping the picture — from the Media Library, an AI job, an
 				// import — says nothing about where it points, so the address
 				// already recorded carries over instead of being replaced by
 				// nothing. Handled here rather than at each call site so a new
@@ -1764,11 +1907,6 @@
 	}
 
 	// ---- Toasts ----
-	// A transient message that does not need the panel that raised it to stay
-	// open. In Pro these sit inside the background-job block, because a
-	// generation running for minutes is what made them necessary; they are
-	// used well outside it, so Lite keeps them under a heading of their own.
-
 	var toastRoot = null;
 	// The one toast that can be raised repeatedly by the same gesture, so it
 	// is held onto and replaced instead of stacking.
@@ -1798,7 +1936,7 @@
 	// eventually expires (and dies with the login session). When it does, the
 	// page still renders — it just comes back as an ordinary front-end view,
 	// with no bridge. Everything downstream then fails silently: nothing is
-	// selectable, a finished result has nowhere to apply itself, and Save
+	// selectable, a finished AI result has nowhere to apply itself, and Save
 	// stays disabled with no explanation. So: if the frame navigates and no
 	// 'ready' handshake follows, say plainly that the session expired.
 
@@ -1954,16 +2092,19 @@
 		return out;
 	}
 
-	// Swap an <img> for a <video>, keeping the box the image occupied.
+	/**
+	 * Swap an image for a video the owner picked from the Media Library.
+	 *
+	 * The element changes kind, so the open panel no longer describes it —
+	 * bridge.js re-posts a 'select' right after the DOM swap, which brings up
+	 * the video panel instead.
+	 */
 	function replaceImageWithVideo( targetId, result ) {
 		var sources = [ { src: result.url, type: result.mime || 'video/mp4' } ];
 		var boxStyle = mediaBoxStyle( targetId );
 		postToFrame( { type: 'convert-to-video', id: targetId, poster: result.poster || '', sources: sources, boxStyle: boxStyle } );
 		recordPatch( { id: targetId, kind: 'convert-to-video', poster: result.poster || '', sources: sources, boxStyle: boxStyle } );
 		if ( current && current.id === targetId ) {
-			// The element just changed kind (image -> video); this panel's
-			// fields no longer apply. bridge.js's own 'select' re-post (sent
-			// right after the DOM swap) refreshes it to the video panel.
 			closePanelSilent();
 		}
 	}
@@ -2012,7 +2153,12 @@
 		var plus = el( 'button', 'cve-step', '+' );
 		function commit( delta ) {
 			var v = pxNumber( input.value ) + delta;
-			var allowNegative = key === 'letterSpacing' || key.indexOf( 'margin' ) === 0;
+			// Block mode names these as dot paths (typography.letterSpacing,
+			// spacing.margin.top), the raw-HTML panel as bare properties, and
+			// both mean the same thing. Matching the tail rather than the
+			// start is what keeps negative tracking and negative margins
+			// available in both.
+			var allowNegative = /(^|\.)letterSpacing$/.test( key ) || /(^|\.)margin(\.|$)/.test( key );
 			if ( v < 0 && ! allowNegative ) {
 				v = 0;
 			}
@@ -2067,6 +2213,121 @@
 			'&text=' + encodeURIComponent( FONT_PREVIEW_TEXT + row.dataset.family ) +
 			'&display=swap';
 		document.head.appendChild( link );
+	}
+
+	var sectionBrowserEl = null;
+	var sectionPatterns = null;
+
+	/**
+	 * Pick a section from the theme's own patterns and put it on the page.
+	 *
+	 * The list is the theme's, not WordPress's: a core "three columns of
+	 * text" is on nobody's design, and the point of composing from patterns
+	 * is that the result already looks like the site. The server decides the
+	 * same way, from the same list, so naming a hidden pattern by hand gets
+	 * nowhere.
+	 *
+	 * @param {string} address Section to add relative to.
+	 * @param {string} name    Its block name, for the staleness check.
+	 */
+	function openSectionBrowser( address, name ) {
+		if ( sectionBrowserEl ) {
+			sectionBrowserEl.hidden = false;
+			return;
+		}
+		sectionBrowserEl = el( 'div', 'cve-fontpicker cve-sectionpicker' );
+		var box = el( 'div', 'cve-fontpicker-box' );
+
+		var head = el( 'div', 'cve-fontpicker-head' );
+		head.appendChild( el( 'strong', '', 'Add a section' ) );
+		var close = el( 'button', 'cve-close', '✕' );
+		close.addEventListener( 'click', function () {
+			sectionBrowserEl.hidden = true;
+		} );
+		head.appendChild( close );
+		box.appendChild( head );
+
+		var where = document.createElement( 'select' );
+		where.className = 'cve-select';
+		[
+			[ 'after', 'After this section' ],
+			[ 'before', 'Before this section' ],
+			[ 'end', 'At the end of the page' ],
+		].forEach( function ( pair ) {
+			var option = document.createElement( 'option' );
+			option.value = pair[ 0 ];
+			option.textContent = pair[ 1 ];
+			where.appendChild( option );
+		} );
+		box.appendChild( where );
+
+		var list = el( 'div', 'cve-sectionlist' );
+		list.appendChild( el( 'p', 'cve-note', 'Loading the theme’s sections…' ) );
+		box.appendChild( list );
+
+		sectionBrowserEl.appendChild( box );
+		document.body.appendChild( sectionBrowserEl );
+
+		var render = function ( patterns ) {
+			list.textContent = '';
+			if ( ! patterns.length ) {
+				list.appendChild( el( 'p', 'cve-note', 'This theme registers no sections to add.' ) );
+				return;
+			}
+			patterns.forEach( function ( pattern ) {
+				var card = el( 'div', 'cve-sectioncard' );
+				card.appendChild( el( 'strong', '', pattern.title ) );
+
+				// The rendered pattern goes in a frame of its own rather than
+				// into this page. A theme's pattern is the theme's markup, and
+				// wp-admin is the last document it should run in.
+				var preview = document.createElement( 'iframe' );
+				preview.className = 'cve-sectionpreview';
+				preview.setAttribute( 'sandbox', '' );
+				preview.setAttribute( 'loading', 'lazy' );
+				preview.srcdoc = pattern.rendered || '';
+				// The frame is rendered at double width and scaled to half, so
+				// a section designed for a full page is legible at panel size.
+				// The transform does not change how much room it takes up in
+				// the layout, which is what the wrapper is for.
+				var shell = el( 'div', 'cve-sectionpreview-wrap' );
+				shell.appendChild( preview );
+				card.appendChild( shell );
+
+				if ( pattern.description ) {
+					card.appendChild( el( 'p', 'cve-note', pattern.description ) );
+				}
+
+				var use = el( 'button', 'cve-btn cve-btn-block', 'Add this section' );
+				use.addEventListener( 'click', function () {
+					sectionBrowserEl.hidden = true;
+					sendBlockStructure( {
+						op: 'insert-pattern',
+						pattern: pattern.name,
+						position: where.value,
+						block: address,
+						expect: name,
+					} );
+				} );
+				card.appendChild( use );
+				list.appendChild( card );
+			} );
+		};
+
+		if ( sectionPatterns ) {
+			render( sectionPatterns );
+			return;
+		}
+		window.wp
+			.apiFetch( { path: '/clara-ve/v1/block-patterns' } )
+			.then( function ( data ) {
+				sectionPatterns = ( data && data.patterns ) || [];
+				render( sectionPatterns );
+			} )
+			.catch( function ( error ) {
+				list.textContent = '';
+				list.appendChild( el( 'p', 'cve-note', 'Could not load the sections: ' + ( ( error && error.message ) || 'request failed' ) ) );
+			} );
 	}
 
 	function openFontPicker() {
@@ -2139,6 +2400,15 @@
 				.then( function ( res ) {
 					googleFonts = res.selected || [];
 					refreshGoogleFontCss( res.cssUrl || '' );
+					// On a block page the typeface list is not this array — it
+					// is the site's theme.json presets, which the kept family
+					// has just been merged into. Taken from the answer rather
+					// than assembled here: the slug that ends up in the markup
+					// is WordPress's to decide, and guessing it wrong would
+					// write a class the stylesheet has no rule for.
+					if ( res.presets ) {
+						BLOCK_PRESETS.fontFamily = res.presets;
+					}
 					render();
 					// An open element panel is showing the old font list.
 					if ( current ) {
@@ -2274,7 +2544,740 @@
 			} );
 	}
 
-	function selectRow( label, key, options, initial, mapValue ) {
+	// ---- Styling on a block page ----
+	//
+	// The controls below this line write inline style="" from a vocabulary of
+	// around twenty-five CSS properties. On a block page that is the wrong
+	// tool twice over: the markup is validated against what the block type
+	// would serialize, so an inline style is drift; and a site whose type
+	// scale and palette are declared in theme.json does not want a client
+	// typing #c0ffee into it.
+	//
+	// So in block mode the panel offers the theme's OWN tokens and stores the
+	// preset slug, which follows the theme when the palette changes — a copied
+	// hex does not. Anything with no preset behind it (opacity, arbitrary
+	// widths, letter spacing) is not shown at all rather than approximated:
+	// the save path would refuse it anyway, and a control that cannot be
+	// saved is worse than no control.
+	var BLOCK_PRESETS = config.blockPresets || {};
+
+	// slug -> the CSS the frame should show while the panel is open. Stored is
+	// always the slug; this is only so a choice can be seen before saving.
+	function presetValue( group, slug ) {
+		var list = BLOCK_PRESETS[ group ] || [];
+		for ( var i = 0; i < list.length; i++ ) {
+			if ( list[ i ].slug === slug ) {
+				return list[ i ].value;
+			}
+		}
+		return '';
+	}
+
+	function presetRow( label, group, attribute, cssProperty, initial ) {
+		var list = BLOCK_PRESETS[ group ] || [];
+		if ( ! list.length ) {
+			return null;
+		}
+		var row = el( 'div', 'cve-field' );
+		row.appendChild( el( 'span', 'cve-field-label', label ) );
+
+		var select = document.createElement( 'select' );
+		select.className = 'cve-select';
+		var none = document.createElement( 'option' );
+		none.value = '';
+		none.textContent = '— theme default —';
+		select.appendChild( none );
+		list.forEach( function ( preset ) {
+			var option = document.createElement( 'option' );
+			option.value = preset.slug;
+			option.textContent = preset.name;
+			select.appendChild( option );
+		} );
+		select.value = initial || '';
+
+		select.addEventListener( 'change', function () {
+			var slug = select.value;
+			var attrs = {};
+			attrs[ attribute ] = slug;
+			recordBlockAttrs( attrs );
+			// Preview only. What gets stored is the slug above.
+			var styles = {};
+			styles[ cssProperty ] = slug ? presetValue( group, slug ) : '';
+			postToFrame( { type: 'preview-style', id: current.id, styles: styles } );
+		} );
+
+		row.appendChild( select );
+		return row;
+	}
+
+	// Attribute patches merge rather than replace: choosing a colour and then
+	// a size must not discard the colour, and recordPatch() replaces a patch
+	// of the same kind on the same target.
+	var pendingBlockAttrs = {};
+
+	function recordBlockAttrs( attrs ) {
+		pendingBlockAttrs = Object.assign( {}, pendingBlockAttrs, attrs );
+		recordPatch( { id: current.id, kind: 'set-block-attrs', attrs: Object.assign( {}, pendingBlockAttrs ) } );
+	}
+
+	// A block's own styling, as a flat map of dot-paths → values. Flat because
+	// that is what the rows write and what reads back cleanly; it is nested
+	// into a style object at the moment the patch is built.
+	var pendingBlockStyle = {};
+
+	// Which CSS property each stored path shows up as, so a choice can be
+	// previewed in the frame before anything is saved. Preview only — what is
+	// stored is the path above, and the server turns that into CSS with
+	// WordPress's own style engine.
+	var BLOCK_STYLE_CSS = {
+		'border.radius': 'borderRadius',
+		'border.width': 'borderWidth',
+		'border.style': 'borderStyle',
+		'border.color': 'borderColor',
+		'shadow': 'boxShadow',
+		'color.gradient': 'background',
+		'dimensions.minHeight': 'minHeight',
+		'typography.fontFamily': 'fontFamily',
+		'typography.fontSize': 'fontSize',
+		'typography.lineHeight': 'lineHeight',
+		'typography.letterSpacing': 'letterSpacing',
+		'typography.fontWeight': 'fontWeight',
+		'typography.fontStyle': 'fontStyle',
+		'typography.textDecoration': 'textDecoration',
+		'typography.textTransform': 'textTransform',
+		'typography.textAlign': 'textAlign',
+		'color.text': 'color',
+		'color.background': 'backgroundColor',
+		'spacing.padding.top': 'paddingTop',
+		'spacing.padding.right': 'paddingRight',
+		'spacing.padding.bottom': 'paddingBottom',
+		'spacing.padding.left': 'paddingLeft',
+		'spacing.margin.top': 'marginTop',
+		'spacing.margin.bottom': 'marginBottom',
+	};
+
+	function recordBlockStyle( path, value ) {
+		pendingBlockStyle[ path ] = ( '' === value || null === value ) ? null : value;
+		recordPatch( { id: current.id, kind: 'set-block-style', style: Object.assign( {}, pendingBlockStyle ) } );
+
+		var css = BLOCK_STYLE_CSS[ path ];
+		if ( css ) {
+			var styles = {};
+			// A spacing preset is stored as a token and expanded server-side;
+			// the frame needs the custom property to show anything.
+			styles[ css ] = ( 'string' === typeof value && 0 === value.indexOf( 'var:preset|' ) )
+				? 'var(--wp--preset--' + value.slice( 11 ).replace( /\|/g, '--' ) + ')'
+				: value;
+			postToFrame( { type: 'preview-style', id: current.id, styles: styles } );
+		}
+	}
+
+	// stepperRow/selectRow/colorRow all take a preview function; handing them
+	// this one is what lets block mode reuse the raw-HTML panel's controls
+	// instead of growing a parallel set that drifts.
+	function blockStyleWriter( path ) {
+		return function ( _key, value ) {
+			recordBlockStyle( path, value );
+		};
+	}
+
+	// One row that offers the theme's presets AND a value typed by hand,
+	// which is the pair Gutenberg offers. Choosing a preset stores a slug on
+	// the block; choosing Custom stores the value itself — the two are
+	// mutually exclusive and the server clears whichever was not chosen.
+	function presetOrCustomRow( label, group, attribute, path, cssProperty, target, kind ) {
+		var presets = BLOCK_PRESETS[ group ] || [];
+		var row = el( 'div', 'cve-field cve-field-stack' );
+		row.appendChild( el( 'span', 'cve-field-label', label ) );
+
+		var select = document.createElement( 'select' );
+		select.className = 'cve-select';
+		[ [ '', '— theme default —' ] ].concat(
+			presets.map( function ( p ) { return [ p.slug, p.name ]; } ),
+			[ [ '__custom__', 'Custom…' ] ]
+		).forEach( function ( pair ) {
+			var option = document.createElement( 'option' );
+			option.value = pair[ 0 ];
+			option.textContent = pair[ 1 ];
+			select.appendChild( option );
+		} );
+
+		var custom = document.createElement( 'input' );
+		custom.type = ( 'color' === kind ) ? 'color' : 'text';
+		custom.className = ( 'color' === kind ) ? 'cve-swatch' : 'cve-num';
+		custom.placeholder = ( 'color' === kind ) ? '' : 'e.g. 24px';
+
+		var stored = target.blockStyle && target.blockStyle[ path ];
+		if ( stored ) {
+			select.value = '__custom__';
+			custom.value = stored;
+		} else {
+			select.value = ( target.blockAttrs && target.blockAttrs[ attribute ] ) || '';
+		}
+		custom.hidden = '__custom__' !== select.value;
+
+		select.addEventListener( 'change', function () {
+			custom.hidden = '__custom__' !== select.value;
+			if ( '__custom__' === select.value ) {
+				custom.focus();
+				return;
+			}
+			// Back to a preset (or to nothing): the slug goes in the
+			// attribute and the hand-typed value is cleared, or the block
+			// would carry both spellings of one decision.
+			recordBlockStyle( path, null );
+			var attrs = {};
+			attrs[ attribute ] = select.value;
+			recordBlockAttrs( attrs );
+			var preview = {};
+			preview[ cssProperty ] = select.value ? presetValue( group, select.value ) : '';
+			postToFrame( { type: 'preview-style', id: current.id, styles: preview } );
+			// And the CLASS. WordPress writes its preset rules with
+			// !important, so leaving the old class on the block means the
+			// preview shows the value being replaced — the change reads as
+			// having done nothing until the page is saved.
+			postToFrame( { type: 'preview-class', id: current.id, kind: attribute, slug: select.value } );
+		} );
+		custom.addEventListener( 'change', function () {
+			var attrs = {};
+			attrs[ attribute ] = '';
+			recordBlockAttrs( attrs );
+			recordBlockStyle( path, custom.value.trim() );
+			// The preset's own class goes; the generic marker stays, which is
+			// what the save will store too.
+			postToFrame( { type: 'preview-class', id: current.id, kind: attribute, slug: '', custom: true } );
+		} );
+
+		row.appendChild( select );
+		row.appendChild( custom );
+		return row;
+	}
+
+	// Which screen the small-screen controls are currently writing for. Kept
+	// outside the panel so it survives re-rendering when a block is selected
+	// again — somebody tuning a phone layout selects one block after another
+	// and should not have to keep saying so.
+	var currentScreen = 'mobile';
+
+	/**
+	 * Different values on smaller screens.
+	 *
+	 * A section of its own rather than a mode the whole panel switches into.
+	 * A mode is what page builders do, and it is how somebody spends ten
+	 * minutes styling a phone layout that was quietly going to the desktop
+	 * one: there is no way to tell, from a row of controls, which screen it
+	 * is talking about. Here the controls that CAN differ per screen say so
+	 * by sitting under a heading that names the screen, and everything above
+	 * means what it has always meant.
+	 */
+	function responsiveSection( target ) {
+		var wrap = document.createDocumentFragment();
+		wrap.appendChild( el( 'div', 'cve-section', 'ON SMALLER SCREENS' ) );
+
+		var tabs = el( 'div', 'cve-screens' );
+		[ [ 'tablet', 'Tablet' ], [ 'mobile', 'Phone' ] ].forEach( function ( pair ) {
+			var button = el( 'button', 'cve-screen', pair[ 1 ] );
+			button.classList.toggle( 'on', currentScreen === pair[ 0 ] );
+			button.addEventListener( 'click', function () {
+				currentScreen = pair[ 0 ];
+				// Re-render so every row below shows THIS screen's values.
+				if ( current ) {
+					openPanel( current );
+				}
+			} );
+			tabs.appendChild( button );
+		} );
+		wrap.appendChild( tabs );
+
+		var rules = ( target.responsive && target.responsive[ currentScreen ] ) || {};
+		var write = function ( path ) {
+			return function ( _key, value ) {
+				recordPatch( {
+					id: current.id,
+					kind: 'set-responsive',
+					breakpoint: currentScreen,
+					path: path,
+					value: value || '',
+				} );
+			};
+		};
+
+		var pad = el( 'div', 'cve-grid' );
+		[ 'top', 'right', 'bottom', 'left' ].forEach( function ( side ) {
+			pad.appendChild( stepperRow( side, 'spacing.padding.' + side,
+				rules[ 'spacing.padding.' + side ] || '', 4, 'px', write( 'spacing.padding.' + side ) ) );
+		} );
+		wrap.appendChild( el( 'div', 'cve-sublabel', 'Padding' ) );
+		wrap.appendChild( pad );
+
+		var margin = el( 'div', 'cve-grid' );
+		[ 'top', 'bottom' ].forEach( function ( side ) {
+			margin.appendChild( stepperRow( side, 'spacing.margin.' + side,
+				rules[ 'spacing.margin.' + side ] || '', 4, 'px', write( 'spacing.margin.' + side ) ) );
+		} );
+		wrap.appendChild( el( 'div', 'cve-sublabel', 'Margin' ) );
+		wrap.appendChild( margin );
+
+		var sizes = ( BLOCK_PRESETS.fontSizes || [] ).map( function ( p ) {
+			return 'var:preset|font-size|' + p.slug;
+		} );
+		wrap.appendChild( selectRow( 'Text size', 'typography.fontSize', [ '' ].concat( sizes ),
+			rules['typography.fontSize'] || '', function ( value ) {
+				return value ? value.split( '|' ).pop() : '— as above —';
+			}, write( 'typography.fontSize' ) ) );
+
+		wrap.appendChild( selectRow( 'Align', 'typography.textAlign', [ '', 'left', 'center', 'right' ],
+			rules['typography.textAlign'] || '', null, write( 'typography.textAlign' ) ) );
+
+		var hideRow = el( 'label', 'cve-checkrow' );
+		var hide = document.createElement( 'input' );
+		hide.type = 'checkbox';
+		hide.checked = 'none' === rules.display;
+		hide.addEventListener( 'change', function () {
+			write( 'display' )( 'display', hide.checked ? 'none' : '' );
+		} );
+		hideRow.appendChild( hide );
+		hideRow.appendChild( document.createTextNode( ' Hide this block on ' + ( 'mobile' === currentScreen ? 'phones' : 'tablets' ) ) );
+		wrap.appendChild( hideRow );
+
+		wrap.appendChild(
+			el( 'p', 'cve-note', 'These apply only below ' + ( 'mobile' === currentScreen ? '600px' : '781px' ) + '. Everything above this heading applies to every screen. Use the device buttons at the top to see the result.' )
+		);
+		return wrap;
+	}
+
+	// A spacer is a measured gap with nothing in it — aria-hidden, no content,
+	// nothing a reader could see move. It takes a class perfectly well (every
+	// core block does), so this is a judgement about usefulness rather than
+	// about validity: a control that would visibly do nothing is not offered.
+	var MOTION_LESS = [ 'core/spacer' ];
+
+	// Which movement a block is currently carrying, read from its classes.
+	function tokenOn( target, prefix ) {
+		var classes = ( target.blockClassName || '' ).split( /\s+/ );
+		for ( var i = 0; i < classes.length; i++ ) {
+			if ( classes[ i ].indexOf( 'cve-' + prefix + '-' ) === 0 ) {
+				return classes[ i ].slice( ( 'cve-' + prefix + '-' ).length );
+			}
+		}
+		return '';
+	}
+
+	function blockStyleSection( target ) {
+		var section = document.createDocumentFragment();
+
+		// What this block type can be styled for, straight from the block
+		// registry via the server. Offering a control the block has no support
+		// for writes markup its own save() would not produce — so the panel
+		// asks rather than assumes, and a block WordPress does not know
+		// offers nothing.
+		var supported = ( config.blockSupports || {} )[ target.blockName ] || [];
+		var can = function ( path ) {
+			return supported.indexOf( path ) !== -1;
+		};
+		var canAny = function ( prefix ) {
+			return supported.some( function ( path ) {
+				return path.indexOf( prefix ) === 0;
+			} );
+		};
+
+		var group = function ( title ) {
+			section.appendChild( el( 'div', 'cve-section', title ) );
+		};
+		var grid = function () {
+			return el( 'div', 'cve-grid' );
+		};
+
+		// core/spacer's height is the block, not a style on it.
+		if ( 'spacer' === target.veCapability ) {
+			group( 'HEIGHT' );
+			section.appendChild( stepperRow( 'Height', 'height',
+				( target.blockStyle && target.blockStyle.height ) || '100px', 4, 'px', function ( _key, value ) {
+					recordBlockAttrs( { height: value } );
+				} ) );
+		}
+
+		if ( canAny( 'typography.' ) ) {
+			group( 'TYPOGRAPHY' );
+			if ( can( 'typography.fontFamily' ) ) {
+				section.appendChild( presetOrCustomRow( 'Font', 'fontFamily', 'fontFamily', 'typography.fontFamily', 'fontFamily', target, 'text' ) );
+
+				// The picker that puts a Google family into the list above. It
+				// writes to the site's typeface presets, so what lands on the
+				// block is a slug like any other — not a font name pinned to
+				// one element that no stylesheet knows about.
+				var addFont = el( 'button', 'cve-btn cve-btn-light cve-btn-block cve-addfont', '＋ Add Google fonts' );
+				addFont.addEventListener( 'click', openFontPicker );
+				section.appendChild( addFont );
+			}
+
+			if ( can( 'typography.fontSize' ) ) {
+				section.appendChild( presetOrCustomRow( 'Size', 'fontSizes', 'fontSize', 'typography.fontSize', 'fontSize', target, 'text' ) );
+			}
+
+			var typo = grid();
+			if ( can( 'typography.fontWeight' ) ) {
+				typo.appendChild( selectRow( 'Weight', 'typography.fontWeight', [ '', '300', '400', '500', '600', '700' ],
+					target.blockStyle && target.blockStyle['typography.fontWeight'], null, blockStyleWriter( 'typography.fontWeight' ) ) );
+			}
+			if ( can( 'typography.textTransform' ) ) {
+				typo.appendChild( selectRow( 'Case', 'typography.textTransform', [ '', 'none', 'uppercase', 'lowercase', 'capitalize' ],
+					target.blockStyle && target.blockStyle['typography.textTransform'], null, blockStyleWriter( 'typography.textTransform' ) ) );
+			}
+			if ( typo.childNodes.length ) {
+				section.appendChild( typo );
+			}
+
+			var metrics = grid();
+			if ( can( 'typography.lineHeight' ) ) {
+				metrics.appendChild( stepperRow( 'Line', 'typography.lineHeight',
+					( target.blockStyle && target.blockStyle['typography.lineHeight'] ) || '', 0.1, '', blockStyleWriter( 'typography.lineHeight' ) ) );
+			}
+			if ( can( 'typography.letterSpacing' ) ) {
+				metrics.appendChild( stepperRow( 'Tracking', 'typography.letterSpacing',
+					( target.blockStyle && target.blockStyle['typography.letterSpacing'] ) || '', 0.01, 'em', blockStyleWriter( 'typography.letterSpacing' ) ) );
+			}
+			if ( metrics.childNodes.length ) {
+				section.appendChild( metrics );
+			}
+
+			var formats = blockFormatRow( target, can );
+			if ( formats ) {
+				section.appendChild( formats );
+			}
+
+			if ( can( 'typography.textAlign' ) ) {
+				section.appendChild( selectRow( 'Align', 'typography.textAlign', [ '', 'left', 'center', 'right' ],
+					( target.blockStyle && target.blockStyle['typography.textAlign'] ) || ( target.blockAttrs && target.blockAttrs.textAlign ) || '',
+					null, blockStyleWriter( 'typography.textAlign' ) ) );
+			}
+
+			if ( 'core/heading' === target.blockName ) {
+				section.appendChild( selectRow( 'Level', 'level', [ '1', '2', '3', '4', '5', '6' ],
+					String( target.headingLevel || 2 ), null, function ( _key, value ) {
+						recordBlockAttrs( { level: value } );
+					} ) );
+			}
+		}
+
+		// Movement is a class, so it is offered wherever a block takes classes
+		// — which is very nearly everywhere. What it must NOT be offered on
+		// is a block whose own type refuses extra classes, and the server
+		// refuses those in turn.
+		if ( target.blockName && MOTION_LESS.indexOf( target.blockName ) === -1 ) {
+			group( 'MOVEMENT' );
+			section.appendChild( selectRow( 'On scroll', 'veAnimation',
+				[ '', 'fade', 'fade-up', 'fade-down', 'zoom', 'slide-left', 'slide-right' ],
+				tokenOn( target, 'anim' ), null, function ( _key, value ) {
+					recordBlockAttrs( { veAnimation: value } );
+				} ) );
+			section.appendChild( selectRow( 'On hover', 'veHover',
+				[ '', 'lift', 'grow', 'soften', 'dim' ],
+				tokenOn( target, 'hover' ), null, function ( _key, value ) {
+					recordBlockAttrs( { veHover: value } );
+				} ) );
+			section.appendChild(
+				el( 'p', 'cve-note', 'Movement is stored as an ordinary CSS class, so the page stays valid WordPress content — switch this plugin off and it simply stops moving.' )
+			);
+		}
+
+		if ( config.blockMode && target.veCapability && 'none' !== target.veCapability ) {
+			section.appendChild( responsiveSection( target ) );
+		}
+
+		if ( canAny( 'color.' ) ) {
+			group( 'COLOURS' );
+			if ( can( 'color.text' ) ) {
+				section.appendChild( presetOrCustomRow( 'Text', 'colors', 'textColor', 'color.text', 'color', target, 'color' ) );
+			}
+			if ( can( 'color.background' ) ) {
+				section.appendChild( presetOrCustomRow( 'Background', 'colors', 'backgroundColor', 'color.background', 'backgroundColor', target, 'color' ) );
+			}
+			if ( can( 'color.gradient' ) ) {
+				// A gradient IS the background — setting one replaces a flat
+				// colour, which is why the two sit together.
+				section.appendChild(
+					presetOrCustomRow( 'Gradient', 'gradients', 'gradient', 'color.gradient', 'background', target, 'text' )
+				);
+			}
+		}
+
+		if ( canAny( 'border.' ) ) {
+			group( 'BORDER' );
+			var border = grid();
+			if ( can( 'border.radius' ) ) {
+				border.appendChild( stepperRow( 'Radius', 'border.radius',
+					( target.blockStyle && target.blockStyle['border.radius'] ) || '', 2, 'px',
+					blockStyleWriter( 'border.radius' ) ) );
+			}
+			if ( can( 'border.width' ) ) {
+				border.appendChild( stepperRow( 'Width', 'border.width',
+					( target.blockStyle && target.blockStyle['border.width'] ) || '', 1, 'px',
+					blockStyleWriter( 'border.width' ) ) );
+			}
+			if ( border.childNodes.length ) {
+				section.appendChild( border );
+			}
+			if ( can( 'border.style' ) ) {
+				section.appendChild( selectRow( 'Line', 'border.style', [ '', 'solid', 'dashed', 'dotted' ],
+					( target.blockStyle && target.blockStyle['border.style'] ) || '', null,
+					blockStyleWriter( 'border.style' ) ) );
+			}
+			if ( can( 'border.color' ) ) {
+				section.appendChild( presetOrCustomRow( 'Colour', 'colors', 'borderColor', 'border.color', 'borderColor', target, 'color' ) );
+			}
+		}
+
+		if ( can( 'shadow' ) ) {
+			group( 'SHADOW' );
+			// WordPress's own five, and a typed value for anything else. There
+			// is no shadow attribute on a block: both spellings live at
+			// style.shadow, so one control serves them.
+			section.appendChild( presetTokenRow( 'Shadow', 'shadow', 'shadow', target, 'e.g. 4px 4px 10px #0002' ) );
+		}
+
+		if ( can( 'spacing.padding' ) ) {
+			// The same decision, sent to the canvas: a block whose padding is
+			// its own gets grab bars on the page itself. Asked for from here
+			// because this is where the block registry's answer already is —
+			// the canvas keeping its own copy is how the two come to disagree.
+			postToFrame( { type: 'show-handles', id: target.id } );
+
+			// Spacing has no slug attribute on a block — a preset and a typed
+			// value both live in the same place — so these rows offer the
+			// theme's steps and a free value through one control.
+			group( 'PADDING' );
+			var pad = grid();
+			[ 'top', 'right', 'bottom', 'left' ].forEach( function ( side ) {
+				pad.appendChild( spacingRow( side, 'spacing.padding.' + side, target ) );
+			} );
+			section.appendChild( pad );
+		}
+
+		if ( can( 'spacing.blockGap' ) || canAny( 'dimensions.' ) || can( 'position.type' ) ) {
+			group( 'LAYOUT' );
+			if ( can( 'spacing.blockGap' ) ) {
+				// The space BETWEEN the blocks inside this one. Stored on the
+				// block and applied by WordPress's layout rules at render —
+				// nothing about it is written into the markup, which is why
+				// the writer keeps it out of the style attribute.
+				section.appendChild( presetTokenRow( 'Gap inside', 'spacing.blockGap', 'spacing', target, 'e.g. 2rem' ) );
+			}
+			if ( can( 'dimensions.minHeight' ) ) {
+				section.appendChild( stepperRow( 'Min height', 'dimensions.minHeight',
+					( target.blockStyle && target.blockStyle['dimensions.minHeight'] ) || '', 10, 'px',
+					blockStyleWriter( 'dimensions.minHeight' ) ) );
+			}
+			if ( can( 'dimensions.aspectRatio' ) ) {
+				section.appendChild( selectRow( 'Shape', 'dimensions.aspectRatio',
+					[ '', '16/9', '4/3', '3/2', '1', '3/4', '9/16' ],
+					( target.blockStyle && target.blockStyle['dimensions.aspectRatio'] ) || '', null,
+					blockStyleWriter( 'dimensions.aspectRatio' ) ) );
+			}
+			if ( can( 'position.type' ) ) {
+				section.appendChild( selectRow( 'Stick to top', 'position.type', [ '', 'sticky' ],
+					( target.blockStyle && target.blockStyle['position.type'] ) || '', null,
+					function ( _key, value ) {
+						// The offset travels with the choice: a sticky block
+						// with no top is stuck to nothing.
+						recordBlockStyle( 'position.type', value );
+						recordBlockStyle( 'position.top', value ? '0px' : '' );
+					} ) );
+			}
+		}
+
+		if ( can( 'spacing.margin' ) ) {
+			// Top and bottom only: several blocks declare margin as those two
+			// sides alone (core/group, core/spacer), and no block this editor
+			// touches has a horizontal margin worth offering.
+			group( 'MARGIN' );
+			var margin = grid();
+			[ 'top', 'bottom' ].forEach( function ( side ) {
+				margin.appendChild( spacingRow( side, 'spacing.margin.' + side, target ) );
+			} );
+			section.appendChild( margin );
+		}
+
+		section.appendChild(
+			el( 'p', 'cve-note', 'Pick one of the theme’s own values where you can — those follow the design if it ever changes. Custom… is there for the one-off.' )
+		);
+		return section;
+	}
+
+	/**
+	 * Move, copy or remove a whole section of the page.
+	 *
+	 * These act on the SECTION, never on what was clicked. A person selects a
+	 * paragraph to change its words and the buttons here would remove the
+	 * whole band it sits in — so the section is named on the row, and the
+	 * confirmation names it too. An unlabelled bin that deletes more than was
+	 * selected is the one control in this panel that cannot be undone by
+	 * looking at the page.
+	 *
+	 * One operation per save, and the frame reloads afterwards: each of these
+	 * renumbers everything below it.
+	 */
+	function blockStructureSection( target ) {
+		var section = document.createDocumentFragment();
+		var address = target.sectionAddress;
+		var name    = target.sectionName || '';
+		var label   = blockTitle( name );
+
+		section.appendChild( el( 'div', 'cve-section', 'SECTION' ) );
+		section.appendChild(
+			el( 'p', 'cve-note cve-structure-note', 'These act on the whole ' + label.toLowerCase() + ' — the band of the page this sits in, not just what is selected.' )
+		);
+
+		var row = el( 'div', 'cve-formatrow cve-structure' );
+		[
+			{ glyph: '↑', title: 'Move ' + label + ' up', op: { op: 'move', direction: 'up' } },
+			{ glyph: '↓', title: 'Move ' + label + ' down', op: { op: 'move', direction: 'down' } },
+			{ glyph: '⧉', title: 'Duplicate ' + label, op: { op: 'duplicate' } },
+		].forEach( function ( button ) {
+			var node = el( 'button', 'cve-fmt', button.glyph );
+			node.title = button.title;
+			node.addEventListener( 'click', function () {
+				sendBlockStructure( Object.assign( { block: address, expect: name }, button.op ) );
+			} );
+			row.appendChild( node );
+		} );
+
+		var remove = el( 'button', 'cve-fmt cve-fmt-danger', '🗑' );
+		remove.title = 'Remove ' + label;
+		remove.addEventListener( 'click', function () {
+			// Named, because the thing being removed is usually bigger than
+			// the thing that was clicked.
+			if ( ! window.confirm( 'Remove this whole ' + label.toLowerCase() + ' from the page?' ) ) {
+				return;
+			}
+			sendBlockStructure( { op: 'remove', block: address, expect: name } );
+		} );
+		row.appendChild( remove );
+		section.appendChild( row );
+
+		var add = el( 'button', 'cve-btn cve-btn-light cve-btn-block', '＋ Add a section' );
+		add.addEventListener( 'click', function () {
+			openSectionBrowser( address, name );
+		} );
+		section.appendChild( add );
+		return section;
+	}
+
+	// core/media-text → "Media text". Not the block's registered title, which
+	// the canvas has no copy of, but close enough to name what a button acts
+	// on — and it is the naming that makes the bin button safe.
+	function blockTitle( name ) {
+		var bare = String( name || '' ).replace( /^core\//, '' ).replace( /-/g, ' ' );
+		return bare ? bare.charAt( 0 ).toUpperCase() + bare.slice( 1 ) : 'section';
+	}
+
+	/**
+	 * Bold / italic / underline, written as block typography rather than as
+	 * inline CSS. There is no block support for superscript or subscript, so
+	 * unlike the raw-HTML panel this offers three buttons, not five.
+	 */
+	function blockFormatRow( target, can ) {
+		var row   = el( 'div', 'cve-field' );
+		var style = target.blockStyle || {};
+		row.appendChild( el( 'span', 'cve-field-label', 'Format' ) );
+		var buttons = el( 'div', 'cve-formatrow' );
+
+		[
+			{ glyph: 'B', title: 'Bold', path: 'typography.fontWeight', on: '700' },
+			{ glyph: 'I', title: 'Italic', path: 'typography.fontStyle', on: 'italic' },
+			{ glyph: 'U', title: 'Underline', path: 'typography.textDecoration', on: 'underline' },
+		].filter( function ( format ) {
+			return can( format.path );
+		} ).forEach( function ( format ) {
+			var button = el( 'button', 'cve-fmt', format.glyph );
+			button.title = format.title;
+			var active = style[ format.path ] === format.on;
+			// `on`, which is what the stylesheet knows — the raw-HTML panel's
+			// format buttons have always used it.
+			button.classList.toggle( 'on', active );
+			button.addEventListener( 'click', function () {
+				active = ! active;
+				button.classList.toggle( 'on', active );
+				// Turning one OFF writes empty rather than the opposite value:
+				// the stylesheet's own answer should come back, not "normal"
+				// pinned over a heading the theme means to be bold.
+				recordBlockStyle( format.path, active ? format.on : '' );
+			} );
+			buttons.appendChild( button );
+		} );
+
+		if ( ! buttons.childNodes.length ) {
+			return null;
+		}
+		row.appendChild( buttons );
+		return row;
+	}
+
+	/**
+	 * One spacing side: the theme's steps, or a length typed by hand.
+	 */
+	function spacingRow( label, path, target ) {
+		return presetTokenRow( label, path, 'spacing', target, 'e.g. 24px' );
+	}
+
+	/**
+	 * A control for a value stored as a preset TOKEN rather than as a slug
+	 * attribute.
+	 *
+	 * Spacing and shadow both work this way: there is no `spacing` or `shadow`
+	 * attribute on a block, so a chosen step and a typed value live in the
+	 * same place — `var:preset|spacing|50` or `24px`, one field either way.
+	 */
+	function presetTokenRow( label, path, group, target, placeholder ) {
+		var steps = BLOCK_PRESETS[ group ] || [];
+		var row   = el( 'div', 'cve-field' );
+		row.appendChild( el( 'span', 'cve-field-label', label ) );
+
+		var select = document.createElement( 'select' );
+		select.className = 'cve-select';
+		[ [ '', '—' ] ].concat(
+			steps.map( function ( step ) { return [ 'var:preset|' + group + '|' + step.slug, step.name ]; } ),
+			[ [ '__custom__', 'Custom…' ] ]
+		).forEach( function ( pair ) {
+			var option = document.createElement( 'option' );
+			option.value = pair[ 0 ];
+			option.textContent = pair[ 1 ];
+			select.appendChild( option );
+		} );
+
+		var custom = document.createElement( 'input' );
+		custom.type = 'text';
+		custom.className = 'cve-num';
+		custom.placeholder = placeholder || 'e.g. 24px';
+
+		var stored = ( target.blockStyle && target.blockStyle[ path ] ) || '';
+		if ( stored && 0 === stored.indexOf( 'var:preset|' ) ) {
+			select.value = stored;
+		} else if ( stored ) {
+			select.value = '__custom__';
+			custom.value = stored;
+		}
+		custom.hidden = '__custom__' !== select.value;
+
+		select.addEventListener( 'change', function () {
+			custom.hidden = '__custom__' !== select.value;
+			if ( '__custom__' === select.value ) {
+				custom.focus();
+				return;
+			}
+			recordBlockStyle( path, select.value );
+		} );
+		custom.addEventListener( 'change', function () {
+			recordBlockStyle( path, custom.value.trim() );
+		} );
+
+		row.appendChild( select );
+		row.appendChild( custom );
+		return row;
+	}
+
+	function selectRow( label, key, options, initial, mapValue, previewFn ) {
+		previewFn = previewFn || previewStyle;
 		var row = el( 'div', 'cve-field' );
 		row.appendChild( el( 'span', 'cve-field-label', label ) );
 		var select = document.createElement( 'select' );
@@ -2293,7 +3296,7 @@
 		}
 		select.value = initial || options[ 0 ];
 		select.addEventListener( 'change', function () {
-			previewStyle( key, mapValue ? mapValue( select.value ) : select.value );
+			previewFn( key, mapValue ? mapValue( select.value ) : select.value );
 		} );
 		row.appendChild( select );
 		return row;
@@ -2481,6 +3484,8 @@
 		closePanelSilent();
 		current = target;
 		pendingStyles = {};
+		pendingBlockAttrs = {};
+		pendingBlockStyle = {};
 
 		panel = el( 'div', 'cve-panel' );
 
@@ -2700,16 +3705,32 @@
 					img.src = att.url;
 					current.fields.src = att.url;
 					postToFrame( { type: 'set-image', id: current.id, src: att.url, alt: current.fields.alt } );
-					recordPatch( { id: current.id, kind: 'set-image', src: att.url, alt: current.fields.alt } );
+					// The attachment's own id rides along. Raw HTML has no use
+					// for it, but a core/image block records which attachment
+					// it shows — in its attributes and in a wp-image-{id}
+					// class — and a picture swapped without it opens in
+					// WordPress offering to replace a file that has gone.
+					recordPatch( { id: current.id, kind: 'set-image', src: att.url, alt: current.fields.alt, attachmentId: att.id } );
 				} );
 				mediaFrame.open();
 			} );
 			panel.appendChild( pick );
 
-			// Swap the <img> for a <video> using a library video. The current
+			// Swap the <img> for a <video> using an EXISTING library video —
+			// the same img->video conversion the AI video job produces, just
+			// with a hand-picked source instead of a generated one. The current
 			// image becomes the poster so the element keeps a still frame
 			// before playback.
-			var pickVideo = el( 'button', 'cve-btn', 'Replace with video from Media Library' );
+			//
+			// Raw HTML only. A core/image block has no video counterpart, and
+			// the change it queues cannot be translated into a block patch —
+			// so a page saved after using it had EVERY pending change refused,
+			// not just this one. It sat directly beneath "Choose image from
+			// Media Library", opened an empty picker on a site with no videos,
+			// and was the likeliest thing to click when a picture would not
+			// change.
+			var pickVideo = config.blockMode ? null : el( 'button', 'cve-btn', 'Replace with video from Media Library' );
+			if ( pickVideo ) {
 			pickVideo.addEventListener( 'click', function () {
 				var targetId = current.id;
 				var poster = current.fields.src;
@@ -2721,6 +3742,7 @@
 				mediaFrame.open();
 			} );
 			panel.appendChild( pickVideo );
+			}
 			panel.appendChild(
 				textRow( 'Alt', target.fields.alt || '', function ( value ) {
 					current.fields.alt = value;
@@ -2780,14 +3802,18 @@
 
 			// ---- Image hosted somewhere else ----
 			// A converted design routinely points at a CDN or a stock-photo
-			// host, which leaves the page depending on someone else's server
-			// staying up. One click copies the image into this site's Media
-			// Library and repoints the markup.
+			// host, and the AI tools refuse such a source on purpose: they only
+			// read files this site serves itself, because an endpoint that
+			// fetches any URL it is handed is a way to read arbitrary files and
+			// probe the server's own network. That leaves the owner stuck for a
+			// reason they cannot act on, so offer the action instead of the
+			// explanation — one click copies the image into this site's Media
+			// Library and repoints the markup, after which every tool works.
 			var srcIsRemote = /^https?:\/\//i.test( target.fields.src || '' )
 				&& 0 !== ( target.fields.src || '' ).indexOf( window.location.origin );
 			if ( srcIsRemote ) {
 				var remoteNote = el( 'p', 'cve-note',
-					'This image is hosted on another site, so the page depends on that server staying up. Import it into your Media Library to serve it yourself.' );
+					'This image is hosted on another site, so it cannot be AI-edited or turned into video from here. Import it and those become available.' );
 				panel.appendChild( remoteNote );
 				var importBtn = el( 'button', 'cve-btn cve-btn-block', 'Import image into this site' );
 				importBtn.addEventListener( 'click', function () {
@@ -2809,7 +3835,7 @@
 							// is left untouched.
 							postToFrame( { type: 'set-image', id: targetId, src: res.url, alt: altNow } );
 							recordPatch( { id: targetId, kind: 'set-image', src: res.url, alt: altNow } );
-							remoteNote.textContent = 'Imported into this site — it is served from your own Media Library now. Save to keep the change.';
+							remoteNote.textContent = 'Imported into this site — the page no longer depends on the original server. Save to keep the change.';
 							importBtn.remove();
 						} )
 						.catch( function ( err ) {
@@ -2820,9 +3846,15 @@
 				} );
 				panel.appendChild( importBtn );
 			}
+
 		}
 
-		if ( target.kind === 'video' ) {
+		// Raw HTML only, for the same reason as the button above: none of the
+		// changes this branch queues — swapping a source, a scroll video,
+		// converting back to a picture — can be expressed as a block patch, so
+		// using one refuses the whole save. A block page has no such element
+		// to select anyway; the gate says so rather than relying on it.
+		if ( ! config.blockMode && target.kind === 'video' ) {
 			var vid = document.createElement( 'video' );
 			vid.className = 'cve-video-preview';
 			vid.muted = true;
@@ -3036,7 +4068,11 @@
 		// field is both at once — the <h1> around the article title, the card
 		// around a prev/next link — and it is the only handle on that part of
 		// the template, so it gets the full set rather than half of it.
-		if ( target.kind === 'container' || target.holdsField ) {
+		// Not in block mode. These write raw CSS declarations, which on a block
+		// page have nowhere to go: blockPatchesFrom() cannot translate them and
+		// refuses the whole queue at Save. A block's own box controls come from
+		// blockStyleSection() below, built from what the block supports.
+		if ( ! config.blockMode && ( target.kind === 'container' || target.holdsField ) ) {
 			panel.appendChild( el( 'div', 'cve-section', 'BACKGROUND' ) );
 			panel.appendChild( colorRow( 'Color', 'backgroundColor', target.styles.backgroundColor ) );
 			var contGrid = el( 'div', 'cve-grid' );
@@ -3115,7 +4151,19 @@
 			);
 		}
 
-		if ( target.kind === 'text' || target.kind === 'link' ) {
+		if ( config.blockMode && target.sectionAddress ) {
+			panel.appendChild( blockStructureSection( target ) );
+		}
+
+		// Every addressable block, not only the ones with words in them: a
+		// group's padding and a spacer's height are the whole reason those
+		// blocks are selectable at all.
+		if ( config.blockMode && target.veCapability && 'none' !== target.veCapability ) {
+			panel.appendChild( blockStyleSection( target ) );
+			if ( target.kind === 'text' && target.editableNow ) {
+				panel.appendChild( el( 'p', 'cve-note', 'Edit text directly in the page — Enter commits, Esc cancels.' ) );
+			}
+		} else if ( target.kind === 'text' || target.kind === 'link' ) {
 			panel.appendChild( el( 'div', 'cve-section', 'TYPOGRAPHY' ) );
 			panel.appendChild(
 				selectRow( 'Font', 'fontFamily', fontOptions(), target.styles.fontFamily, fontValue )
@@ -3268,13 +4316,20 @@
 
 		// Footer: delete · reset · Cancel / Save
 		var foot = el( 'div', 'cve-foot' );
-		var trash = el( 'button', 'cve-icon', '🗑' );
-		trash.title = 'Delete element';
-		trash.addEventListener( 'click', function () {
-			postToFrame( { type: 'remove', id: current.id } );
-			recordPatch( { id: current.id, kind: 'remove-element' } );
-			closePanelSilent();
-		} );
+		// Deleting is a structural edit to the document. On a raw-HTML page
+		// that is one string operation; on a block page it means removing a
+		// node from the parsed tree, which the store does not yet express —
+		// so the button is withheld rather than offered and then refused at
+		// Save, taking everything else in the queue down with it.
+		var trash = config.blockMode ? null : el( 'button', 'cve-icon', '🗑' );
+		if ( trash ) {
+			trash.title = 'Delete element';
+			trash.addEventListener( 'click', function () {
+				postToFrame( { type: 'remove', id: current.id } );
+				recordPatch( { id: current.id, kind: 'remove-element' } );
+				closePanelSilent();
+			} );
+		}
 		var reset = el( 'button', 'cve-icon', '↺' );
 		reset.title = 'Reset';
 		reset.addEventListener( 'click', function () {
@@ -3318,7 +4373,9 @@
 			postToFrame( { type: 'finish-text', commit: true } );
 			closePanelSilent();
 		} );
-		foot.appendChild( trash );
+		if ( trash ) {
+			foot.appendChild( trash );
+		}
 		foot.appendChild( reset );
 		foot.appendChild( el( 'span', 'cve-flex' ) );
 		foot.appendChild( cancel );
@@ -3347,6 +4404,30 @@
 		if ( ! data || data.ns !== 'clara-ve' ) {
 			return;
 		}
+		if ( data.type === 'handle-drag' ) {
+			// A drag on the page ends as the same change the panel's own
+			// padding field makes, queued the same way and saved by the same
+			// path. The canvas has already shown the result; this is what
+			// makes it survive.
+			if ( current && current.id === data.id ) {
+				pendingBlockStyle[ data.path ] = data.value;
+				recordPatch( {
+					id: data.id,
+					kind: 'set-block-style',
+					style: Object.assign( {}, pendingBlockStyle ),
+				} );
+				// The panel is the other half of this control, and it was
+				// built from what the block looked like when it was selected.
+				// Without this the field would still show the value the drag
+				// replaced, and the two halves would disagree about one
+				// number in front of the person who just changed it.
+				current.blockStyle = current.blockStyle || {};
+				current.blockStyle[ data.path ] = data.value;
+				openPanel( current );
+			}
+			return;
+		}
+
 		if ( data.type === 'select' ) {
 			openPanel( data.target );
 		} else if ( data.type === 'text-commit' ) {
@@ -3423,6 +4504,7 @@
 			// icon would be trusted as ground truth while the newly loaded
 			// frame quietly defaulted to its own ON state underneath it.
 			postToFrame( { type: 'edit-mode', enabled: editModeOn } );
+			// The frame (re)loaded — page switch, save-reload, or first boot.
 		}
 	} );
 
@@ -3581,9 +4663,10 @@
 		seoToggle.setAttribute( 'aria-pressed', open ? 'true' : 'false' );
 		if ( open ) {
 			// The docked panels are siblings of the canvas, each taking a fixed
-			// 320px out of it. Both at once leaves the preview too narrow to be
-			// a preview of anything, so opening one closes the other. Only ever
-			// on the way OPEN, which is also what keeps this from recursing.
+			// 320px out of it. Two could coexist; a third cannot — on a 1440px
+			// screen it leaves the preview under 500px wide, which is no longer a
+			// preview of anything. So opening one closes the other. Only ever on
+			// the way OPEN, which is also what keeps this from recursing.
 			setHistoryOpen( false );
 			loadSeo();
 		}
@@ -3819,6 +4902,216 @@
 		} );
 	}
 
+	// The queue this editor keeps, expressed as operations the block store
+	// understands. Deliberately a whitelist that REFUSES what it cannot
+	// express rather than dropping it: a save that silently discards half of
+	// what somebody did is the worst of the available outcomes, and several
+	// of the kinds below are structural edits to a source string that a
+	// block document has no equivalent for.
+	function blockPatchesFrom( queue ) {
+		var out = [];
+		for ( var i = 0; i < queue.length; i++ ) {
+			var patch = queue[ i ];
+			var address = String( patch.id || '' ).replace( /^path-/, '' );
+			if ( ! address ) {
+				return { ok: false, error: 'A change arrived without a target.' };
+			}
+			if ( 'set-text' === patch.kind ) {
+				out.push( { block: address, op: 'set-text', html: escapeForBlock( patch.value ) } );
+			} else if ( 'set-inner-html' === patch.kind ) {
+				out.push( { block: address, op: 'set-text', html: patch.value } );
+			} else if ( 'set-link' === patch.kind ) {
+				out.push( { block: address, op: 'set-link', href: patch.href, target: patch.target || '' } );
+			} else if ( 'set-image' === patch.kind ) {
+				out.push( {
+					block: address,
+					op: 'set-image',
+					url: patch.src,
+					alt: patch.alt,
+					id: patch.attachmentId || 0,
+					// Where the picture leads travels on the same patch the
+					// picture does — see the note at recordPatch. Undefined
+					// means "not part of this edit"; empty string means "the
+					// person cleared it".
+					link: 'string' === typeof patch.link ? patch.link : undefined,
+					linkTarget: 'string' === typeof patch.linkTarget ? patch.linkTarget : undefined,
+				} );
+			} else if ( 'set-block-attrs' === patch.kind ) {
+				out.push( { block: address, op: 'set-attrs', attrs: patch.attrs || {} } );
+			} else if ( 'set-responsive' === patch.kind ) {
+				out.push( {
+					block: address,
+					op: 'set-responsive',
+					breakpoint: patch.breakpoint,
+					path: patch.path,
+					value: patch.value,
+				} );
+			} else if ( 'set-block-style' === patch.kind ) {
+				// The panel keeps styling as a flat map of dot-paths because
+				// that is what its rows read and write; the store wants the
+				// nested shape a block actually holds.
+				out.push( { block: address, op: 'set-style', style: nestStyle( patch.style || {} ) } );
+			} else {
+				return {
+					ok: false,
+					error: 'This page is made of blocks, and “' + patch.kind.replace( /-/g, ' ' ) + '” is not something that can be changed here yet. Open the page in WordPress for that.',
+				};
+			}
+		}
+		return { ok: true, patches: out };
+	}
+
+	// { 'typography.fontSize': '24px' } → { typography: { fontSize: '24px' } }
+	function nestStyle( flat ) {
+		var nested = {};
+		Object.keys( flat ).forEach( function ( path ) {
+			var steps = path.split( '.' );
+			var node = nested;
+			steps.forEach( function ( step, i ) {
+				if ( i === steps.length - 1 ) {
+					node[ step ] = flat[ path ];
+					return;
+				}
+				node[ step ] = node[ step ] || {};
+				node = node[ step ];
+			} );
+		} );
+		return nested;
+	}
+
+	// set-text carries plain text; the server stores it as HTML.
+	function escapeForBlock( value ) {
+		var box = document.createElement( 'div' );
+		box.textContent = value === undefined || value === null ? '' : String( value );
+		return box.innerHTML;
+	}
+
+	/**
+	 * Send the queue, and say when it landed.
+	 *
+	 * The promise is the point as much as the save is: a structural change
+	 * has to wait for the queue to be safely stored before it fires, because
+	 * it renumbers the page underneath any patch still in flight. A caller
+	 * that cannot tell success from failure would send the second half of a
+	 * half-applied edit.
+	 */
+	function saveBlockPatches() {
+		var translated = blockPatchesFrom( patches );
+		if ( ! translated.ok ) {
+			statusEl.textContent = translated.error;
+			return Promise.reject( new Error( translated.error ) );
+		}
+		if ( ! translated.patches.length ) {
+			statusEl.textContent = 'Saved ✓';
+			return Promise.resolve( null );
+		}
+		saveBtn.disabled = true;
+		statusEl.textContent = 'Saving…';
+		return window.wp
+			.apiFetch( {
+				path: '/clara-ve/v1/block-patches',
+				method: 'POST',
+				data: { post: blockPostFor( currentKey ), patches: translated.patches },
+			} )
+			.then( function () {
+				patches = [];
+				setDirty();
+				statusEl.textContent = 'Saved ✓';
+				if ( historyPanel && historyPanel.classList.contains( 'is-open' ) ) {
+					loadHistory();
+				}
+				// Re-read rather than trust the local copy: the server rewrote
+				// the markup, normalising delimiters as it went, and the next
+				// save's addresses are computed from what it actually stored.
+				frame.src = reloadUrlForCurrentKey();
+				window.setTimeout( function () {
+					statusEl.textContent = '';
+				}, 1500 );
+			} )
+			.catch( function ( error ) {
+				statusEl.textContent = 'Error: ' + ( ( error && error.message ) || 'save failed' );
+				// Shown AND rethrown. A caller waiting on this — a structural
+				// change, which must not fire over an edit that did not land —
+				// needs to hear about the failure, not just the person looking
+				// at the status line.
+				throw error;
+			} )
+			.finally( function () {
+				saveBtn.disabled = false;
+			} );
+	}
+
+	/**
+	 * A change to the page's structure: add a section, copy one, move it,
+	 * remove it.
+	 *
+	 * Sent on its own, after everything queued has been stored, and followed
+	 * by a reload. Addresses are positions on the page, so any of these
+	 * renumbers what is below it: a patch queued against block 4 and a removal
+	 * of block 2 in the same breath would apply the first to whatever slid
+	 * into the gap.
+	 *
+	 * @param {Object} op op, block, expect, direction, pattern, position.
+	 */
+	function sendBlockStructure( op ) {
+		statusEl.textContent = 'Saving…';
+		saveBtn.disabled = true;
+
+		// An inline edit still open has to be committed FIRST, exactly as the
+		// Save button does it. The canvas reports a finished edit by
+		// postMessage, which arrives a tick later — read the queue before that
+		// lands and the person's typing is not in it, the operation succeeds,
+		// and the queue is cleared with their words still in it. They watch
+		// the section move and the sentence they just wrote go back to what it
+		// was.
+		postToFrame( { type: 'finish-text', commit: true } );
+		window.setTimeout( function () {
+			flushThenStructure( op );
+		}, 80 );
+	}
+
+	function flushThenStructure( op ) {
+		// Nothing to flush from the panel itself: unlike the raw-HTML side's
+		// pendingStyles, every block-style row records its patch as it is
+		// changed. Only the inline caret needed committing, above.
+		// The queue first, and only if it lands.
+		Promise.resolve( patches.length ? saveBlockPatches() : null )
+			.then( function () {
+				return window.wp.apiFetch( {
+					path: '/clara-ve/v1/block-structure',
+					method: 'POST',
+					data: Object.assign( { post: blockPostFor( currentKey ) }, op ),
+				} );
+			} )
+			.then( function () {
+				patches = [];
+				setDirty();
+				statusEl.textContent = 'Saved ✓';
+				if ( historyPanel && historyPanel.classList.contains( 'is-open' ) ) {
+					loadHistory();
+				}
+				// Every address below the change has shifted, and the panel is
+				// holding one. Nothing here is salvageable by patching the DOM.
+				closePanelSilent();
+				frame.src = reloadUrlForCurrentKey();
+				window.setTimeout( function () {
+					statusEl.textContent = '';
+				}, 1500 );
+			} )
+			.catch( function ( error ) {
+				statusEl.textContent = 'Error: ' + ( ( error && error.message ) || 'that change could not be made' );
+			} )
+			.finally( function () {
+				saveBtn.disabled = false;
+			} );
+	}
+
+	// block__page-12 → 12.
+	function blockPostFor( key ) {
+		var match = /^block__page-(\d+)$/.exec( String( key || '' ) );
+		return match ? parseInt( match[ 1 ], 10 ) : 0;
+	}
+
 	saveBtn.addEventListener( 'click', function () {
 		postToFrame( { type: 'finish-text', commit: true } );
 		window.setTimeout( function () {
@@ -3826,6 +5119,19 @@
 				recordPatch( { id: current.id, kind: 'set-style', styles: Object.assign( {}, pendingStyles ) } );
 				pendingStyles = {};
 			}
+			// A block page is never saved as a document. Applying the queue
+			// here would mean POSTing HTML that has been through DOMParser,
+			// and Gutenberg decides a block is valid by comparing its stored
+			// markup against what the block type would serialize — so the
+			// entity normalisation a DOM round trip performs is enough to
+			// invalidate blocks that were fine before the save. The queue
+			// itself goes to the server instead, and the server rewrites one
+			// addressed block at a time.
+			if ( config.blockMode ) {
+				saveBlockPatches();
+				return;
+			}
+
 			var result = patchedSource();
 			if ( ! result.ok ) {
 				statusEl.textContent = 'Error: ' + result.error;
@@ -3834,10 +5140,12 @@
 			// Every other patch kind is already reflected in the preview —
 			// bridge.js applies text, images, styles and the rest to the live
 			// DOM as they are made. A [wp-form] token is the exception: what it
-			// turns into (the hidden fields, the rewritten action) is decided
-			// server-side at render, so the frame goes on showing the pre-save
-			// form until it is fetched again. Noted before the promise clears
-			// `patches`.
+			// turns into (its hidden fields) is decided server-side at render,
+			// so the frame goes on showing the pre-save form until it is
+			// fetched again. Without this, changing what a form does and
+			// pressing Save leaves the old form on screen, which reads as
+			// "the setting did not
+			// work". Noted before the promise clears `patches`.
 			var needsRerender = patches.some( function ( p ) {
 				return 'set-form-token' === p.kind;
 			} );
@@ -3880,6 +5188,156 @@
 		closePanelSilent();
 		setDirty();
 		frame.src = reloadUrlForCurrentKey();
+	} );
+
+	// ------------------------------------------------- copying and removing
+
+	// Both were things you had to leave the editor for — copying needed a
+	// second plugin entirely. They belong on the page you are looking at.
+	var duplicateBtn = document.getElementById( 'clara-ve-duplicate' );
+	var trashBtn = document.getElementById( 'clara-ve-trash' );
+	var duplicatePanel = document.getElementById( 'clara-ve-duplicate-panel' );
+	var duplicateTitle = document.getElementById( 'clara-ve-duplicate-title' );
+	var duplicateSlug = document.getElementById( 'clara-ve-duplicate-slug' );
+	var duplicateGo = document.getElementById( 'clara-ve-duplicate-go' );
+	var duplicateNote = document.getElementById( 'clara-ve-duplicate-note' );
+	var duplicateClose = document.getElementById( 'clara-ve-duplicate-close' );
+
+	function currentPageEntry() {
+		return visualPages.filter( function ( p ) {
+			return p.key === currentKey;
+		} )[ 0 ] || null;
+	}
+
+	// The front page and the chrome parts are keys, not posts — there is
+	// nothing to copy or remove, so the buttons say so by being off rather
+	// than by failing when pressed.
+	function refreshPageButtons() {
+		var entry = currentPageEntry();
+		var id = entry && entry.post ? entry.post : 0;
+		if ( duplicateBtn ) {
+			duplicateBtn.disabled = ! id;
+		}
+		if ( trashBtn ) {
+			// Copying the front page is fine; removing it is not, because
+			// page_on_front would go on naming a page in the trash and the
+			// home page would render nothing at all.
+			trashBtn.disabled = ! id || !! ( entry && entry.front );
+			trashBtn.title = entry && entry.front
+				? 'The site’s front page cannot be removed here — choose a different one under Settings → Reading first'
+				: 'Move this page to the trash';
+		}
+		return id;
+	}
+
+	function openDuplicatePanel() {
+		var entry = currentPageEntry();
+		if ( ! entry || ! entry.post ) {
+			return;
+		}
+		duplicateTitle.value = entry.label + ' (copy)';
+		duplicateSlug.value = entry.slug ? entry.slug + '-copy' : '';
+		duplicateNote.textContent = 'Copying “' + entry.label + '”.';
+		duplicatePanel.classList.add( 'is-open' );
+		duplicateTitle.focus();
+		duplicateTitle.select();
+	}
+
+	function closeDuplicatePanel() {
+		duplicatePanel.classList.remove( 'is-open' );
+	}
+
+	function runDuplicate() {
+		var entry = currentPageEntry();
+		if ( ! entry || ! entry.post ) {
+			return;
+		}
+		duplicateGo.disabled = true;
+		statusEl.textContent = 'Duplicating…';
+		window.wp
+			.apiFetch( {
+				path: '/clara-ve/v1/pages/duplicate',
+				method: 'POST',
+				data: { post: entry.post, title: duplicateTitle.value, slug: duplicateSlug.value }
+			} )
+			.then( function ( res ) {
+				closeDuplicatePanel();
+				// Said out loud rather than left to be discovered: a trashed or
+				// parked page still holds its address, so WordPress hands the
+				// copy the next one along.
+				statusEl.textContent = res.slug_changed
+					? 'Copied — the address was taken, so it is /' + res.slug + '/'
+					: 'Copied ✓';
+				// The list has to know about the copy before we can switch to
+				// it — waited for, not guessed at with a timer.
+				return loadVisualPages().then( function () {
+					switchToKey( res.key );
+					refreshPageButtons();
+				} );
+			} )
+			.catch( function ( err ) {
+				statusEl.textContent = 'Error: ' + ( err && err.message ? err.message : 'could not copy the page' );
+			} )
+			.then( function () {
+				duplicateGo.disabled = false;
+			} );
+	}
+
+	function runTrash() {
+		var entry = currentPageEntry();
+		if ( ! entry || ! entry.post ) {
+			return;
+		}
+		// Named, and with what happens next spelled out. "Are you sure?" on its
+		// own tells somebody nothing about what they are agreeing to.
+		if (
+			! window.confirm(
+				'Move “' + entry.label + '” to the trash?\n\n' +
+					'The page stops being visible on the site. WordPress keeps it, so you can put it back from Pages → Trash.'
+			)
+		) {
+			return;
+		}
+		statusEl.textContent = 'Removing…';
+		window.wp
+			.apiFetch( { path: '/clara-ve/v1/pages/trash', method: 'POST', data: { post: entry.post } } )
+			.then( function () {
+				statusEl.textContent = 'Moved to the trash ✓';
+				// Nothing to look at any more, so go somewhere that exists.
+				return loadVisualPages().then( function () {
+					switchToKey( DEFAULT_KEY );
+					refreshPageButtons();
+				} );
+			} )
+			.catch( function ( err ) {
+				statusEl.textContent = 'Error: ' + ( err && err.message ? err.message : 'could not remove the page' );
+			} );
+	}
+
+	if ( duplicateBtn ) {
+		duplicateBtn.addEventListener( 'click', openDuplicatePanel );
+	}
+	if ( duplicateClose ) {
+		duplicateClose.addEventListener( 'click', closeDuplicatePanel );
+	}
+	if ( duplicateGo ) {
+		duplicateGo.addEventListener( 'click', runDuplicate );
+	}
+	if ( trashBtn ) {
+		trashBtn.addEventListener( 'click', runTrash );
+	}
+	[ duplicateTitle, duplicateSlug ].forEach( function ( el ) {
+		if ( ! el ) {
+			return;
+		}
+		el.addEventListener( 'keydown', function ( ev ) {
+			if ( 'Enter' === ev.key ) {
+				ev.preventDefault();
+				runDuplicate();
+			} else if ( 'Escape' === ev.key ) {
+				closeDuplicatePanel();
+			}
+		} );
 	} );
 
 	window.addEventListener( 'beforeunload', function ( ev ) {

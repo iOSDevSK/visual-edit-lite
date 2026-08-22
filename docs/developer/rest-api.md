@@ -72,34 +72,9 @@ the automatic label.
 Writes the old content back as live. Records **no** new version — checkout,
 not revert.
 
-## AI
-
-### `POST /ai-chat`
-`messages` (**required**), `current_key` → `{ messages }`
-
-Stateless: the client resends the conversation each turn; the system message
-is injected fresh server-side. Bounded by 10 tool iterations per turn and 60
-incoming messages.
-
-### `POST /ai-image`
-`src`, `prompt` (**required**), `aspect`, `alt` → `{ jobId }`
-
-### `POST /ai-video`
-`src`, `prompt` (**required**), `aspect`, `box_w`, `box_h`, `frame_w` →
-`{ jobId }`
-
-### `GET /ai-job/{id}`
-→ `{ status, result, error }`
-
-Polling has a side effect by design: it advances the video state machine one
-step, and self-heals an image job whose worker never started.
-
-### `GET /credits`
-`refresh` → `{ total, usage, remaining }`. Cached two minutes.
-
 ## Public routes
 
-Four routes have `permission_callback => '__return_true'`. Each is public
+Three routes have `permission_callback => '__return_true'`. Each is public
 because it must be, and each has a specific gate.
 
 ### `GET /posts` — blog "load more"
@@ -130,23 +105,11 @@ hash and compared in constant time. Every outcome — valid, invalid, already
 used, prefetched by a mail client — lands on the same page, so the endpoint
 cannot be used to probe whether an address is on a list.
 
-### `POST /ai-job/{id}/run` — background worker
-`token` (**required**) → `{ ok: true }`
-
-**Why it cannot be capability-gated:** it is a server-to-server loopback the
-site fires at itself; the request carries no session cookies, so there is no
-user to check.
-
-**What protects it:** a per-job 32-character random token compared in constant
-time, and a job id constrained by the route regex to `[a-zA-Z0-9]+`. A job is
-claimed under a lock so a duplicate trigger cannot cause a second paid
-provider call.
-
 ## Notes for integrators
 
 - REST is the only editing interface; there is no admin-ajax path
 - Errors are `WP_Error` with meaningful codes (`clara_ve_rate_limited`,
-  `clara_ve_stale_form`, `clara_ve_job_missing`, `clara_ve_bundle_newer`, …)
+  `clara_ve_stale_form`, `clara_ve_bundle_newer`, …)
 - Nothing here is versioned independently of the plugin. The namespace is
   `clara-ve/v1` and has not changed
 

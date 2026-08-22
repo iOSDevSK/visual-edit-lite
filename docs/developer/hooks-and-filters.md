@@ -12,9 +12,9 @@ Three. They exist for real reasons rather than as a speculative API.
 do_action( 'clara_ve_source_saved', string $key, string $source );
 ```
 
-Fired after a page's markup is successfully saved — from the editor, the AI
-assistant or an import — once the option is written and the render target is
-synced. `$source` carries absolute theme URIs.
+Fired after a page's markup is successfully saved — from the editor or an
+import — once the option is written and the render target is synced.
+`$source` carries absolute theme URIs.
 
 **Use it to invalidate anything derived from page content.** It exists because
 there was no way to know: extracted FAQs, the readiness report, any cache were
@@ -134,9 +134,8 @@ this one returns without touching it. A separate SMTP plugin can coexist.
 | Hook | |
 |---|---|
 | `template_redirect` | Redirect map, **gated on `is_404()`** |
-| `heartbeat_received` | Advance background AI jobs from any admin screen |
 | `register_activation_hook` | Flush rewrite rules; seed a menu only if the theme ships no content |
-| `register_deactivation_hook` | Unschedule AI job cron, flush rewrite rules. Touches no data |
+| `register_deactivation_hook` | Flush rewrite rules. Touches no data |
 
 ### One compatibility hazard
 

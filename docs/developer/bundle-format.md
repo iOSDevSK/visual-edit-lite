@@ -196,12 +196,12 @@ than scanning the options table, so any setting added elsewhere in the plugin
 is excluded until someone deliberately lists it. That is the intended failure
 direction.
 
-Two scopes: `portable` (meaningful anywhere — model preferences, consent text,
-SEO identity) and `site` (this site only — recipient address, SMTP settings,
-list provider), withheld from a sample bundle.
+Two scopes: `portable` (meaningful anywhere — consent text, double opt-in
+copy, SEO identity) and `site` (this site only — recipient address, SMTP
+settings, list provider), withheld from a sample bundle.
 
 **2. A never-export list**, checked on the way out *and* on the way in. The
-eight credential options, enumerated redundantly on purpose: the cost of the
+five credential options, enumerated redundantly on purpose: the cost of the
 redundancy is one array intersection, and the cost of being wrong once is a
 customer's API key inside a file they hand to someone else.
 
@@ -228,6 +228,6 @@ never confirm on the destination site.
 
 ## Related
 
-- [Import and export](../guide/import-export.md) — the user-facing view
+- [Import](../guide/import-export.md) — the user-facing view
 - [Data model](data-model.md) — what exists before it is packaged
 - [Architecture](architecture.md) — keys and the source store

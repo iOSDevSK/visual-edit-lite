@@ -204,4 +204,4 @@ Full detail in [Data model](../developer/data-model.md).
 
 - [Security](security.md)
 - [Mailing lists](../guide/mailing-lists.md)
-- [Import and export](../guide/import-export.md)
+- [Import](../guide/import-export.md)

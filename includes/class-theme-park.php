@@ -50,6 +50,20 @@ class Clara_VE_Theme_Park {
 	/**
 	 * The themes whose content is currently put away.
 	 *
+	 * The registry flag is the record, and the content is the truth. They can
+	 * disagree: park writes statuses and then the flag, so a crash between the
+	 * two leaves content away with the registry saying otherwise — and so does
+	 * handing the lifecycle back and forth with a converted theme, which owns
+	 * the same park/restore when this plugin is inactive. That handover is how
+	 * it was first seen: three converted themes on one site, this plugin
+	 * switched off while one of them was parked, and every theme's menus turned
+	 * up in every other theme, because the flag said nothing was away.
+	 *
+	 * Believing both heals it with no migration, in whichever side is running.
+	 * The ACTIVE theme is never in the set — during its own restore its content
+	 * is briefly still parked, and hiding a theme's menus from itself is the one
+	 * answer always wrong.
+	 *
 	 * Memoized per request: the registry is one non-autoloaded option and the
 	 * filters below ask on every query.
 	 *
@@ -65,6 +79,23 @@ class Clara_VE_Theme_Park {
 				$parked[] = $slug;
 			}
 		}
+		global $wpdb;
+		$owners = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT DISTINCT pm.meta_value FROM {$wpdb->postmeta} pm
+				   JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				  WHERE pm.meta_key = %s AND p.post_status = %s",
+				CLARA_VE_PAGE_THEME_META,
+				CLARA_VE_PARKED_STATUS
+			)
+		);
+		foreach ( (array) $owners as $slug ) {
+			$slug = sanitize_key( (string) $slug );
+			if ( '' !== $slug && ! in_array( $slug, $parked, true ) ) {
+				$parked[] = $slug;
+			}
+		}
+		$parked            = array_values( array_diff( $parked, array( sanitize_key( get_stylesheet() ) ) ) );
 		self::$parked_memo = $parked;
 		return $parked;
 	}
@@ -447,6 +478,40 @@ class Clara_VE_Theme_Park {
 		return is_array( $record ) && ! empty( $record['parked'] );
 	}
 
+
+	/**
+	 * Park and restore change a post's STATUS and its SLUG — and nothing else.
+	 * `wp_update_post` does not know that: it merges the change into the whole
+	 * row and re-saves it, content included, through `content_save_pre`. Where
+	 * kses is armed — anywhere the acting user may not post unfiltered HTML,
+	 * which includes having no user at all — that re-save silently strips a
+	 * converted page's own form fields, inline SVG and embeds. Measured live:
+	 * a contact form lost its boxes on every theme switch, on content that was
+	 * whole a moment earlier.
+	 *
+	 * Restored exactly as found — re-arming unconditionally would switch
+	 * filtering ON for an administrator entitled to post unfiltered HTML.
+	 *
+	 * @return bool Whether the caller must re-arm.
+	 */
+	private static function suspend_kses() {
+		if ( has_filter( 'content_save_pre', 'wp_filter_post_kses' ) ) {
+			kses_remove_filters();
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param bool $was_armed
+	 * @return void
+	 */
+	private static function resume_kses( $was_armed ) {
+		if ( $was_armed ) {
+			kses_init_filters();
+		}
+	}
+
 	/**
 	 * Put a theme's world away.
 	 *
@@ -469,6 +534,7 @@ class Clara_VE_Theme_Park {
 		// and the site's entire home page 404s for everyone.
 		self::release_front_page( $theme );
 
+		$kses = self::suspend_kses();
 		foreach ( self::owned_ids( $theme, array( 'page', 'post' ) ) as $id ) {
 			$post = get_post( $id );
 			if ( ! $post || CLARA_VE_PARKED_STATUS === $post->post_status ) {
@@ -493,6 +559,7 @@ class Clara_VE_Theme_Park {
 				)
 			);
 		}
+		self::resume_kses( $kses );
 
 		foreach ( self::owned_ids( $theme, array( 'attachment' ) ) as $id ) {
 			update_post_meta( $id, self::PARKED_META, $theme );
@@ -519,6 +586,7 @@ class Clara_VE_Theme_Park {
 			return;
 		}
 
+		$kses = self::suspend_kses();
 		foreach ( self::owned_ids( $theme, array( 'page', 'post' ) ) as $id ) {
 			$post = get_post( $id );
 			if ( ! $post ) {
@@ -545,6 +613,7 @@ class Clara_VE_Theme_Park {
 				wp_update_post( $update );
 			}
 		}
+		self::resume_kses( $kses );
 
 		foreach ( self::owned_ids( $theme, array( 'attachment' ) ) as $id ) {
 			delete_post_meta( $id, self::PARKED_META );

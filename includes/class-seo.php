@@ -587,6 +587,18 @@ class Clara_VE_SEO {
 		if ( in_array( $key, array( CLARA_VE_HEADER_KEY, CLARA_VE_FOOTER_KEY, CLARA_VE_ARTICLE_KEY, CLARA_VE_404_KEY ), true ) ) {
 			return 0;
 		}
+		// A page of a block theme. Its key is derived from the post ID rather
+		// than stored as meta, so the meta lookup below finds nothing — which
+		// is why the search-appearance panel reported every page of such a
+		// theme as "shared across every page, so it has no title of its own".
+		// Round-tripped through block_key() rather than trusting the number
+		// in the key: that is what confirms the post is one the block driver
+		// actually owns, so a made-up key cannot point this at another post.
+		$block_post = Clara_VE_Source_Store::block_key_post_id( $key );
+		if ( $block_post && Clara_VE_Source_Store::block_key( $block_post ) === $key ) {
+			return $block_post;
+		}
+
 		if ( CLARA_VE_DEFAULT_KEY === $key ) {
 			// Via the store, not get_option('page_on_front') directly: that also
 			// resolves a front page that has been tagged but whose settings have
