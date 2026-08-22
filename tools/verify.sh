@@ -182,6 +182,10 @@ $out[] = array( "no Export Theme menu", false === stripos( $items, "Export Theme
 
 ob_start(); Clara_VE_Editor_Page::render(); $html = ob_get_clean();
 $out[] = array( "editor renders", 500 < strlen( $html ) );
+// The toolbar heading is one of the six user-visible product names, and the
+// admin-bar and sidebar checks below do not reach it -- it shipped reading
+// "Visual Editor" because nothing looked here.
+$out[] = array( "editor toolbar says Visual Edit Lite", false === strpos( $html, "Visual Editor" ) );
 $out[] = array( "no AI chat panel in the DOM", false === strpos( $html, "clara-ve-ai-chat" ) );
 
 // Block mode is the reason Lite is worth installing on a Gutenberg theme:

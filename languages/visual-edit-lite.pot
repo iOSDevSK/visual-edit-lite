@@ -241,7 +241,7 @@ msgid "You need theme-editing and unfiltered HTML permissions to use the visual 
 msgstr ""
 
 #: includes/class-editor-page.php:301
-msgid "Visual Editor — Front Page"
+msgid "Visual Edit Lite — Front Page"
 msgstr ""
 
 #: includes/class-editor-page.php:302
@@ -803,7 +803,7 @@ msgid "You do not have permission to do that."
 msgstr ""
 
 #: includes/class-geo-audit.php:597
-msgid "What this site tells search engines and AI assistants about itself. Everything here is a report — nothing on this screen changes a page, because the pages are meant to stay exactly as they were designed. Fix anything you want to act on in the Visual Editor."
+msgid "What this site tells search engines and AI assistants about itself. Everything here is a report — nothing on this screen changes a page, because the pages are meant to stay exactly as they were designed. Fix anything you want to act on in Visual Edit Lite."
 msgstr ""
 
 #: includes/class-geo-audit.php:602
@@ -1653,7 +1653,7 @@ msgid "SEO &amp; Sharing"
 msgstr ""
 
 #: includes/class-seo-settings.php:179
-msgid "What is true of the whole site. Each page's own title and description live in the Visual Editor, under Search appearance."
+msgid "What is true of the whole site. Each page's own title and description live in Visual Edit Lite, under Search appearance."
 msgstr ""
 
 #: includes/class-seo-settings.php:188

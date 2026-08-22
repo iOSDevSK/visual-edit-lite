@@ -594,7 +594,7 @@ class Clara_VE_GEO_Audit {
 			<h1><?php esc_html_e( 'SEO &amp; AI Readiness', 'visual-edit-lite' ); ?></h1>
 
 			<p class="description" style="max-width:44em;">
-				<?php esc_html_e( 'What this site tells search engines and AI assistants about itself. Everything here is a report — nothing on this screen changes a page, because the pages are meant to stay exactly as they were designed. Fix anything you want to act on in the Visual Editor.', 'visual-edit-lite' ); ?>
+				<?php esc_html_e( 'What this site tells search engines and AI assistants about itself. Everything here is a report — nothing on this screen changes a page, because the pages are meant to stay exactly as they were designed. Fix anything you want to act on in Visual Edit Lite.', 'visual-edit-lite' ); ?>
 			</p>
 
 			<?php self::render_status( $report ); ?>

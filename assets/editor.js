@@ -30,7 +30,7 @@
 	// DEFAULT_KEY mirrors CLARA_VE_DEFAULT_KEY (PHP) — the front page, which
 	// isn't a real WP Page but the plugin's original pattern-override
 	// mechanism. Any other key is a WP Page tagged via the Pages-list
-	// "Visual Editor" column / the AI Assistant's create_visual_page tool.
+	// The "Visual Edit Lite" column on the Pages list.
 
 	var DEFAULT_KEY = 'front-page';
 	// The header/footer template parts have no page/URL of their own — they
@@ -167,7 +167,7 @@
 		var match = visualPages.filter( function ( p ) {
 			return p.key === currentKey;
 		} )[ 0 ];
-		toolbarTitle.textContent = 'Visual Editor — ' + ( match ? match.label : currentKey );
+		toolbarTitle.textContent = 'Visual Edit Lite — ' + ( match ? match.label : currentKey );
 		// Both places that change which page is open come through here, so the
 		// copy and remove buttons follow along without a second listener.
 		refreshPageButtons();

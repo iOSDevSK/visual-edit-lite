@@ -176,7 +176,7 @@ class Clara_VE_SEO_Settings {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'SEO &amp; Sharing', 'visual-edit-lite' ); ?></h1>
 			<p class="description" style="max-width:44em;">
-				<?php esc_html_e( 'What is true of the whole site. Each page\'s own title and description live in the Visual Editor, under Search appearance.', 'visual-edit-lite' ); ?>
+				<?php esc_html_e( 'What is true of the whole site. Each page\'s own title and description live in Visual Edit Lite, under Search appearance.', 'visual-edit-lite' ); ?>
 			</p>
 
 			<?php if ( $host ) : ?>

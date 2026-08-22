@@ -298,7 +298,7 @@ class Clara_VE_Editor_Page {
 		?>
 		<div id="clara-ve-app" class="clara-ve-app">
 			<div class="clara-ve-toolbar">
-				<strong><?php esc_html_e( 'Visual Editor — Front Page', 'visual-edit-lite' ); ?></strong>
+				<strong><?php esc_html_e( 'Visual Edit Lite — Front Page', 'visual-edit-lite' ); ?></strong>
 				<select id="clara-ve-page-picker" class="clara-ve-page-picker" title="<?php esc_attr_e( 'Switch page', 'visual-edit-lite' ); ?>"></select>
 				<button type="button" id="clara-ve-preview" class="clara-ve-preview-btn" title="<?php esc_attr_e( 'Preview live page in a new tab', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-external"></span></button>
 				<button type="button" id="clara-ve-toggle" class="clara-ve-toggle is-off" aria-pressed="false" title="<?php esc_attr_e( 'Toggle edit mode', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-edit"></span></button>

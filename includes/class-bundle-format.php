@@ -78,8 +78,6 @@ class Clara_VE_Bundle_Format {
 		'clara_ve_seo_default_og_image'  => 'portable',
 		'clara_ve_seo_title_separator'   => 'portable',
 
-		// AI model preferences (the KEYS that pay for them are in NEVER_EXPORT)
-
 		// This site's own wiring
 		'clara_ve_form_to'               => 'site',
 		'clara_ve_form_from_email'       => 'site',
