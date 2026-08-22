@@ -231,8 +231,8 @@ msgstr ""
 #: includes/class-editor-page.php:20
 #: includes/class-editor-page.php:21
 #: visual-edit-lite.php:974
-#: visual-edit-lite.php:2306
-#: visual-edit-lite.php:2320
+#: visual-edit-lite.php:2309
+#: visual-edit-lite.php:2323
 msgid "Visual Edit Lite"
 msgstr ""
 
@@ -338,22 +338,340 @@ msgstr ""
 msgid "The Google Fonts list was not in the expected format."
 msgstr ""
 
-#: includes/class-form-settings.php:136
+#: includes/class-form-settings.php:130
+#: includes/class-form-settings.php:131
+#: includes/class-form-settings.php:275
+msgid "Form Settings"
+msgstr ""
+
+#: includes/class-form-settings.php:267
+msgid "You need administrator permissions to manage form settings."
+msgstr ""
+
+#: includes/class-form-settings.php:277
+msgid "Where contact-form submissions are sent, how they are protected from spam, and how email leaves the site. These apply to every [wp-form] on the site; a form can still override the recipient with its own to=\"\" attribute."
+msgstr ""
+
+#: includes/class-form-settings.php:284
+msgid "Send submissions to"
+msgstr ""
+
+#: includes/class-form-settings.php:287
+msgid "Leave blank to use the site admin email."
+msgstr ""
+
+#: includes/class-form-settings.php:291
+msgid "From name"
+msgstr ""
+
+#: includes/class-form-settings.php:295
+msgid "From address"
+msgstr ""
+
+#: includes/class-form-settings.php:298
+msgid "Must be an address on this site's own domain — sending \"from\" a visitor's Gmail fails spam checks. The visitor's own address is set as Reply-To so you can reply directly."
+msgstr ""
+
+#: includes/class-form-settings.php:302
+msgid "Minimum fill time (seconds)"
+msgstr ""
+
+#: includes/class-form-settings.php:305
+msgid "Submissions sent faster than this after the page loads are treated as bots and rejected. 0 disables the check. 3 is a good default."
+msgstr ""
+
+#: includes/class-form-settings.php:309
+msgid "Akismet spam filtering"
+msgstr ""
+
+#: includes/class-form-settings.php:311
+msgid "Check submissions against Akismet"
+msgstr ""
+
+#: includes/class-form-settings.php:312
+msgid "Akismet is installed and configured — recommended."
+msgstr ""
+
+#: includes/class-form-settings.php:312
+msgid "Install and configure the free Akismet plugin to enable this."
+msgstr ""
+
+#: includes/class-form-settings.php:318
+msgid "Email delivery"
+msgstr ""
+
+#: includes/class-form-settings.php:319
+msgid "Pick how the site sends email. WordPress's default server mail very often lands in spam — connect a real provider for reliable delivery, no extra plugin needed. The API options send over HTTPS, so they work even on hosts that block outbound SMTP ports. For best results also add SPF/DKIM DNS records for your domain at your provider."
+msgstr ""
+
+#: includes/class-form-settings.php:322
+msgid "Mailer"
+msgstr ""
+
+#: includes/class-form-settings.php:325
+msgid "Default (WordPress server mail)"
+msgstr ""
+
+#: includes/class-form-settings.php:326
+msgid "Other SMTP"
+msgstr ""
+
+#: includes/class-form-settings.php:327
+msgid "Brevo (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:328
+msgid "SendGrid (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:329
+msgid "Postmark (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:330
+msgid "Mailgun (API)"
+msgstr ""
+
+#: includes/class-form-settings.php:337
+msgid "WordPress sends mail directly from the web server. Fine for a quick test, but it commonly lands in spam or is dropped in production — pick a real provider above."
+msgstr ""
+
+#: includes/class-form-settings.php:343
+msgid "SMTP host"
+msgstr ""
+
+#: includes/class-form-settings.php:347
+msgid "Port"
+msgstr ""
+
+#: includes/class-form-settings.php:350
+msgid "587 for TLS (most common), 465 for SSL, 25 for none."
+msgstr ""
+
+#: includes/class-form-settings.php:354
+msgid "Encryption"
+msgstr ""
+
+#: includes/class-form-settings.php:358
+msgid "TLS (recommended)"
+msgstr ""
+
+#: includes/class-form-settings.php:360
+msgid "None"
+msgstr ""
+
+#: includes/class-form-settings.php:365
+msgid "Authentication"
+msgstr ""
+
+#: includes/class-form-settings.php:366
+msgid "This server requires a username and password"
+msgstr ""
+
+#: includes/class-form-settings.php:369
+msgid "Username"
+msgstr ""
+
+#: includes/class-form-settings.php:373
+msgid "Password"
+msgstr ""
+
+#: includes/class-form-settings.php:376
+msgid "Stored encrypted. Leave blank to keep the saved password."
+msgstr ""
+
+#: includes/class-form-settings.php:385
+msgid "Brevo API key"
+msgstr ""
+
+#: includes/class-form-settings.php:388
+msgid "Brevo → SMTP & API → API Keys (v3). Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:397
+msgid "SendGrid API key"
+msgstr ""
+
+#: includes/class-form-settings.php:400
+msgid "SendGrid → Settings → API Keys (Mail Send permission). Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:409
+msgid "Postmark server token"
+msgstr ""
+
+#: includes/class-form-settings.php:412
+msgid "Postmark → your Server → API Tokens. Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:421
+msgid "Mailgun API key"
+msgstr ""
+
+#: includes/class-form-settings.php:424
+msgid "Mailgun → Send → API keys. Stored encrypted; leave blank to keep."
+msgstr ""
+
+#: includes/class-form-settings.php:428
+msgid "Mailgun domain"
+msgstr ""
+
+#: includes/class-form-settings.php:432
+msgid "Region"
+msgstr ""
+
+#: includes/class-form-settings.php:490
+msgid "Mailing list"
+msgstr ""
+
+#: includes/class-form-settings.php:492
+msgid "Where a form set to \"Mailing list\" sends its subscribers. This is separate from the mailer above — the mailer is how email leaves this site, a mailing list is where contacts live and where the welcome email and the download come from. Most transports have no lists at all, so the two are chosen independently."
+msgstr ""
+
+#: includes/class-form-settings.php:496
+msgid "Provider"
+msgstr ""
+
+#: includes/class-form-settings.php:506
+msgid "Add the Brevo API key above — the list uses the same key as the mailer."
+msgstr ""
+
+#: includes/class-form-settings.php:508
+msgid "Brevo reuses the API key you already entered above; there is nothing else to paste."
+msgstr ""
+
+#: includes/class-form-settings.php:515
+msgid "Double opt-in"
+msgstr ""
+
+#: includes/class-form-settings.php:518
+msgid "Off — subscribe immediately"
+msgstr ""
+
+#: includes/class-form-settings.php:519
+msgid "On, handled here — works with any mailer"
+msgstr ""
+
+#: includes/class-form-settings.php:520
+msgid "On, handled by the provider"
+msgstr ""
+
+#: includes/class-form-settings.php:523
+msgid "Handled here: the address is held, a confirmation email goes out through your normal mailer, and only a click subscribes it and sends the download. Works on plain SMTP, Gmail, SendGrid — anything. The consent record (time, IP, wording) stays in this site. Handled by the provider: Brevo does the same thing with its own template, set below."
+msgstr ""
+
+#: includes/class-form-settings.php:528
+msgid "Confirmation email"
+msgstr ""
+
+#: includes/class-form-settings.php:532
+msgid "Must contain {confirm_url} — that is the link. {site} is your From name."
+msgstr ""
+
+#: includes/class-form-settings.php:536
+msgid "Delivery email"
+msgstr ""
+
+#: includes/class-form-settings.php:540
+msgid "Sent after they confirm, never before. {download_url} is the file below."
+msgstr ""
+
+#: includes/class-form-settings.php:544
+msgid "The file they get"
+msgstr ""
+
+#: includes/class-form-settings.php:547
+msgid "Choose from Media Library"
+msgstr ""
+
+#: includes/class-form-settings.php:548
+msgid "Upload the PDF to Media and pick it here. Leave blank if the confirmation email is all you send."
+msgstr ""
+
+#: includes/class-form-settings.php:552
+msgid "Provider template id"
+msgstr ""
+
+#: includes/class-form-settings.php:555
+msgid "The id of a double opt-in template at your provider. Only used when the provider handles it."
+msgstr ""
+
+#: includes/class-form-settings.php:559
+msgid "After confirming, go to"
+msgstr ""
+
+#: includes/class-form-settings.php:562
+msgid "Where the confirmation link lands. Only used when a double opt-in template is set."
+msgstr ""
+
+#: includes/class-form-settings.php:566
+msgid "Consent line"
+msgstr ""
+
+#: includes/class-form-settings.php:568
+msgid "Show a consent note under every connected form"
+msgstr ""
+
+#: includes/class-form-settings.php:571
+msgid "Off by default — turn it on if you collect addresses under GDPR and want the note visible at the point of consent. Link to your privacy policy inside the text with normal HTML: <a href=\"/privacy/\">Privacy Policy</a>."
+msgstr ""
+
+#: includes/class-form-settings.php:578
+msgid "Uninstall"
+msgstr ""
+
+#: includes/class-form-settings.php:581
+msgid "On plugin deletion"
+msgstr ""
+
+#: includes/class-form-settings.php:583
+msgid "Also delete all stored data — form submissions, subscribers, edit history and edited page sources"
+msgstr ""
+
+#: includes/class-form-settings.php:585
+msgid "Off: deleting the plugin keeps your data in the database, so reinstalling picks up where you left off. On: deleting the plugin removes everything it ever stored. Saved passwords and API keys are removed on deletion either way."
+msgstr ""
+
+#: includes/class-form-settings.php:595
+msgid "Send a test email"
+msgstr ""
+
+#: includes/class-form-settings.php:599
+msgid "Test email sent. Check the inbox (and spam folder)."
+msgstr ""
+
+#: includes/class-form-settings.php:600
+msgid "Sending failed — check the mailer credentials above (save first)."
+msgstr ""
+
+#: includes/class-form-settings.php:606
+msgid "Sends a test message to %s using the mailer selected above (save first)."
+msgstr ""
+
+#: includes/class-form-settings.php:612
+msgid "Send test email"
+msgstr ""
+
+#: includes/class-form-settings.php:630
+msgid "•••••••• (saved — leave blank to keep)"
+msgstr ""
+
+#: includes/class-form-settings.php:708
 msgid "By submitting this form you agree to us storing and using the details above to reply to you."
 msgstr ""
 
-#: includes/class-form-settings.php:210
+#: includes/class-form-settings.php:782
 #: includes/class-optin.php:92
 #: includes/class-optin.php:193
 #: includes/class-optin.php:220
 msgid "You need administrator permissions."
 msgstr ""
 
-#: includes/class-form-settings.php:219
+#: includes/class-form-settings.php:791
 msgid "Visual Edit — test email"
 msgstr ""
 
-#: includes/class-form-settings.php:220
+#: includes/class-form-settings.php:792
 msgid "This is a test email. If you received it, your email delivery settings are working."
 msgstr ""
 
@@ -397,217 +715,217 @@ msgstr ""
 
 #: includes/class-geo-audit.php:93
 #: includes/class-geo-audit.php:94
-#: includes/class-geo-audit.php:592
+#: includes/class-geo-audit.php:594
 msgid "SEO &amp; AI Readiness"
 msgstr ""
 
-#: includes/class-geo-audit.php:189
+#: includes/class-geo-audit.php:190
 msgid "This description is used elsewhere too: %s. Two pages claiming the same summary compete with each other."
 msgstr ""
 
-#: includes/class-geo-audit.php:190
+#: includes/class-geo-audit.php:192
 msgid "This title is used elsewhere too: %s."
 msgstr ""
 
-#: includes/class-geo-audit.php:328
+#: includes/class-geo-audit.php:330
 msgid "This post has its own h1, on top of the one the layout makes from the title. That is two."
 msgstr ""
 
-#: includes/class-geo-audit.php:334
+#: includes/class-geo-audit.php:336
 msgid "No h1. Nothing on the page states what it is about in one line."
 msgstr ""
 
-#: includes/class-geo-audit.php:343
+#: includes/class-geo-audit.php:345
 msgid "%d h1 headings. A page can only be about one thing; more than one leaves it ambiguous."
 msgstr ""
 
-#: includes/class-geo-audit.php:361
+#: includes/class-geo-audit.php:363
 msgid "Heading levels jump from h%1$d straight to h%2$d, so the outline of the page has a gap in it."
 msgstr ""
 
-#: includes/class-geo-audit.php:400
+#: includes/class-geo-audit.php:402
 msgid "%d image has no alt attribute."
 msgid_plural "%d images have no alt attribute."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-geo-audit.php:435
+#: includes/class-geo-audit.php:437
 msgid "“%1$s” is answered by a %2$d-word paragraph. Answer engines quote the passage right under the question, so a shorter opening sentence is what gets cited."
 msgstr ""
 
-#: includes/class-geo-audit.php:465
+#: includes/class-geo-audit.php:467
 msgid "No excerpt, so this post has no description. Search results and AI answers will quote whatever sentence they happen to find. Add one in the post editor, under Excerpt."
 msgstr ""
 
-#: includes/class-geo-audit.php:466
+#: includes/class-geo-audit.php:468
 msgid "No description. Search results and AI answers will quote whatever sentence they happen to find."
 msgstr ""
 
-#: includes/class-geo-audit.php:477
+#: includes/class-geo-audit.php:479
 msgid "The description is only %d characters — too short to say what the page offers."
 msgstr ""
 
-#: includes/class-geo-audit.php:489
+#: includes/class-geo-audit.php:491
 msgid "The description is %d characters, so the end of it will be cut off."
 msgstr ""
 
-#: includes/class-geo-audit.php:508
+#: includes/class-geo-audit.php:510
 msgid "No business or personal name is set, so the site name is being used instead."
 msgstr ""
 
-#: includes/class-geo-audit.php:511
+#: includes/class-geo-audit.php:513
 msgid "No social or directory profiles are listed. These are how an answer engine confirms the site belongs to a real, identifiable business."
 msgstr ""
 
-#: includes/class-geo-audit.php:514
+#: includes/class-geo-audit.php:516
 msgid "No logo is set for the site's structured data."
 msgstr ""
 
-#: includes/class-geo-audit.php:517
+#: includes/class-geo-audit.php:519
 msgid "AI crawler rules are switched off, so robots.txt does not mention answer engines at all."
 msgstr ""
 
-#: includes/class-geo-audit.php:520
+#: includes/class-geo-audit.php:522
 msgid "The front page is not set as a static page, so it cannot carry its own title or description."
 msgstr ""
 
-#: includes/class-geo-audit.php:523
+#: includes/class-geo-audit.php:525
 msgid "Permalinks are still set to plain, which breaks the links between imported pages."
 msgstr ""
 
-#: includes/class-geo-audit.php:533
+#: includes/class-geo-audit.php:535
 msgid "Rank Math manages robots.txt itself, so the AI crawler rules here will not appear in it. Copy them into Rank Math → General Settings → Edit robots.txt."
 msgstr ""
 
-#: includes/class-geo-audit.php:584
+#: includes/class-geo-audit.php:586
 #: includes/class-seo-settings.php:164
 msgid "You do not have permission to do that."
 msgstr ""
 
-#: includes/class-geo-audit.php:595
+#: includes/class-geo-audit.php:597
 msgid "What this site tells search engines and AI assistants about itself. Everything here is a report — nothing on this screen changes a page, because the pages are meant to stay exactly as they were designed. Fix anything you want to act on in the Visual Editor."
 msgstr ""
 
-#: includes/class-geo-audit.php:600
+#: includes/class-geo-audit.php:602
 msgid "Worth your attention"
 msgstr ""
 
-#: includes/class-geo-audit.php:605
+#: includes/class-geo-audit.php:607
 msgid "%1$d worth fixing, %2$d worth a look, %3$d suggestions."
 msgstr ""
 
-#: includes/class-geo-audit.php:612
+#: includes/class-geo-audit.php:614
 msgid "Re-check"
 msgstr ""
 
-#: includes/class-geo-audit.php:617
+#: includes/class-geo-audit.php:619
 msgid "The site as a whole"
 msgstr ""
 
-#: includes/class-geo-audit.php:621
+#: includes/class-geo-audit.php:623
 msgid "Change these under SEO &amp; Sharing"
 msgstr ""
 
-#: includes/class-geo-audit.php:626
+#: includes/class-geo-audit.php:628
 msgid "Page by page"
 msgstr ""
 
-#: includes/class-geo-audit.php:630
+#: includes/class-geo-audit.php:632
 msgid "Page"
 msgstr ""
 
-#: includes/class-geo-audit.php:631
+#: includes/class-geo-audit.php:633
 msgid "Findings"
 msgstr ""
 
-#: includes/class-geo-audit.php:641
+#: includes/class-geo-audit.php:643
 msgid "post"
 msgstr ""
 
-#: includes/class-geo-audit.php:650
+#: includes/class-geo-audit.php:652
 msgid "Edit post"
 msgstr ""
 
-#: includes/class-geo-audit.php:651
+#: includes/class-geo-audit.php:653
 msgid "Open in editor"
 msgstr ""
 
-#: includes/class-geo-audit.php:657
+#: includes/class-geo-audit.php:659
 msgid "Nothing to report."
 msgstr ""
 
-#: includes/class-geo-audit.php:675
+#: includes/class-geo-audit.php:677
 msgid "Showing the %1$d most recent of %2$d posts. Older ones are not checked."
 msgstr ""
 
-#: includes/class-geo-audit.php:723
+#: includes/class-geo-audit.php:725
 msgid "Titles and descriptions"
 msgstr ""
 
-#: includes/class-geo-audit.php:726
+#: includes/class-geo-audit.php:728
 msgid "Handled by %s, filled in from the original design."
 msgstr ""
 
-#: includes/class-geo-audit.php:727
+#: includes/class-geo-audit.php:729
 msgid "Handled here — no SEO plugin needed."
 msgstr ""
 
-#: includes/class-geo-audit.php:730
+#: includes/class-geo-audit.php:732
 msgid "%1$d of %2$d pages and posts have a description"
 msgstr ""
 
-#: includes/class-geo-audit.php:737
+#: includes/class-geo-audit.php:739
 msgid "Structured data"
 msgstr ""
 
-#: includes/class-geo-audit.php:740
+#: includes/class-geo-audit.php:742
 msgid "This site describes itself as a %1$s called “%2$s”."
 msgstr ""
 
-#: includes/class-geo-audit.php:744
+#: includes/class-geo-audit.php:746
 msgid "Every page carries it, blog posts as articles"
 msgstr ""
 
-#: includes/class-geo-audit.php:748
+#: includes/class-geo-audit.php:750
 #: includes/class-seo-settings.php:257
 msgid "AI assistants"
 msgstr ""
 
-#: includes/class-geo-audit.php:750
+#: includes/class-geo-audit.php:752
 msgid "Named in robots.txt and pointed at a plain-text summary of the site."
 msgstr ""
 
-#: includes/class-geo-audit.php:751
+#: includes/class-geo-audit.php:753
 msgid "Switched off — robots.txt does not mention them."
 msgstr ""
 
-#: includes/class-geo-audit.php:756
+#: includes/class-geo-audit.php:758
 msgid "Old addresses"
 msgstr ""
 
-#: includes/class-geo-audit.php:758
+#: includes/class-geo-audit.php:760
 msgid "Addresses from before the conversion still work, so existing links and search results are not lost."
 msgstr ""
 
-#: includes/class-geo-audit.php:759
+#: includes/class-geo-audit.php:761
 msgid "No redirects are stored. If this site replaced an older one, its old addresses now return \"not found\"."
 msgstr ""
 
-#: includes/class-geo-audit.php:762
+#: includes/class-geo-audit.php:764
 msgid "%d address redirected"
 msgid_plural "%d addresses redirected"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-geo-audit.php:768
+#: includes/class-geo-audit.php:770
 msgid "Sitemap"
 msgstr ""
 
-#: includes/class-geo-audit.php:769
+#: includes/class-geo-audit.php:771
 msgid "Generated by WordPress; pages you hide from search are left out."
 msgstr ""
 
-#: includes/class-geo-audit.php:775
+#: includes/class-geo-audit.php:777
 msgid "What this site already does"
 msgstr ""
 
@@ -1572,14 +1890,14 @@ msgstr ""
 msgid "Something went wrong — please try again."
 msgstr ""
 
-#: visual-edit-lite.php:2308
+#: visual-edit-lite.php:2311
 msgid "Open the front page in the visual editor"
 msgstr ""
 
-#: visual-edit-lite.php:2360
+#: visual-edit-lite.php:2363
 msgid "Advanced (HTML block &amp; %s)"
 msgstr ""
 
-#: visual-edit-lite.php:2361
+#: visual-edit-lite.php:2364
 msgid "Edit HTML block"
 msgstr ""

@@ -229,12 +229,26 @@ ob_start(); clara_ve_contract_notice(); $notice = ob_get_clean();
 // that the SCREEN GATE still matches, so any notice at all proves it.
 $out[] = array( "no-contract notice reaches the plugin screen", false !== strpos( $notice, "notice-" ) );
 
+$out[] = array( "assertion block ran to completion", true );
 foreach ( $out as $row ) { echo ( $row[1] ? "OK|" : "FAIL|" ), $row[0], "\n"; }
 ')
+# A fatal inside the eval prints a stack trace, not verdicts. Skipping lines
+# that carry no verdict is how a crash once counted as zero failures and the
+# script announced VERIFIED over assertions that never ran. Anything that is
+# not a verdict is now a failure, and the sentinel proves the block finished.
+SAW_SENTINEL=0
 while IFS='|' read -r verdict label; do
-  [ -z "$label" ] && continue
-  if [ "$verdict" = "OK" ]; then pass "$label"; else bad "$label"; fi
+  [ -z "$verdict" ] && [ -z "$label" ] && continue
+  case "$verdict" in
+    OK)
+      [ "$label" = "assertion block ran to completion" ] && { SAW_SENTINEL=1; continue; }
+      pass "$label" ;;
+    FAIL) bad "$label" ;;
+    *) bad "unexpected output from the assertion block: ${verdict}${label:+|$label}" ;;
+  esac
 done <<< "$ASSERT"
+[ "$SAW_SENTINEL" = "1" ] || bad "the assertion block did not run to completion"
+
 
 # ------------------------------------------------------------- 6. no noise ---
 step "Runtime"

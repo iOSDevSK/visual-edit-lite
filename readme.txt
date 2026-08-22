@@ -8,7 +8,7 @@ Stable tag: 1.25.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Click-to-edit visual editing for WordPress themes built from static HTML — text, images, forms, menus, SEO. Markup stays 1:1 with the design.
+Click-to-edit visual editing for WordPress — static-HTML themes and Gutenberg block themes alike. Text, images, forms, menus, SEO, 1:1 markup.
 
 == Description ==
 
