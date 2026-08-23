@@ -111,6 +111,45 @@ class Clara_VE_Editor_Page {
 		return $out;
 	}
 
+	/**
+	 * The theme's own colours, whichever panel is running.
+	 *
+	 * block_presets() answers nothing for a theme of ours, and rightly: block
+	 * mode is not what such a theme uses, and its controls pick from that list
+	 * INSTEAD of writing CSS. The gradient builder needs the palette for
+	 * something weaker — a handful of suggested pairs to click, which it then
+	 * writes out as ordinary CSS either way. Refusing it there would leave the
+	 * raw-HTML panel with two empty colour pickers where the block panel has
+	 * six ready-made gradients, for no reason a person could see.
+	 *
+	 * `theme` and `custom` only, never `default` — same rule as block_presets:
+	 * a site offered someone else's palette stops looking like itself.
+	 *
+	 * @return array
+	 */
+	private static function theme_colors() {
+		if ( ! function_exists( 'wp_get_global_settings' ) ) {
+			return array();
+		}
+		$group = wp_get_global_settings( array( 'color', 'palette' ) );
+		$out   = array();
+		$seen  = array();
+		foreach ( array( 'theme', 'custom' ) as $origin ) {
+			foreach ( (array) ( isset( $group[ $origin ] ) ? $group[ $origin ] : array() ) as $preset ) {
+				if ( empty( $preset['slug'] ) || isset( $seen[ $preset['slug'] ] ) ) {
+					continue;
+				}
+				$seen[ $preset['slug'] ] = true;
+				$out[]                   = array(
+					'slug'  => (string) $preset['slug'],
+					'name'  => isset( $preset['name'] ) ? (string) $preset['name'] : (string) $preset['slug'],
+					'value' => isset( $preset['color'] ) ? (string) $preset['color'] : '',
+				);
+			}
+		}
+		return $out;
+	}
+
 	private static function block_presets() {
 		if ( clara_ve_active_theme_is_ours() || ! function_exists( 'wp_get_global_settings' ) ) {
 			return array();
@@ -271,6 +310,9 @@ class Clara_VE_Editor_Page {
 				// the site keeps one type scale and one palette, and the
 				// client cannot leave the brand by accident.
 				'blockPresets'    => self::block_presets(),
+				// The palette on its own, for the gradient builder's suggested
+				// pairs — which both panels offer, so both need it.
+				'themeColors'     => self::theme_colors(),
 				'blockSupports'   => self::block_supports(),
 				// Lets the Pages-list "Visual Editor" column link straight into
 				// editing that specific page. On a block site the front page's

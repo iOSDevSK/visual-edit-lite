@@ -2714,6 +2714,15 @@
 		return 'linear-gradient(' + direction + ', ' + from + ' 0%, ' + to + ' 100%)';
 	}
 
+	// A computed background-image is `none` when there is none, and may be a
+	// url() — a hero photograph the design put there. Only a gradient is this
+	// section's business; anything else it reports as nothing, so that the
+	// panel does not claim a photograph is a gradient it could rebuild.
+	function gradientOf( value ) {
+		var image = String( value || '' ).trim();
+		return /^(linear|radial|conic)-gradient\(/i.test( image ) ? image : '';
+	}
+
 	/**
 	 * The two colours and the direction out of a gradient this panel wrote.
 	 *
@@ -2740,6 +2749,16 @@
 	 *
 	 * @return {Array}
 	 */
+	// The theme's palette, whichever panel is asking. block_presets() answers
+	// nothing for a theme of ours; themeColors is the same palette sent to
+	// both, because the gradient builder only ever suggests from it.
+	function gradientPalette() {
+		var list = ( config.themeColors && config.themeColors.length )
+			? config.themeColors
+			: ( BLOCK_PRESETS.colors || [] );
+		return list;
+	}
+
 	function paletteGradients() {
 		// Plain colours only. A palette entry may be a computed value —
 		// Twenty Twenty-Five's accent-6 is
@@ -2747,7 +2766,7 @@
 		// perfectly good gradient stop but has no swatch to show and no
 		// meaning outside the element it is on. Those stay reachable through
 		// Custom rather than being made into a chip that cannot be drawn.
-		var palette = ( BLOCK_PRESETS.colors || [] ).filter( function ( colour ) {
+		var palette = gradientPalette().filter( function ( colour ) {
 			return /^(#|rgb)/i.test( colour.value || '' );
 		} );
 		var out = [];
@@ -2780,14 +2799,14 @@
 	 * @param {Object} target
 	 * @return {DocumentFragment}
 	 */
-	function gradientSection( target ) {
-		var frag = document.createDocumentFragment();
+	function appendGradientSection( parent, opts ) {
+		var frag = parent;
 		frag.appendChild( el( 'div', 'cve-section', 'GRADIENT' ) );
 
-		var themeGradients = BLOCK_PRESETS.gradients || [];
-		var palette = BLOCK_PRESETS.colors || [];
-		var storedCss = ( target.blockStyle && target.blockStyle['color.gradient'] ) || '';
-		var storedSlug = ( target.blockAttrs && target.blockAttrs.gradient ) || '';
+		var themeGradients = opts.presets || [];
+		var palette = gradientPalette();
+		var storedCss = opts.css || '';
+		var storedSlug = opts.slug || '';
 		var showing = storedCss || ( storedSlug ? presetValue( 'gradients', storedSlug ) : '' );
 
 		var fallbackFrom = palette.length ? palette[ 0 ].value : '#000000';
@@ -2800,29 +2819,20 @@
 			preview.classList.toggle( 'is-empty', ! showing );
 		};
 
-		var show = function ( css ) {
-			showing = css;
-			paint();
-			postToFrame( { type: 'preview-style', id: current.id, styles: { background: css } } );
-		};
-
 		// A gradient BUILT here, or chosen from the palette row.
 		var applyCss = function ( css ) {
-			recordBlockStyle( 'color.gradient', css );
-			recordBlockAttrs( { gradient: '' } );
-			show( css );
-			// WordPress writes its preset rules with !important, so a leftover
-			// preset class paints over what was just chosen and the change
-			// reads as having done nothing.
-			postToFrame( { type: 'preview-class', id: current.id, kind: 'gradient', slug: '', custom: true } );
+			showing = css;
+			paint();
+			opts.apply( css );
 		};
 
-		// One the THEME declares. Stored by name, not by value.
+		// One the THEME declares, stored by name rather than by value. Only
+		// the block panel has such a thing; the raw-HTML one passes no presets
+		// and never reaches this.
 		var applySlug = function ( slug ) {
-			recordBlockStyle( 'color.gradient', null );
-			recordBlockAttrs( { gradient: slug } );
-			show( slug ? presetValue( 'gradients', slug ) : '' );
-			postToFrame( { type: 'preview-class', id: current.id, kind: 'gradient', slug: slug } );
+			showing = slug ? presetValue( 'gradients', slug ) : '';
+			paint();
+			opts.applyPreset( slug );
 		};
 
 		var rebuild = function () {
@@ -2858,7 +2868,11 @@
 		none.type = 'button';
 		none.title = 'No gradient';
 		none.addEventListener( 'click', function () {
-			applySlug( '' );
+			if ( opts.applyPreset ) {
+				applySlug( '' );
+			} else {
+				applyCss( '' );
+			}
 		} );
 		ready.appendChild( none );
 		if ( ready.childNodes.length > 1 ) {
@@ -2961,11 +2975,10 @@
 				colourRows.from();
 				colourRows.to();
 			}
-			custom.value = ( target.blockAttrs && target.blockAttrs.gradient ) ? '' : showing;
+			custom.value = storedSlug ? '' : showing;
 		}
 
 		paint();
-		return frag;
 	}
 
 	function presetRow( label, group, attribute, cssProperty, initial ) {
@@ -3423,7 +3436,30 @@
 		// which is why it used to sit inside COLOURS. It has outgrown the row:
 		// see gradientSection(), where the swatch/direction builder lives.
 		if ( can( 'color.gradient' ) ) {
-			section.appendChild( gradientSection( target ) );
+			appendGradientSection( section, {
+				presets: BLOCK_PRESETS.gradients || [],
+				css: ( target.blockStyle && target.blockStyle['color.gradient'] ) || '',
+				slug: ( target.blockAttrs && target.blockAttrs.gradient ) || '',
+				apply: function ( css ) {
+					recordBlockStyle( 'color.gradient', css );
+					recordBlockAttrs( { gradient: '' } );
+					postToFrame( { type: 'preview-style', id: current.id, styles: { background: css } } );
+					// WordPress writes its preset rules with !important, so a
+					// leftover preset class paints over what was just chosen
+					// and the change reads as having done nothing.
+					postToFrame( { type: 'preview-class', id: current.id, kind: 'gradient', slug: '', custom: true } );
+				},
+				applyPreset: function ( slug ) {
+					recordBlockStyle( 'color.gradient', null );
+					recordBlockAttrs( { gradient: slug } );
+					postToFrame( {
+						type: 'preview-style',
+						id: current.id,
+						styles: { background: slug ? presetValue( 'gradients', slug ) : '' },
+					} );
+					postToFrame( { type: 'preview-class', id: current.id, kind: 'gradient', slug: slug } );
+				},
+			} );
 		}
 
 		if ( canAny( 'border.' ) ) {
@@ -4623,6 +4659,25 @@
 			// rounded corner belongs to the frame rather than to what sits
 			// behind it, and it is four controls now rather than one.
 			panel.appendChild( contGrid );
+
+			// A gradient background, which this panel never offered at all —
+			// it was a block-mode control, so on a converted theme there was
+			// no way to have one.
+			//
+			// Written to background-IMAGE, not to background. The shorthand
+			// would clear the flat colour above it, and the two are not
+			// alternatives here: the gradient paints over the colour, so an
+			// element keeps whatever it had underneath and clearing the
+			// gradient gives it back. (Block mode is the other way round
+			// because that is how WordPress stores it — a block's gradient
+			// and its background colour are one choice, and picking either
+			// clears the other.)
+			appendGradientSection( panel, {
+				css: gradientOf( target.styles.backgroundImage ),
+				apply: function ( css ) {
+					previewStyle( 'backgroundImage', css );
+				},
+			} );
 
 			// Size — lets empty decorative elements (a 1px rule, a spacer) be
 			// resized, not just recoloured.

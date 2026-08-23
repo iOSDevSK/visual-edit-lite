@@ -505,6 +505,11 @@
 			lineHeight: computed.lineHeight === 'normal' ? '' : computed.lineHeight,
 			letterSpacing: spacing,
 			backgroundColor: bgToHex( computed.backgroundColor ),
+			// Raw, and the panel decides what it is. `none` when there is
+			// none, a gradient when this panel put one there, and a url()
+			// when the design did — which the gradient section reports as
+			// nothing rather than as a gradient it could rebuild.
+			backgroundImage: computed.backgroundImage,
 			opacity: computed.opacity,
 			paddingTop: computed.paddingTop,
 			paddingBottom: computed.paddingBottom,

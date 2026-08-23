@@ -223,6 +223,12 @@ This edition is derived from Visual Edit Pro 1.25.4.
   colours plus a direction to make your own. Custom stays for anything more
   elaborate. Before, a gradient shared a row with the size controls: a 54-pixel
   box suggesting "e.g. 24px", and usually nothing to pick instead.
+* New: a gradient background on a raw-HTML theme too — the same GRADIENT
+  section, with ready-made gradients from the theme's own palette. It writes
+  background-image, so the flat colour underneath survives.
+* Fixed: the BORDER Style row read [object Object] for every choice, and the
+  only selectable entry was the value already set — so it could not change
+  anything.
 * Fixed: the editor panel's controls were unstyled in this edition. Deriving
   Lite from Pro cut the AI panel out of the stylesheet and took the panel's own
   rules with it — the number boxes, colour swatches, grids and steppers had no
