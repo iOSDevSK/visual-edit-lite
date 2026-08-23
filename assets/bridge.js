@@ -2873,6 +2873,36 @@
 			}
 			return;
 		}
+		if ( data.type === 'duplicate' ) {
+			el = findById( data.id );
+			if ( el && el.parentNode ) {
+				finishEdit( false );
+				var copy = el.cloneNode( true );
+				// The copy is shown, not made addressable. Every path after
+				// the original has just shifted by one and nothing here
+				// re-stamps — the same state a delete leaves behind — so a
+				// clone carrying the original's path would answer findById()
+				// first and take edits meant for the original. Stripped bare,
+				// it is scenery until the save reloads the frame and stamps
+				// it properly.
+				//
+				// The id goes for the ordinary reason: a document has one of
+				// each, and the original is what the page's anchors, labels
+				// and scripts already point at.
+				var strip = [ copy ].concat( [].slice.call( copy.querySelectorAll( '*' ) ) );
+				for ( var m = 0; m < strip.length; m++ ) {
+					strip[ m ].removeAttribute( 'id' );
+					var own = strip[ m ].attributes;
+					for ( var a = own.length - 1; a >= 0; a-- ) {
+						if ( 0 === own[ a ].name.indexOf( 'data-cve-' ) ) {
+							strip[ m ].removeAttribute( own[ a ].name );
+						}
+					}
+				}
+				el.parentNode.insertBefore( copy, el.nextSibling );
+			}
+			return;
+		}
 		if ( data.type === 'faq-apply' ) {
 			// Re-arrange a list of questions by MOVING the existing elements,
 			// never by writing new markup over them.

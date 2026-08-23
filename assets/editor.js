@@ -822,6 +822,21 @@
 				return { ok: false, error: 'Cannot remove the root element.' };
 			}
 			el.remove();
+		} else if ( patch.kind === 'duplicate-element' ) {
+			if ( ! el.parentElement ) {
+				return { ok: false, error: 'Cannot duplicate the root element.' };
+			}
+			var copy = el.cloneNode( true );
+			// An id may appear once in a document. The original keeps it: it is
+			// what anchors, labels and any script on the page already point at,
+			// and a copy that stole it would move a menu link's destination or
+			// a label's field without touching either.
+			copy.removeAttribute( 'id' );
+			var inner = copy.querySelectorAll( '[id]' );
+			for ( var d = 0; d < inner.length; d++ ) {
+				inner[ d ].removeAttribute( 'id' );
+			}
+			el.parentElement.insertBefore( copy, el.nextSibling );
 		} else if ( patch.kind === 'set-faq-list' ) {
 			// Rebuild the whole list of questions in one go.
 			//
@@ -1004,7 +1019,7 @@
 		// resolved afterwards points at the wrong element. Processing them in
 		// reverse path order means each target is still where its path says it is
 		// at the moment it is used, because nothing before it has moved yet.
-		var STRUCTURAL = { 'remove-element': 1, 'set-faq-list': 1, 'set-collection-list': 1 };
+		var STRUCTURAL = { 'remove-element': 1, 'duplicate-element': 1, 'set-faq-list': 1, 'set-collection-list': 1 };
 		var ordered = patches
 			.filter( function ( p ) {
 				return ! STRUCTURAL[ p.kind ] && p.kind !== 'set-pseudo';
@@ -5076,6 +5091,23 @@
 				closePanelSilent();
 			} );
 		}
+		// Duplicate, beside delete and withheld in block mode for the same
+		// reason: adding a node to the parsed tree is not something the block
+		// store expresses yet, and a button that is refused at Save takes the
+		// whole queue down with it. Block pages have their own copy, at
+		// section level, in blockStructureSection().
+		var twin = config.blockMode ? null : el( 'button', 'cve-icon', '⧉' );
+		if ( twin ) {
+			twin.title = 'Duplicate element';
+			twin.addEventListener( 'click', function () {
+				postToFrame( { type: 'duplicate', id: current.id } );
+				recordPatch( { id: current.id, kind: 'duplicate-element' } );
+				// Closed, like delete: the copy is on the page but the paths
+				// around it have all shifted, so nothing there is addressable
+				// until the save re-stamps the frame.
+				closePanelSilent();
+			} );
+		}
 		var reset = el( 'button', 'cve-icon', '↺' );
 		reset.title = 'Reset';
 		reset.addEventListener( 'click', function () {
@@ -5121,6 +5153,9 @@
 		} );
 		if ( trash ) {
 			foot.appendChild( trash );
+		}
+		if ( twin ) {
+			foot.appendChild( twin );
 		}
 		foot.appendChild( reset );
 		foot.appendChild( el( 'span', 'cve-flex' ) );

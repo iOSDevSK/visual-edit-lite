@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.6
+Stable tag: 1.25.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,12 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.7 =
+This edition is derived from Visual Edit Pro 1.25.7.
+* New: duplicate — any element you can select can be copied, from the icon
+  beside delete in the panel's footer. The copy lands after the original and
+  keeps everything about it except its id.
 
 = 1.25.6 =
 This edition is derived from Visual Edit Pro 1.25.6.
