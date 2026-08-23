@@ -72,6 +72,28 @@ purity "AI code survived"           'Clara_VE_AI_|clara-ve-ai|clara_ve_ai_|ai-ch
 purity "Turnstile survived"         'turnstile'
 purity "theme export survived"      'Clara_VE_Export_Page|clara_ve_export_theme'
 
+# The gate that runs the OTHER way: something that must still be HERE.
+#
+# Deriving Lite cuts the AI chat and the credits chip out of editor.css, and
+# those blocks are not adjacent to each other — so the cut is made by reading
+# the file, and one made by span instead takes whatever sits between them. That
+# happened: thirty non-AI rules went with it, including .cve-panel, .cve-field,
+# .cve-grid and every control inside them, and Lite shipped for two releases
+# with the editor panel unstyled. Nothing caught it, because every gate above
+# asks what is still present that should be gone, and verify.sh asks whether
+# the editor RENDERS — not whether it is styled.
+#
+# These nine are the panel's skeleton, not a feature list: they are what
+# el( 'div', 'cve-field' ) and its neighbours put in the markup on every
+# render, and they do not come and go the way features do. A tenth going
+# missing would be caught by the same cut taking one of these with it.
+#
+# Cut CSS by SELECTOR, never by span. A combined rule keeps its non-AI half.
+for CLASS in cve-panel cve-field cve-field-label cve-grid cve-num cve-step cve-unit cve-color cve-swatch; do
+  grep -qF ".$CLASS" "$SRC/assets/editor.css" \
+    || fail "editor.css has no rule for .$CLASS — the CSS derivation over-cut (see the note above)"
+done
+
 # The product name itself. Pro hardcodes "Visual Edit Pro" into user-visible
 # strings — the admin-bar node and a wp_die() title — and neither carries a
 # licence gate, an AI class or any other marker the greps above look for, so
@@ -140,4 +162,4 @@ if unzip -l "$OUT" | grep -qE '__MACOSX|\.DS_Store'; then
   fail "junk in the archive — build is dirty"
 fi
 echo "  clean: no __MACOSX, no .DS_Store"
-echo "  gates: licence, updater, AI, Turnstile, export, wp.org headers — all clear"
+echo "  gates: licence, updater, AI, Turnstile, export, wp.org headers, panel CSS — all clear"

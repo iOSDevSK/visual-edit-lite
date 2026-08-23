@@ -101,9 +101,11 @@
 	z-index: 200;
 	background: rgba(10, 10, 12, 0.6);
 }
+
 .cve-fontpicker[hidden] {
 	display: none;
 }
+
 /* Absolute, not flex-centred: openFontPicker() sets left/top in px so the box
    can then be dragged. A flex-centred child ignores both. */
 .cve-fontpicker-box {
@@ -119,6 +121,7 @@
 	box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
 	font-size: 13px;
 }
+
 .cve-fontpicker-head {
 	display: flex;
 	align-items: center;
@@ -126,14 +129,17 @@
 	margin-bottom: 10px;
 	cursor: grab; /* matches .cve-head — same gesture, same cursor */
 }
+
 .cve-fontpicker-head strong {
 	font-size: 14px;
 }
+
 .cve-fontpicker-count {
 	margin-left: auto;
 	color: #a7a7ad;
 	font-variant-numeric: tabular-nums;
 }
+
 .cve-fontpicker-search {
 	width: 100%;
 	padding: 8px 11px;
@@ -143,9 +149,11 @@
 	color: #f5f5f7;
 	font-size: 13px;
 }
+
 .cve-fontpicker-search::placeholder {
 	color: #7c7c85;
 }
+
 .cve-fontpicker-chosen {
 	display: flex;
 	flex-wrap: wrap;
@@ -153,6 +161,7 @@
 	padding: 10px 0;
 	border-bottom: 1px solid #303038;
 }
+
 .cve-fontchip {
 	display: inline-flex;
 	align-items: center;
@@ -162,6 +171,7 @@
 	background: #2e2e36;
 	font-size: 13px;
 }
+
 .cve-fontchip-x {
 	border: 0;
 	border-radius: 50%;
@@ -173,16 +183,19 @@
 	font-size: 10px;
 	line-height: 1;
 }
+
 .cve-fontchip-x:hover {
 	background: #a5333a;
 	color: #fff;
 }
+
 .cve-fontpicker-list {
 	flex: 1;
 	overflow-y: auto;
 	margin: 4px -6px 6px;
 	padding: 0 6px;
 }
+
 .cve-fontrow {
 	display: flex;
 	align-items: center;
@@ -190,6 +203,7 @@
 	padding: 7px 2px;
 	border-bottom: 1px solid #29292f;
 }
+
 .cve-fontrow-name {
 	width: 150px;
 	flex: none;
@@ -199,6 +213,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
 /* The point of the row: the family rendered in its own face. */
 .cve-fontrow-prev {
 	flex: 1;
@@ -207,6 +222,7 @@
 	overflow: hidden;
 	white-space: nowrap;
 }
+
 .cve-fontrow-add {
 	flex: none;
 	width: auto;
@@ -214,10 +230,12 @@
 	margin: 0;
 	font-size: 12px;
 }
+
 .cve-fontrow-add:disabled {
 	opacity: 0.45;
 	cursor: default;
 }
+
 .cve-addfont {
 	margin-top: 6px;
 }
@@ -234,9 +252,11 @@
 	justify-content: center;
 	background: rgba(15, 15, 18, 0.55);
 }
+
 #clara-ve-stale[hidden] {
 	display: none;
 }
+
 .clara-ve-stale-box {
 	max-width: 380px;
 	padding: 22px 24px;
@@ -245,12 +265,14 @@
 	box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
 	text-align: center;
 }
+
 .clara-ve-stale-box strong {
 	display: block;
 	margin-bottom: 6px;
 	font-size: 15px;
 	color: #1d2327;
 }
+
 .clara-ve-stale-box p {
 	margin: 0 0 14px;
 	color: #50575e;
@@ -258,9 +280,6 @@
 	line-height: 1.5;
 }
 
-/* These toolbar controls set `display`, which beats the UA stylesheet's
-   `[hidden] { display: none }` — so hiding them from JS needs saying here,
-   or a feature switched off by a missing API key stays on screen. */
 .clara-ve-history-btn[hidden] {
 	display: none;
 }
@@ -597,7 +616,8 @@
    than docked: it is a list being reorganised, which needs width the 320px
    docked panels do not have. */
 /* Positioned in px by openFaqEditor() so makeDraggable() can take over — no
-   transform centring, which would make the first drag jump by half the box. */
+   transform centring,
+which would make the first drag jump by half the box. */
 .cve-faq-modal {
 	position: fixed;
 	z-index: 100001; /* above the element panel, which it is opened from */
@@ -830,6 +850,397 @@
 	cursor: default;
 }
 
+/* ---- Floating inspector panel (open-design dark look) ---- */
+
+.cve-panel {
+	position: absolute;
+	z-index: 100;
+	width: 340px;
+	max-height: calc( 100% - 24px );
+	overflow-y: auto;
+	padding: 14px 16px 12px;
+	border-radius: 16px;
+	background: #202024;
+	color: #f5f5f7;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+	font-size: 13px;
+}
+
+.cve-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 10px;
+	cursor: grab;
+	user-select: none;
+}
+
+/* While dragging a panel: no accidental text selection anywhere, and a
+   consistent grabbing cursor even when the pointer outruns the handle. */
+body.cve-dragging,
+body.cve-dragging * {
+	user-select: none !important;
+	cursor: grabbing !important;
+}
+
+.cve-grip {
+	color: #8e8e93;
+	font-size: 14px;
+	letter-spacing: 2px;
+}
+
+.cve-title {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 15px;
+}
+
+.cve-close {
+	width: 30px;
+	height: 30px;
+	border: 1px solid #3a3a3f;
+	border-radius: 9px;
+	background: transparent;
+	color: #f5f5f7;
+	cursor: pointer;
+}
+
+.cve-section {
+	margin: 14px 0 8px;
+	color: #8e8e93;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+}
+
+/* A folding section heading. The whole row is the hit target, not a small
+   chevron — the pointer is already on the word. */
+.cve-section-fold {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	cursor: pointer;
+	user-select: none;
+	padding: 2px 0;
+	border-radius: 4px;
+}
+
+.cve-section-fold:hover {
+	color: #c7c7cc;
+}
+
+.cve-section-fold:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.cve-section-fold::after {
+	content: '';
+	width: 6px;
+	height: 6px;
+	border-right: 1.5px solid currentColor;
+	border-bottom: 1.5px solid currentColor;
+	transform: rotate(45deg) translate(-1px, -1px);
+	transition: transform 0.12s ease;
+	flex: 0 0 auto;
+}
+
+.cve-section-fold[aria-expanded='false']::after {
+	transform: rotate(-45deg) translate(-1px, 1px);
+}
+
+.cve-secbody[hidden] {
+	display: none;
+}
+
+.cve-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.cve-field {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 4px 0;
+	padding: 7px 10px;
+	border-radius: 9px;
+	background: #2c2c31;
+	min-width: 0;
+}
+
+.cve-field-label {
+	color: #8e8e93;
+	flex: 0 0 auto;
+}
+
+.cve-select,
+.cve-num,
+.cve-text,
+.cve-hex {
+	flex: 1;
+	min-width: 0;
+	border: 0 !important;
+	background: transparent !important;
+	color: #f5f5f7 !important;
+	font-size: 13px;
+	box-shadow: none !important;
+	text-align: right;
+	padding: 0 !important;
+	min-height: 0 !important;
+}
+
+.cve-select {
+	appearance: auto;
+}
+
+.cve-select option {
+	background: #2c2c31;
+	color: #f5f5f7;
+}
+
+.cve-num {
+	width: 54px;
+	flex: 0 1 auto;
+}
+
+.cve-unit {
+	color: #8e8e93;
+}
+
+.cve-step {
+	flex: 0 0 auto;
+	width: 20px;
+	border: 0;
+	background: transparent;
+	color: #8e8e93;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.cve-step:hover {
+	color: #fff;
+}
+
+.cve-color {
+	flex: 0 0 auto;
+	width: 26px;
+	height: 22px;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	cursor: pointer;
+}
+
+/* The Custom colour next to a preset select. It has been in the markup since
+   presetOrCustomRow() was written and never had a rule of its own, so it drew
+   at whatever size the browser felt like. */
+.cve-swatch {
+	flex: 0 0 auto;
+	width: 26px;
+	height: 22px;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	cursor: pointer;
+}
+
+/* ---- Gradient builder ---- */
+
+/* What is about to be applied,
+at the width it will be applied across. A
+   gradient is the one thing in this panel that cannot be judged from its
+   values: two hexes and an angle say nothing about what the eye gets. */
+.cve-grad-preview {
+	height: 34px;
+	margin: 2px 0 8px;
+	border-radius: 5px;
+	border: 1px solid #3a3a3e;
+}
+
+.cve-grad-preview.is-empty {
+	/* No gradient — and said so, rather than drawn as a black bar that reads
+	   like a very dark one. */
+	background-image: linear-gradient( 45deg, #2c2c30 25%, transparent 25%, transparent 75%, #2c2c30 75% ),
+		linear-gradient( 45deg, #2c2c30 25%, transparent 25%, transparent 75%, #2c2c30 75% );
+	background-size: 12px 12px;
+	background-position: 0 0, 6px 6px;
+}
+
+.cve-grad-ready {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 10px;
+}
+
+.cve-grad-swatch {
+	width: 34px;
+	height: 24px;
+	padding: 0;
+	border: 1px solid #3a3a3e;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.cve-grad-swatch:hover,
+.cve-grad-swatch:focus-visible {
+	border-color: #8e8e93;
+	outline: none;
+}
+
+.cve-grad-none {
+	background: transparent;
+	color: #8e8e93;
+	font-size: 12px;
+	line-height: 1;
+}
+
+.cve-checkrow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 8px 0;
+	color: #d5d5da;
+}
+
+.cve-img {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 140px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: 8px;
+}
+
+.cve-video-preview {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 160px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: 8px;
+	background: #000;
+}
+
+/* One row per <source> — format fallbacks or responsive breakpoints, each
+   replaced independently so swapping one never collapses the others. */
+.cve-sources {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.cve-source-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-radius: 8px;
+	background: rgba( 255, 255, 255, 0.05 );
+}
+
+.cve-source-label {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: #d5d5da;
+	font-size: 12px;
+}
+
+.cve-source-replace {
+	flex: 0 0 auto;
+	padding: 5px 12px;
+	font-size: 12px;
+}
+
+.cve-note {
+	margin: 10px 0 4px;
+	color: #8e8e93;
+	font-size: 12px;
+}
+
+.cve-foot {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 14px;
+	padding-top: 12px;
+	border-top: 1px solid #3a3a3f;
+}
+
+.cve-flex {
+	flex: 1;
+}
+
+.cve-icon {
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: #d5d5da;
+	font-size: 15px;
+	cursor: pointer;
+}
+
+.cve-icon:hover {
+	background: #2c2c31;
+}
+
+.cve-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px 16px;
+	border: 0;
+	border-radius: 999px;
+	background: #2c2c31;
+	color: #f5f5f7;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.cve-btn-light {
+	background: transparent;
+	border: 1px solid #3a3a3f;
+}
+
+.cve-btn-save {
+	background: #f5f0e6;
+	color: #1c1c1e;
+}
+
+/* Ornament Symbol field: preview the glyph in the ornament's real font. */
+.cve-symbol {
+	font-size: 22px !important;
+	text-align: center !important;
+	line-height: 1.2;
+}
+
+/* Full-width panel buttons (ornament convert, video/poster pickers). */
+.cve-btn-block {
+	display: flex;
+	width: 100%;
+	margin: 2px 0 6px;
+}
+
+.cve-btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
 .cve-textarea {
 	display: block;
 	width: 100%;
@@ -933,7 +1344,8 @@
 
 /* ---- Format toggles (italic / underline / super / sub) ---- */
 /* Same field chrome as every typography row; the active state borrows the
-   Save button's cream-on-ink inversion, so "on" reads instantly without
+   Save button's cream-on-ink inversion,
+so "on" reads instantly without
    introducing a new accent color to the panel. */
 .cve-fmtgroup {
 	display: flex;
@@ -975,7 +1387,8 @@
 
 /* ---- Sections: the structural toolbar and the "Add a section" browser ---- */
 
-/* The bin removes a whole band of the page, which is usually more than what
+/* The bin removes a whole band of the page,
+which is usually more than what
    was clicked. It is the one button here that reads differently from the
    others on purpose. */
 .cve-fmt-danger {
@@ -983,10 +1396,12 @@
 	border-color: #6b3a3a;
 	color: #e8a9a9;
 }
+
 .cve-fmt-danger:hover {
 	background: #6b3a3a;
 	color: #fff;
 }
+
 .cve-structure {
 	display: flex;
 	gap: 6px;
@@ -1003,25 +1418,30 @@
 	justify-content: center;
 	overflow: auto;
 }
+
 .cve-sectionpicker[hidden] {
 	display: none;
 }
+
 .cve-sectionpicker .cve-fontpicker-box {
 	position: relative;
 	margin: 5vh 0;
 	width: min(720px, 94vw);
 }
+
 .cve-sectionlist {
 	overflow-y: auto;
 	margin-top: 10px;
 	display: grid;
 	gap: 14px;
 }
+
 .cve-sectioncard {
 	padding: 12px;
 	border: 1px solid #3a3a40;
 	border-radius: 12px;
 }
+
 /* Scaled down rather than cropped: what matters is recognising the section,
    and a pattern designed for a full page is unreadable at panel width
    otherwise. A transform does not change the room an element takes up, so
@@ -1033,6 +1453,7 @@
 	border-radius: 8px;
 	background: #fff;
 }
+
 .cve-sectionpreview {
 	display: block;
 	width: 200%;
@@ -1051,6 +1472,7 @@
 	gap: 6px;
 	margin-bottom: 8px;
 }
+
 .cve-screen {
 	flex: 1;
 	height: 28px;
@@ -1061,14 +1483,17 @@
 	font-size: 12px;
 	cursor: pointer;
 }
+
 .cve-screen:hover {
 	background: #3a3a40;
 }
+
 .cve-screen.on {
 	background: #f5f0e6;
 	border-color: #f5f0e6;
 	color: #1c1c1e;
 }
+
 /* A quiet label for a group of rows that shares one meaning. */
 .cve-sublabel {
 	margin: 8px 0 4px;
@@ -1076,56 +1501,4 @@
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
 	color: #8b8b93;
-}
-
-/* ---- Panel section headings ---- */
-/* The base rule was missing here while Pro has had it — a derivation gap, so
-   Lite's panel headings rendered as plain body text. */
-.cve-section {
-	margin: 14px 0 8px;
-	color: #8e8e93;
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.12em;
-}
-
-/* A folding section heading. The whole row is the hit target, not a small
-   chevron — the pointer is already on the word. */
-.cve-section-fold {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	cursor: pointer;
-	user-select: none;
-	padding: 2px 0;
-	border-radius: 4px;
-}
-
-.cve-section-fold:hover {
-	color: #c7c7cc;
-}
-
-.cve-section-fold:focus-visible {
-	outline: 2px solid #2563eb;
-	outline-offset: 2px;
-}
-
-.cve-section-fold::after {
-	content: '';
-	width: 6px;
-	height: 6px;
-	border-right: 1.5px solid currentColor;
-	border-bottom: 1.5px solid currentColor;
-	transform: rotate(45deg) translate(-1px, -1px);
-	transition: transform 0.12s ease;
-	flex: 0 0 auto;
-}
-
-.cve-section-fold[aria-expanded='false']::after {
-	transform: rotate(-45deg) translate(-1px, 1px);
-}
-
-.cve-secbody[hidden] {
-	display: none;
 }

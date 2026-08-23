@@ -218,6 +218,15 @@ This edition is derived from Visual Edit Pro 1.25.4.
   from the palette list. Not the same as turning the line off: no line takes up
   no space, and the layout moves.
 * Fixed: the panel showed black for a border that was already transparent.
+* New: gradients are chosen, not typed — a GRADIENT section with a live
+  preview, ready-made gradients built from your theme's own palette, and two
+  colours plus a direction to make your own. Custom stays for anything more
+  elaborate. Before, a gradient shared a row with the size controls: a 54-pixel
+  box suggesting "e.g. 24px", and usually nothing to pick instead.
+* Fixed: the editor panel's controls were unstyled in this edition. Deriving
+  Lite from Pro cut the AI panel out of the stylesheet and took the panel's own
+  rules with it — the number boxes, colour swatches, grids and steppers had no
+  styling at all. Only the styling was affected; every control worked.
 
 = 1.25.3 =
 This edition is derived from Visual Edit Pro 1.25.3.

@@ -2685,6 +2685,289 @@
 		return '';
 	}
 
+	// ---- Gradients ----
+	//
+	// A gradient used to share the preset-or-custom row with colours and
+	// sizes, and it was the one thing that row could not serve. Custom there
+	// is a 54px `.cve-num` box carrying the placeholder "e.g. 24px" — written
+	// for the size controls next door — into which one was expected to type
+	// `linear-gradient(135deg, #4a4038 0%, #efe9e1 100%)`. And there was
+	// usually nothing to pick instead: the list holds the THEME's gradients,
+	// deliberately not WordPress's own (see Clara_VE_Editor_Page::block_presets
+	// — a site offered someone else's palette stops looking like itself), and
+	// most converted themes declare none.
+	//
+	// So: build them from what the theme DOES declare. Two colours out of its
+	// own palette and a direction is what nearly every real gradient is, and
+	// every result is on-brand by construction.
+
+	var GRADIENT_DIRECTIONS = [
+		{ value: '135deg', label: '↘  diagonal' },
+		{ value: 'to right', label: '→  left to right' },
+		{ value: 'to bottom', label: '↓  top to bottom' },
+		{ value: '45deg', label: '↗  diagonal, upward' },
+		{ value: 'to left', label: '←  right to left' },
+		{ value: 'to top', label: '↑  bottom to top' },
+	];
+
+	function makeGradient( from, to, direction ) {
+		return 'linear-gradient(' + direction + ', ' + from + ' 0%, ' + to + ' 100%)';
+	}
+
+	/**
+	 * The two colours and the direction out of a gradient this panel wrote.
+	 *
+	 * Only that shape — a gradient typed by hand, or one a theme declares with
+	 * three stops, is left to the Custom field rather than half-understood.
+	 * Reading it wrong would rewrite it on the next click.
+	 *
+	 * @param {string} css
+	 * @return {Object|null}
+	 */
+	function parseGradient( css ) {
+		var match = /^linear-gradient\(\s*([^,]+?)\s*,\s*([^\s,]+)\s+0%\s*,\s*([^\s,]+)\s+100%\s*\)$/i
+			.exec( String( css || '' ).trim() );
+		return match ? { direction: match[ 1 ], from: match[ 2 ], to: match[ 3 ] } : null;
+	}
+
+	/**
+	 * Ready-made gradients, made from the theme's own palette.
+	 *
+	 * Consecutive pairs, which is a rule rather than a taste: a palette is
+	 * written in an order its author chose, and neighbours in it tend to
+	 * belong together. Six at most — this is a starting point to nudge, not a
+	 * catalogue to scroll.
+	 *
+	 * @return {Array}
+	 */
+	function paletteGradients() {
+		// Plain colours only. A palette entry may be a computed value —
+		// Twenty Twenty-Five's accent-6 is
+		// `color-mix(in srgb, currentColor 20%, transparent)` — which is a
+		// perfectly good gradient stop but has no swatch to show and no
+		// meaning outside the element it is on. Those stay reachable through
+		// Custom rather than being made into a chip that cannot be drawn.
+		var palette = ( BLOCK_PRESETS.colors || [] ).filter( function ( colour ) {
+			return /^(#|rgb)/i.test( colour.value || '' );
+		} );
+		var out = [];
+		for ( var i = 0; i + 1 < palette.length && out.length < 6; i++ ) {
+			if ( palette[ i ].value === palette[ i + 1 ].value ) {
+				continue;
+			}
+			out.push( {
+				name: palette[ i ].name + ' → ' + palette[ i + 1 ].name,
+				value: makeGradient( palette[ i ].value, palette[ i + 1 ].value, '135deg' ),
+			} );
+		}
+		return out;
+	}
+
+	/**
+	 * The GRADIENT section: pick one, or build one from two colours.
+	 *
+	 * Two ways of storing a gradient meet here, and both are right:
+	 *
+	 *   - a gradient the THEME declares is stored as its slug, in the block's
+	 *     `gradient` attribute, so it follows the theme when the theme changes
+	 *     its mind. That is what the old row did and it is kept.
+	 *   - anything built here is stored as the CSS itself, at
+	 *     style.color.gradient. There is no slug to name it by.
+	 *
+	 * Whichever is written, the other is cleared: a block carrying both
+	 * spellings of one decision renders the one WordPress happens to prefer.
+	 *
+	 * @param {Object} target
+	 * @return {DocumentFragment}
+	 */
+	function gradientSection( target ) {
+		var frag = document.createDocumentFragment();
+		frag.appendChild( el( 'div', 'cve-section', 'GRADIENT' ) );
+
+		var themeGradients = BLOCK_PRESETS.gradients || [];
+		var palette = BLOCK_PRESETS.colors || [];
+		var storedCss = ( target.blockStyle && target.blockStyle['color.gradient'] ) || '';
+		var storedSlug = ( target.blockAttrs && target.blockAttrs.gradient ) || '';
+		var showing = storedCss || ( storedSlug ? presetValue( 'gradients', storedSlug ) : '' );
+
+		var fallbackFrom = palette.length ? palette[ 0 ].value : '#000000';
+		var fallbackTo = palette.length > 1 ? palette[ 1 ].value : '#ffffff';
+		var state = parseGradient( showing ) || { from: fallbackFrom, to: fallbackTo, direction: '135deg' };
+
+		var preview = el( 'div', 'cve-grad-preview' );
+		var paint = function () {
+			preview.style.background = showing || '';
+			preview.classList.toggle( 'is-empty', ! showing );
+		};
+
+		var show = function ( css ) {
+			showing = css;
+			paint();
+			postToFrame( { type: 'preview-style', id: current.id, styles: { background: css } } );
+		};
+
+		// A gradient BUILT here, or chosen from the palette row.
+		var applyCss = function ( css ) {
+			recordBlockStyle( 'color.gradient', css );
+			recordBlockAttrs( { gradient: '' } );
+			show( css );
+			// WordPress writes its preset rules with !important, so a leftover
+			// preset class paints over what was just chosen and the change
+			// reads as having done nothing.
+			postToFrame( { type: 'preview-class', id: current.id, kind: 'gradient', slug: '', custom: true } );
+		};
+
+		// One the THEME declares. Stored by name, not by value.
+		var applySlug = function ( slug ) {
+			recordBlockStyle( 'color.gradient', null );
+			recordBlockAttrs( { gradient: slug } );
+			show( slug ? presetValue( 'gradients', slug ) : '' );
+			postToFrame( { type: 'preview-class', id: current.id, kind: 'gradient', slug: slug } );
+		};
+
+		var rebuild = function () {
+			applyCss( makeGradient( state.from, state.to, state.direction ) );
+		};
+
+		frag.appendChild( preview );
+
+		// ---- ready-made
+		var ready = el( 'div', 'cve-grad-ready' );
+		var swatch = function ( label, css, onPick ) {
+			var button = el( 'button', 'cve-grad-swatch' );
+			button.type = 'button';
+			button.title = label;
+			button.setAttribute( 'aria-label', label );
+			button.style.background = css;
+			button.addEventListener( 'click', onPick );
+			ready.appendChild( button );
+		};
+		themeGradients.forEach( function ( preset ) {
+			swatch( preset.name, preset.value, function () {
+				applySlug( preset.slug );
+				syncFromShowing();
+			} );
+		} );
+		paletteGradients().forEach( function ( made ) {
+			swatch( made.name, made.value, function () {
+				applyCss( made.value );
+				syncFromShowing();
+			} );
+		} );
+		var none = el( 'button', 'cve-grad-swatch cve-grad-none', '✕' );
+		none.type = 'button';
+		none.title = 'No gradient';
+		none.addEventListener( 'click', function () {
+			applySlug( '' );
+		} );
+		ready.appendChild( none );
+		if ( ready.childNodes.length > 1 ) {
+			frag.appendChild( ready );
+		}
+
+		// ---- from / to / direction
+		var colourRows = {};
+		var colourRow = function ( label, which ) {
+			var row = el( 'div', 'cve-field' );
+			row.appendChild( el( 'span', 'cve-field-label', label ) );
+
+			var select = document.createElement( 'select' );
+			select.className = 'cve-select';
+			palette.concat( [ { slug: '__custom__', name: 'Custom…', value: '' } ] )
+				.forEach( function ( colour ) {
+					var option = document.createElement( 'option' );
+					option.value = colour.value || '__custom__';
+					option.textContent = colour.name;
+					select.appendChild( option );
+				} );
+
+			var pick = document.createElement( 'input' );
+			pick.type = 'color';
+			pick.className = 'cve-swatch';
+
+			var sync = function () {
+				pick.value = /^#[0-9a-f]{6}$/i.test( state[ which ] ) ? state[ which ] : '#000000';
+				select.value = palette.some( function ( c ) { return c.value === state[ which ]; } )
+					? state[ which ]
+					: '__custom__';
+			};
+			sync();
+
+			select.addEventListener( 'change', function () {
+				if ( '__custom__' === select.value ) {
+					pick.focus();
+					return;
+				}
+				state[ which ] = select.value;
+				pick.value = /^#[0-9a-f]{6}$/i.test( select.value ) ? select.value : pick.value;
+				rebuild();
+			} );
+			pick.addEventListener( 'input', function () {
+				state[ which ] = pick.value;
+				select.value = '__custom__';
+				rebuild();
+			} );
+
+			row.appendChild( select );
+			row.appendChild( pick );
+			colourRows[ which ] = sync;
+			return row;
+		};
+
+		frag.appendChild( colourRow( 'From', 'from' ) );
+		frag.appendChild( colourRow( 'To', 'to' ) );
+
+		var directionRow = el( 'div', 'cve-field' );
+		directionRow.appendChild( el( 'span', 'cve-field-label', 'Direction' ) );
+		var direction = document.createElement( 'select' );
+		direction.className = 'cve-select';
+		GRADIENT_DIRECTIONS.forEach( function ( option ) {
+			var node = document.createElement( 'option' );
+			node.value = option.value;
+			node.textContent = option.label;
+			direction.appendChild( node );
+		} );
+		direction.value = state.direction;
+		direction.addEventListener( 'change', function () {
+			state.direction = direction.value;
+			rebuild();
+		} );
+		directionRow.appendChild( direction );
+		frag.appendChild( directionRow );
+
+		// ---- anything else
+		var customRow = el( 'div', 'cve-field cve-field-stack' );
+		customRow.appendChild( el( 'span', 'cve-field-label', 'Custom' ) );
+		var custom = document.createElement( 'input' );
+		custom.type = 'text';
+		custom.className = 'cve-text';
+		custom.placeholder = 'linear-gradient(135deg, #000 0%, #fff 100%)';
+		custom.value = storedCss;
+		custom.addEventListener( 'change', function () {
+			applyCss( custom.value.trim() );
+			syncFromShowing();
+		} );
+		customRow.appendChild( custom );
+		frag.appendChild( customRow );
+
+		// Keep the builders honest about whatever was last chosen, so nudging
+		// a direction after picking a ready-made one starts from that one
+		// rather than from what the boxes happened to hold.
+		function syncFromShowing() {
+			var read = parseGradient( showing );
+			if ( read ) {
+				state = read;
+				direction.value = state.direction;
+				colourRows.from();
+				colourRows.to();
+			}
+			custom.value = ( target.blockAttrs && target.blockAttrs.gradient ) ? '' : showing;
+		}
+
+		paint();
+		return frag;
+	}
+
 	function presetRow( label, group, attribute, cssProperty, initial ) {
 		var list = BLOCK_PRESETS[ group ] || [];
 		if ( ! list.length ) {
@@ -3134,13 +3417,13 @@
 			if ( can( 'color.background' ) ) {
 				section.appendChild( presetOrCustomRow( 'Background', 'colors', 'backgroundColor', 'color.background', 'backgroundColor', target, 'color' ) );
 			}
-			if ( can( 'color.gradient' ) ) {
-				// A gradient IS the background — setting one replaces a flat
-				// colour, which is why the two sit together.
-				section.appendChild(
-					presetOrCustomRow( 'Gradient', 'gradients', 'gradient', 'color.gradient', 'background', target, 'text' )
-				);
-			}
+		}
+
+		// A gradient IS the background — setting one replaces a flat colour,
+		// which is why it used to sit inside COLOURS. It has outgrown the row:
+		// see gradientSection(), where the swatch/direction builder lives.
+		if ( can( 'color.gradient' ) ) {
+			section.appendChild( gradientSection( target ) );
 		}
 
 		if ( canAny( 'border.' ) ) {
