@@ -621,7 +621,16 @@
 	function applyPatch( doc, patch ) {
 		var el = findByPath( doc, patch.id );
 		if ( ! el ) {
-			return { ok: false, error: 'Target not found: ' + patch.id };
+			// The path names a position, so there is nothing useful to show a
+			// person in it. Say what it means and what clears it — this used to
+			// read `Target not found: path-1-0-1-1-1-0-1` and every save after
+			// it failed the same way, with no hint that Discard was the way out.
+			return {
+				ok: false,
+				error: 'One unsaved change (' + patch.kind.replace( /-/g, ' ' ) +
+					') points at part of the page that is no longer there — it was made before the' +
+					' page changed. Use Discard to clear the unsaved changes, then edit again. [' + patch.id + ']',
+			};
 		}
 		if ( patch.kind === 'set-text' ) {
 			// The element's own text nodes, leaving its elements alone —
