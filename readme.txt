@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.2
+Stable tag: 1.25.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,16 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.3 =
+This edition is derived from Visual Edit Pro 1.25.3.
+* Fixed: after switching themes, Appearance → Menus opened on the menu of the
+  theme you had just left, listing its items. The list of menus was right — the
+  screen was simply already sitting on the wrong one, because it reopens
+  whatever you last edited and that pointer is a plain menu id a theme switch
+  does not touch. It now lands on a menu belonging to the theme you are
+  actually using, and sites where this has already happened correct themselves
+  the first time the screen is opened.
 
 = 1.25.2 =
 This edition is derived from Visual Edit Pro 1.25.2.

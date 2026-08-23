@@ -134,6 +134,8 @@ class Clara_VE_Theme_Park {
 		add_filter( 'get_terms_args', array( __CLASS__, 'hide_parked_terms' ), 10, 2 );
 		add_filter( 'wp_get_nav_menus', array( __CLASS__, 'hide_parked_menus' ) );
 		add_filter( 'wp_get_nav_menu_items', array( __CLASS__, 'hide_items_pointing_at_parked' ) );
+		add_filter( 'get_user_option_nav_menu_recently_edited', array( __CLASS__, 'forget_parked_recent_menu' ) );
+		add_action( 'load-nav-menus.php', array( __CLASS__, 'leave_parked_menu_screen' ) );
 	}
 
 	/**
@@ -261,6 +263,77 @@ class Clara_VE_Theme_Park {
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * Which theme owns this menu, or '' for nobody's.
+	 *
+	 * @param int $term_id
+	 * @return string
+	 */
+	private static function menu_owner( $term_id ) {
+		$term_id = (int) $term_id;
+		return $term_id ? (string) get_term_meta( $term_id, Clara_VE_Theme_Registry::TERM_META, true ) : '';
+	}
+
+	/**
+	 * Forget a departed theme's menu as "the one you were last editing".
+	 *
+	 * Appearance → Menus does not open on the first menu in its own list. It
+	 * opens on `nav_menu_recently_edited` — a per-user option holding a bare
+	 * term id, which survives a theme switch untouched — and it resolves that
+	 * id with is_nav_menu(), which is wp_get_nav_menu_object() and therefore
+	 * get_term(). A direct fetch by id goes through neither wp_get_nav_menus
+	 * nor get_terms_args, so hide_parked_menus() cannot reach it: the dropdown
+	 * correctly omits the parked menu while the screen is already open on it.
+	 *
+	 * The items then stay visible because hide_items_pointing_at_parked() only
+	 * drops post_type items pointing at parked content, and a converted theme's
+	 * navigation is mostly anchors — `menu-item-type => custom`. Sixteen of the
+	 * seventeen items in the case this was found in.
+	 *
+	 * Answering at read time rather than clearing the option on switch_theme is
+	 * deliberate twice over: it heals sites that have already switched, since
+	 * nav-menus.php writes the option back for whatever it does select, and it
+	 * stays clear of get_user_option()'s blog-prefixed key on multisite by
+	 * running after that choice has been made.
+	 *
+	 * @param mixed $term_id
+	 * @return mixed
+	 */
+	public static function forget_parked_recent_menu( $term_id ) {
+		$id = (int) $term_id;
+		if ( self::$internal || ! $id ) {
+			return $term_id;
+		}
+		$parked = self::parked_themes();
+		if ( ! $parked ) {
+			return $term_id;
+		}
+		return in_array( self::menu_owner( $id ), $parked, true ) ? 0 : $term_id;
+	}
+
+	/**
+	 * The same screen, reached by its `?menu=` argument.
+	 *
+	 * nav-menus.php reads $_REQUEST['menu'] before any of this runs, so a
+	 * bookmark or the back button opens a parked theme's menu however well the
+	 * recently-edited pointer behaves. Send the request to the screen without
+	 * the argument and let it choose from the list it is allowed to see.
+	 *
+	 * @return void
+	 */
+	public static function leave_parked_menu_screen() {
+		$id = isset( $_REQUEST['menu'] ) ? (int) $_REQUEST['menu'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! $id ) {
+			return;
+		}
+		$parked = self::parked_themes();
+		if ( ! $parked || ! in_array( self::menu_owner( $id ), $parked, true ) ) {
+			return;
+		}
+		wp_safe_redirect( admin_url( 'nav-menus.php' ) );
+		exit;
 	}
 
 	/**
