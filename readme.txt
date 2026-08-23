@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.7
+Stable tag: 1.25.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,12 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.8 =
+This edition is derived from Visual Edit Pro 1.25.8.
+* Fixed: a duplicated element came back as scenery — no frame, no click —
+  until the page was saved. Duplicating now writes the source first and
+  re-renders the canvas from it, so the copy is editable straight away.
 
 = 1.25.7 =
 This edition is derived from Visual Edit Pro 1.25.7.

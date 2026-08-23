@@ -5100,12 +5100,25 @@
 		if ( twin ) {
 			twin.title = 'Duplicate element';
 			twin.addEventListener( 'click', function () {
-				postToFrame( { type: 'duplicate', id: current.id } );
 				recordPatch( { id: current.id, kind: 'duplicate-element' } );
-				// Closed, like delete: the copy is on the page but the paths
-				// around it have all shifted, so nothing there is addressable
-				// until the save re-stamps the frame.
 				closePanelSilent();
+				// Saved and reloaded rather than cloned into the frame.
+				//
+				// Cloning it live was the first attempt and it produced a copy
+				// nobody could use: an element that exists in the DOM and in no
+				// source has no path, so it drew no frame and took no click.
+				// Giving it one is worse than useless — every path after the
+				// original has shifted by one in the LIVE dom while the source
+				// still says otherwise, so the copy would answer to a path
+				// belonging to its neighbour and take that element's edits.
+				//
+				// The list editors hit this first and settled it: a genuinely
+				// new element has no source-index yet, so the source is written
+				// FIRST and the frame is re-rendered from it. saveNow()'s own
+				// argument, in its words: the DOM is only touched after the
+				// server has the new source, so the stamps, the source and the
+				// server never disagree.
+				saveNow( 'Duplicated' );
 			} );
 		}
 		var reset = el( 'button', 'cve-icon', '↺' );
