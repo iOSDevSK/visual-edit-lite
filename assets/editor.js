@@ -1915,6 +1915,109 @@
 		return isNaN( n ) ? 0 : Math.round( n * 100 ) / 100;
 	}
 
+	// The unit a value is already written in, so a stepper writes back the
+	// same one. `border-radius: 50%` is how a round avatar is made; reading it
+	// as 50 and writing 50px turns the circle into an almost-square, and the
+	// only clue is that it stopped being round.
+	function unitOf( value, fallback ) {
+		var match = /^-?[0-9.]+\s*([a-z%]+)/i.exec( String( value || '' ).trim() );
+		return match ? match[ 1 ] : fallback;
+	}
+
+	// The four corners, in reading order — which is also the order they sit in
+	// a two-column grid. The labels are the corner itself: no words fit in a
+	// column this narrow, and an arrow would say "side" rather than "corner".
+	var RADIUS_CORNERS = [
+		{ key: 'topLeft', label: '◜', css: 'borderTopLeftRadius' },
+		{ key: 'topRight', label: '◝', css: 'borderTopRightRadius' },
+		{ key: 'bottomLeft', label: '◟', css: 'borderBottomLeftRadius' },
+		{ key: 'bottomRight', label: '◞', css: 'borderBottomRightRadius' },
+	];
+
+	/**
+	 * A RADIUS section: each corner on its own, and one row for all four.
+	 *
+	 * Shared by both panels on purpose. The raw-HTML panel writes CSS
+	 * properties and the block panel writes style paths, but a corner is a
+	 * corner — and the single control this replaces flattened all four the
+	 * moment anyone touched it, in both.
+	 *
+	 * `write` is handed the corner that moved AND the state of all four,
+	 * because the two panels need different halves of that. A CSS property
+	 * stands alone, so the raw-HTML panel writes just the one. A block stores
+	 * the corners as ONE value — a plain length while they agree, an object
+	 * once they do not — so sending a single corner asks the server to merge
+	 * an object over a string, and the other three corners are gone. The
+	 * block panel therefore writes the whole set every time.
+	 *
+	 * @param {Node}     parent
+	 * @param {Function} read  corner -> the value it currently has
+	 * @param {Function} write corner, value, all -> record it
+	 */
+	function appendRadiusSection( parent, read, write ) {
+		parent.appendChild( el( 'div', 'cve-section', 'RADIUS' ) );
+
+		var grid = el( 'div', 'cve-grid' );
+		var inputs = {};
+		var units = {};
+
+		// What all four currently read, as values with their units — the
+		// argument `write` gets alongside the corner that moved.
+		var allNow = function () {
+			var out = {};
+			RADIUS_CORNERS.forEach( function ( corner ) {
+				out[ corner.key ] = inputs[ corner.key ]
+					? inputs[ corner.key ].value + units[ corner.key ]
+					: '';
+			} );
+			return out;
+		};
+
+		RADIUS_CORNERS.forEach( function ( corner ) {
+			var value = read( corner );
+			units[ corner.key ] = unitOf( value, 'px' );
+			var row = stepperRow( corner.label, corner.key, value, 2, units[ corner.key ],
+				function ( key, written ) {
+					write( corner, written, allNow() );
+				} );
+			inputs[ corner.key ] = row.querySelector( '.cve-num' );
+			grid.appendChild( row );
+		} );
+		parent.appendChild( grid );
+
+		// All four at once. Whether they currently agree is the whole question
+		// this row answers, so it starts blank when they do not — a number
+		// there would claim a shape the element does not have.
+		var first = read( RADIUS_CORNERS[ 0 ] );
+		var agreed = RADIUS_CORNERS.every( function ( corner ) {
+			return pxNumber( read( corner ) ) === pxNumber( first );
+		} );
+		var allRow = stepperRow( 'All corners', 'radiusAll', agreed ? first : '', 2, unitOf( first, 'px' ),
+				function ( key, written ) {
+					RADIUS_CORNERS.forEach( function ( corner ) {
+						// Move the box first: `write` reads them back, and a
+						// box still showing what it held before would send the
+						// old value for every corner but the last.
+						if ( inputs[ corner.key ] ) {
+							inputs[ corner.key ].value = pxNumber( written );
+							units[ corner.key ] = unitOf( written, units[ corner.key ] );
+						}
+					} );
+					RADIUS_CORNERS.forEach( function ( corner ) {
+						write( corner, written, allNow() );
+					} );
+				} );
+		// stepperRow fills its box from pxNumber(), which turns "nothing" into
+		// a zero. Here that would be a claim: zero says "no rounding at all"
+		// about an element that is rounded on two corners. Empty says what is
+		// true — there is no single number for this — and a nudge still starts
+		// from zero, which is what the box would have done anyway.
+		if ( ! agreed ) {
+			allRow.querySelector( '.cve-num' ).value = '';
+		}
+		parent.appendChild( allRow );
+	}
+
 	// ---- Toasts ----
 	var toastRoot = null;
 	// The one toast that can be raised repeatedly by the same gesture, so it
@@ -2640,6 +2743,10 @@
 	// WordPress's own style engine.
 	var BLOCK_STYLE_CSS = {
 		'border.radius': 'borderRadius',
+		'border.radius.topLeft': 'borderTopLeftRadius',
+		'border.radius.topRight': 'borderTopRightRadius',
+		'border.radius.bottomRight': 'borderBottomRightRadius',
+		'border.radius.bottomLeft': 'borderBottomLeftRadius',
 		'border.width': 'borderWidth',
 		'border.style': 'borderStyle',
 		'border.color': 'borderColor',
@@ -2701,8 +2808,16 @@
 
 		var select = document.createElement( 'select' );
 		select.className = 'cve-select';
+		// A colour can also be no colour. The Custom box here is
+		// <input type="color">, a native swatch with no alpha channel at all,
+		// so "see-through" was not merely hard to reach — it could not be
+		// expressed. It matters most on a border: setting the LINE to none
+		// computes its width to zero and the layout moves, while a
+		// transparent line keeps the space it had.
+		var offersTransparent = 'color' === kind && 'gradients' !== group;
 		[ [ '', '— theme default —' ] ].concat(
 			presets.map( function ( p ) { return [ p.slug, p.name ]; } ),
+			offersTransparent ? [ [ '__transparent__', 'Transparent' ] ] : [],
 			[ [ '__custom__', 'Custom…' ] ]
 		).forEach( function ( pair ) {
 			var option = document.createElement( 'option' );
@@ -2717,7 +2832,9 @@
 		custom.placeholder = ( 'color' === kind ) ? '' : 'e.g. 24px';
 
 		var stored = target.blockStyle && target.blockStyle[ path ];
-		if ( stored ) {
+		if ( stored && offersTransparent && /^transparent$/i.test( stored ) ) {
+			select.value = '__transparent__';
+		} else if ( stored ) {
 			select.value = '__custom__';
 			custom.value = stored;
 		} else {
@@ -2729,6 +2846,21 @@
 			custom.hidden = '__custom__' !== select.value;
 			if ( '__custom__' === select.value ) {
 				custom.focus();
+				return;
+			}
+			if ( '__transparent__' === select.value ) {
+				// Stored as the style, not as a preset slug: no theme palette
+				// has a transparent entry, and the class a preset carries
+				// would paint over it — WordPress writes those rules with
+				// !important.
+				recordBlockStyle( path, 'transparent' );
+				var cleared = {};
+				cleared[ attribute ] = '';
+				recordBlockAttrs( cleared );
+				var seeThrough = {};
+				seeThrough[ cssProperty ] = 'transparent';
+				postToFrame( { type: 'preview-style', id: current.id, styles: seeThrough } );
+				postToFrame( { type: 'preview-class', id: current.id, kind: attribute, slug: '', custom: true } );
 				return;
 			}
 			// Back to a preset (or to nothing): the slug goes in the
@@ -3014,11 +3146,6 @@
 		if ( canAny( 'border.' ) ) {
 			group( 'BORDER' );
 			var border = grid();
-			if ( can( 'border.radius' ) ) {
-				border.appendChild( stepperRow( 'Radius', 'border.radius',
-					( target.blockStyle && target.blockStyle['border.radius'] ) || '', 2, 'px',
-					blockStyleWriter( 'border.radius' ) ) );
-			}
 			if ( can( 'border.width' ) ) {
 				border.appendChild( stepperRow( 'Width', 'border.width',
 					( target.blockStyle && target.blockStyle['border.width'] ) || '', 1, 'px',
@@ -3035,6 +3162,33 @@
 			if ( can( 'border.color' ) ) {
 				section.appendChild( presetOrCustomRow( 'Colour', 'colors', 'borderColor', 'border.color', 'borderColor', target, 'color' ) );
 			}
+		}
+
+		// RADIUS, its own group so the raw-HTML panel and this one read the
+		// same. A block stores the corners as a plain length while they agree
+		// and as an object once they do not — which is exactly what these four
+		// flat paths nest into, and exactly what Gutenberg itself writes. The
+		// two shapes never coexist: writing either replaces the other whole.
+		if ( can( 'border.radius' ) ) {
+			var stored = ( target.blockStyle || {} );
+			appendRadiusSection(
+				section,
+				function ( corner ) {
+					// Seed from the plain length when the corners agree, or a
+					// block that already has a radius opens showing four zeros
+					// and reads as though its rounding had been lost.
+					return stored[ 'border.radius.' + corner.key ] || stored['border.radius'] || '';
+				},
+				function ( corner, value, all ) {
+					// The whole set, every time — see appendRadiusSection.
+					// The plain length needs no clearing: an object arriving
+					// at border.radius replaces whatever was there, both in
+					// nestStyle() here and in the server's merge().
+					RADIUS_CORNERS.forEach( function ( each ) {
+						recordBlockStyle( 'border.radius.' + each.key, all[ each.key ] );
+					} );
+				}
+			);
 		}
 
 		if ( can( 'shadow' ) ) {
@@ -3389,19 +3543,50 @@
 		hex.type = 'text';
 		hex.className = 'cve-hex';
 		hex.value = initial;
+		// What this box takes, said where it is asked. A swatch cannot express
+		// "see-through" at all — <input type="color"> has no alpha — so the
+		// typed box is the only way to reach it, and an empty box gave no
+		// clue that it was more than a hex field.
+		hex.placeholder = '#rrggbb / transparent';
 		swatch.addEventListener( 'input', function () {
 			hex.value = swatch.value;
 			previewFn( key, swatch.value );
 		} );
 		hex.addEventListener( 'change', function () {
-			if ( /^#[0-9a-f]{3,6}$/i.test( hex.value ) ) {
-				swatch.value = hex.value.length === 4 ? '#' + hex.value[ 1 ] + hex.value[ 1 ] + hex.value[ 2 ] + hex.value[ 2 ] + hex.value[ 3 ] + hex.value[ 3 ] : hex.value;
-				previewFn( key, hex.value );
+			var typed = hex.value.trim();
+			// A border people want gone but whose space they want kept is set
+			// to transparent, not to style:none — none computes the width to
+			// zero and the layout moves. There was no way to say it: this box
+			// took #rgb and #rrggbb and silently ignored everything else, so
+			// typing the word did nothing and looked like a dead field.
+			// Eight digits are the same idea with a degree to it, and the
+			// server already stored those.
+			if ( /^transparent$/i.test( typed ) ) {
+				hex.value = 'transparent';
+				previewFn( key, 'transparent' );
+				return;
+			}
+			if ( /^#[0-9a-f]{3,4}$/i.test( typed ) || /^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test( typed ) ) {
+				// The swatch shows the opaque half of it; it has nowhere to
+				// put the alpha, and a swatch that rounds is better than a
+				// value the box refuses.
+				swatch.value = expandHex( typed ).slice( 0, 7 );
+				previewFn( key, typed );
 			}
 		} );
 		row.appendChild( swatch );
 		row.appendChild( hex );
 		return row;
+	}
+
+	// #abc → #aabbcc, #abcd → #aabbccdd, anything longer unchanged.
+	function expandHex( value ) {
+		if ( ! /^#[0-9a-f]{3,4}$/i.test( value ) ) {
+			return value;
+		}
+		return '#' + value.slice( 1 ).split( '' ).map( function ( digit ) {
+			return digit + digit;
+		} ).join( '' );
 	}
 
 	function textRow( label, initial, onChange, live, placeholder ) {
@@ -4128,7 +4313,9 @@
 			panel.appendChild( colorRow( 'Color', 'backgroundColor', target.styles.backgroundColor ) );
 			var contGrid = el( 'div', 'cve-grid' );
 			contGrid.appendChild( stepperRow( 'Opacity', 'opacity', target.styles.opacity || '1', 0.1, '' ) );
-			contGrid.appendChild( stepperRow( 'Radius', 'borderRadius', target.styles.borderRadius, 1, 'px' ) );
+			// Radius has moved to a RADIUS section of its own, below BORDER: a
+			// rounded corner belongs to the frame rather than to what sits
+			// behind it, and it is four controls now rather than one.
 			panel.appendChild( contGrid );
 
 			// Size — lets empty decorative elements (a 1px rule, a spacer) be
@@ -4180,8 +4367,6 @@
 			// under the text and nothing else.
 			panel.appendChild( el( 'div', 'cve-section', 'BORDER' ) );
 			panel.appendChild( colorRow( 'Colour', 'borderColor', target.styles.borderColor ) );
-			// Radius is not repeated here — BACKGROUND already carries it, and
-			// two controls for one property disagree the moment either moves.
 			var bordGrid = el( 'div', 'cve-grid' );
 			bordGrid.appendChild( stepperRow( 'Width', 'borderWidth', target.styles.borderWidth, 1, 'px' ) );
 			panel.appendChild( bordGrid );
@@ -4241,6 +4426,25 @@
 					'cve-note',
 					held.note
 				)
+			);
+
+			// Each corner on its own. The single control this replaces read
+			// the shorthand, which computes to "8px 8px 0px 0px" as soon as
+			// the corners differ: it parsed as 8, and one nudge wrote 8 to all
+			// four. An element could not be given one rounded corner, and an
+			// element that already had one lost it on the way past.
+			appendRadiusSection(
+				panel,
+				function ( corner ) {
+					return target.styles[ corner.css ];
+				},
+				function ( corner, value ) {
+					// One property, on its own. A corner untouched here is a
+					// corner never written — which is what leaves an elliptical
+					// radius ("8px 4px", not a single number and not shown as
+					// one) exactly as the design had it.
+					previewStyle( corner.css, value );
+				}
 			);
 		}
 

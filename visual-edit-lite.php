@@ -3,7 +3,7 @@
  * Plugin Name: Visual Edit Lite
  * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
  * Description: Point-and-click visual editing for raw-HTML theme pages — text, links, images, forms, menus, SEO and AI-readiness — keeping the page markup 1:1 with the original design. No builder re-structuring.
- * Version: 1.25.3
+ * Version: 1.25.4
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Filip Dvoran
@@ -57,7 +57,7 @@ if ( clara_ve_lite_pro_active() ) {
 	return;
 }
 
-define( 'CLARA_VE_VERSION', '1.25.3' );
+define( 'CLARA_VE_VERSION', '1.25.4' );
 // Signals schema-1 generated themes that this plugin delegates every public
 // rendering concern to them. Themes generated before that contract ignore the
 // signal and continue to receive the complete legacy runtime below.

@@ -208,6 +208,11 @@ class Clara_VE_Block_Supports {
 			$key   = $parts[0] . '.' . $parts[1];
 		} elseif ( 0 === strpos( $path, 'position.' ) ) {
 			$key = 'position.type';
+		} elseif ( 0 === strpos( $path, 'border.radius.' ) ) {
+			// A corner, for the same reason: `__experimentalBorder.radius` is
+			// declared once and covers all four. A block that rounds its
+			// corners together can round them separately.
+			$key = 'border.radius';
 		}
 		if ( ! isset( self::SUPPORT_FLAG[ $key ] ) ) {
 			return false;
@@ -806,7 +811,12 @@ class Clara_VE_Block_Supports {
 			'border.radius'             => $lengths,
 			'border.width'              => $lengths,
 			'border.style'              => '~^(none|solid|dashed|dotted|double|groove|ridge|inset|outset)$~',
-			'border.color'              => '~^(#[0-9a-f]{3,8}|var:preset\|color\|[a-z0-9-]{1,40})$~i',
+			// `transparent` alongside the hexes: a border people want out of
+			// sight but whose space they want kept is transparent, not
+			// style:none — none computes the width to zero and the layout
+			// moves. It is a CSS keyword the style engine passes through, and
+			// there was no way to store it.
+			'border.color'              => '~^(#[0-9a-f]{3,8}|transparent|var:preset\|color\|[a-z0-9-]{1,40})$~i',
 			'shadow'                    => $shadow,
 			'color.gradient'            => $gradient,
 			'dimensions.minHeight'      => $lengths,
@@ -829,13 +839,20 @@ class Clara_VE_Block_Supports {
 			'typography.textTransform'  => '~^(none|uppercase|lowercase|capitalize)$~',
 			'typography.textDecoration' => '~^(none|underline|line-through)$~',
 			'typography.textAlign'      => '~^(left|center|right)$~',
-			'color.text'                => '~^(#[0-9a-f]{3,8}|var:preset\|color\|[a-z0-9-]{1,40})$~i',
-			'color.background'          => '~^(#[0-9a-f]{3,8}|var:preset\|color\|[a-z0-9-]{1,40})$~i',
+			'color.text'                => '~^(#[0-9a-f]{3,8}|transparent|var:preset\|color\|[a-z0-9-]{1,40})$~i',
+			'color.background'          => '~^(#[0-9a-f]{3,8}|transparent|var:preset\|color\|[a-z0-9-]{1,40})$~i',
 		);
 		foreach ( array( 'padding', 'margin' ) as $box ) {
 			foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
 				$allowed[ 'spacing.' . $box . '.' . $side ] = $length;
 			}
+		}
+		// A radius is ONE value that is either a length or four of them: a
+		// block holds `border.radius` as a plain length while the corners
+		// agree and as an object of corners once they do not, and the style
+		// engine reads both (`border-%s-radius` in its own definitions).
+		foreach ( array( 'topLeft', 'topRight', 'bottomRight', 'bottomLeft' ) as $corner ) {
+			$allowed[ 'border.radius.' . $corner ] = $length;
 		}
 
 		$out = array();
@@ -847,6 +864,15 @@ class Clara_VE_Block_Supports {
 			if ( null === $value || '' === $value ) {
 				// An explicit clear. Kept as null so the merge can remove it.
 				self::put( $out, $path, null );
+				continue;
+			}
+			// border.radius is in this list as a plain length AND, four
+			// entries further down, as its corners. When the corners are what
+			// arrived, the value at `border.radius` is the array holding them:
+			// casting that to a string is a PHP warning and the literal
+			// "Array", which matches no pattern, so the whole change would be
+			// refused. The corner entries below check the corners themselves.
+			if ( is_array( $value ) ) {
 				continue;
 			}
 			if ( ! preg_match( $pattern, (string) $value ) ) {

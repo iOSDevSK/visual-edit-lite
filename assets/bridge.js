@@ -515,6 +515,19 @@
 			marginLeft: computed.marginLeft,
 			marginRight: computed.marginRight,
 			borderRadius: computed.borderRadius,
+			// Per CORNER, for the same reason the three below are per side.
+			//
+			// The shorthand computes to "8px 8px 0px 0px" the moment the
+			// corners differ, and the panel's stepper parseFloats whatever it
+			// is handed: it read that as a single 8, and the first nudge wrote
+			// one value back to all four — flattening a shape nobody asked to
+			// change. Each corner resolves on its own in computed style, so
+			// asking for them individually removes the shorthand from the
+			// path entirely rather than trying to parse it.
+			borderTopLeftRadius: computed.borderTopLeftRadius,
+			borderTopRightRadius: computed.borderTopRightRadius,
+			borderBottomRightRadius: computed.borderBottomRightRadius,
+			borderBottomLeftRadius: computed.borderBottomLeftRadius,
 			// The three the BORDER panel needs, reported per VISIBLE side.
 			//
 			// A form field in this design is a line under the text and nothing
@@ -525,7 +538,13 @@
 			// actually drawn, which is the one a person means.
 			borderWidth: visibleBorder( computed, 'Width' ),
 			borderStyle: visibleBorder( computed, 'Style' ),
-			borderColor: rgbToHex( visibleBorder( computed, 'Color' ) ),
+			// bgToHex, not rgbToHex: a transparent border computes to
+			// rgba(0, 0, 0, 0), and rgbToHex reads the three numbers and
+			// throws the alpha away — so the panel said BLACK about a border
+			// nobody can see, and the only way to find out otherwise was to
+			// set a colour and lose the original. Alpha-aware, like the
+			// background has always been.
+			borderColor: bgToHex( visibleBorder( computed, 'Color' ) ),
 			width: computed.width,
 			height: computed.height,
 			display: computed.display,
@@ -1391,6 +1410,48 @@
 		return match ? 'var:preset|' + match[ 1 ] + '|' + match[ 2 ] : value;
 	}
 
+	/**
+	 * The four corners of a radius, but only when they disagree.
+	 *
+	 * A block stores border.radius as a plain length while the corners agree
+	 * and as an object of corners once they do not, and the two must never
+	 * both be reported: nesting a flat map that holds `border.radius` AND
+	 * `border.radius.topLeft` puts a string and an object at the same key.
+	 *
+	 * This cannot ride along in STYLE_PATHS, because CSSOM fills the longhands
+	 * in from a shorthand — `style="border-radius:8px"` makes
+	 * style.borderTopLeftRadius answer "8px" — so every block with any radius
+	 * at all would report both shapes. It works the other way too, which is
+	 * the case that bit: set the four longhands and style.borderRadius
+	 * composes them back into "8px 8px 0px 0px". Reading THAT as the plain
+	 * length seeds all four corners from one parseFloat, and reopening the
+	 * panel squares off a shape it had just been used to make.
+	 *
+	 * @param {CSSStyleDeclaration} decl
+	 * @param {Object}              out
+	 */
+	function readRadiusCorners( decl, out ) {
+		var corners = {
+			topLeft: decl.borderTopLeftRadius,
+			topRight: decl.borderTopRightRadius,
+			bottomRight: decl.borderBottomRightRadius,
+			bottomLeft: decl.borderBottomLeftRadius,
+		};
+		var names = Object.keys( corners );
+		var differ = names.some( function ( name ) {
+			return corners[ name ] !== corners.topLeft;
+		} );
+		if ( ! differ ) {
+			return;
+		}
+		delete out['border.radius'];
+		names.forEach( function ( name ) {
+			if ( corners[ name ] ) {
+				out[ 'border.radius.' + name ] = unexpandPreset( corners[ name ] );
+			}
+		} );
+	}
+
 	function blockStyleOn( el ) {
 		var out = {};
 		if ( ! el.style ) {
@@ -1409,6 +1470,8 @@
 				out[ STYLE_PATHS[ property ] ] = unexpandPreset( value );
 			}
 		} );
+		readRadiusCorners( el.style, out );
+
 		// text-decoration reads back as a shorthand in some browsers.
 		if ( el.style.textDecorationLine || el.style.textDecoration ) {
 			out['typography.textDecoration'] = ( el.style.textDecorationLine || el.style.textDecoration ).split( ' ' )[ 0 ];
@@ -1432,6 +1495,12 @@
 							out[ STYLE_PATHS[ property ] ] = unexpandPreset( picture.style[ property ] );
 						}
 					} );
+				// And its corners, from the same place. This runs after the
+				// figure's own reading and overrides it: the figure carries no
+				// radius, so the four corners there are empty and the generic
+				// pass said nothing, while borderRadius above has just put the
+				// picture's composed shorthand in as the plain length.
+				readRadiusCorners( picture.style, out );
 			}
 		}
 

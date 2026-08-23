@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.3
+Stable tag: 1.25.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,21 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.4 =
+This edition is derived from Visual Edit Pro 1.25.4.
+* New: each corner rounds on its own. Radius was one control for all four and
+  read the browser's shorthand, so on an element whose corners already differed
+  the first nudge squared off the three you were not looking at. Four controls
+  now, in a RADIUS section next to BORDER, with a row that still sets all four
+  at once.
+* Fixed: a radius written as a percentage — how a round avatar is made — was
+  read as a number and written back in pixels. The unit a value carries is the
+  unit it keeps.
+* New: a border can be made transparent, by typing it or by picking Transparent
+  from the palette list. Not the same as turning the line off: no line takes up
+  no space, and the layout moves.
+* Fixed: the panel showed black for a border that was already transparent.
 
 = 1.25.3 =
 This edition is derived from Visual Edit Pro 1.25.3.
