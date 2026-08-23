@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.5
+Stable tag: 1.25.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,12 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.6 =
+This edition is derived from Visual Edit Pro 1.25.6.
+* Fixed: three controls were folded into sections they have nothing to do with
+  — Text inside RADIUS, and the FAQ and item editors inside ORNAMENT (AFTER).
+  TEXT, QUESTIONS and ITEMS are their own sections now, above the styling.
 
 = 1.25.5 =
 This edition is derived from Visual Edit Pro 1.25.5.

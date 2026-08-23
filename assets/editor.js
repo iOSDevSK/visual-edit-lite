@@ -4669,8 +4669,13 @@
 		// has padding and a field is a border — the box is not something only
 		// wrappers have, and gating these on `kind` meant the most commonly
 		// restyled elements on a page could not be nudged at all.
+		// Everything a person came to CHANGE goes above everything that only
+		// makes it look different — see contentFrag below. This is where the
+		// styling starts, in whichever mode.
+		var stylingStart = null;
 		if ( ! config.blockMode ) {
-			panel.appendChild( el( 'div', 'cve-section', 'BACKGROUND' ) );
+			stylingStart = el( 'div', 'cve-section', 'BACKGROUND' );
+			panel.appendChild( stylingStart );
 			panel.appendChild( colorRow( 'Color', 'backgroundColor', target.styles.backgroundColor ) );
 			var contGrid = el( 'div', 'cve-grid' );
 			contGrid.appendChild( stepperRow( 'Opacity', 'opacity', target.styles.opacity || '1', 0.1, '' ) );
@@ -4841,9 +4846,24 @@
 		//
 		// Block mode is still excluded: its set-text op replaces a block's
 		// whole inner HTML, so the same edit there really would flatten.
+		// The words, the questions and the items: what the element SAYS, as
+		// opposed to how it looks. Collected here and put in above the styling
+		// (see stylingStart) rather than appended where they are built.
+		//
+		// Appending them at the end is how all three went missing. A section
+		// swallows everything after its heading until the next heading, so a
+		// control appended later without one of its own lands inside whatever
+		// section happened to be last — Text ended up folded into RADIUS, and
+		// the FAQ and item editors into ORNAMENT (AFTER), where nobody would
+		// think to look for them. They also sit above the styling now, because
+		// only the first section is open by default and these are the reason
+		// the panel was opened at all.
+		var contentFrag = document.createDocumentFragment();
+
 		if ( ( target.kind === 'text' || target.kind === 'link' ) && target.editableNow && ! target.holdsField
 			&& ( ! target.rich || ! config.blockMode ) ) {
-			panel.appendChild(
+			contentFrag.appendChild( el( 'div', 'cve-section', 'TEXT' ) );
+			contentFrag.appendChild(
 				textRow( 'Text', ( target.fields.ownText !== undefined ? target.fields.ownText : target.fields.text ) || '', function ( value ) {
 					current.fields.text = value;
 					postToFrame( { type: 'set-text-live', id: current.id, value: value } );
@@ -4853,7 +4873,12 @@
 		}
 
 		if ( config.blockMode && target.sectionAddress ) {
-			panel.appendChild( blockStructureSection( target ) );
+			// The first thing block mode appends after the content controls,
+			// so it is the mark to put them in front of — the raw-HTML panel
+			// uses BACKGROUND for the same purpose.
+			var structure = blockStructureSection( target );
+			stylingStart = structure.firstChild;
+			panel.appendChild( structure );
 		}
 
 		// Every addressable block, not only the ones with words in them: a
@@ -4972,8 +4997,13 @@
 		// re-read from the saved source, so it follows with no extra step.
 		if ( current.faq ) {
 			var faqUnit = current.faq;
-			var faqSec  = el( 'div', 'cve-sec' );
-			faqSec.appendChild( el( 'div', 'cve-sec-title', 'QUESTIONS' ) );
+			// cve-section, not cve-sec: collapsibleSections() looks for the
+			// former and only among the panel's OWN children, so a heading of
+			// another name nested in a wrapper is not a section at all — it is
+			// content belonging to whichever section came before. cve-sec also
+			// has no rule in editor.css and never had one.
+			contentFrag.appendChild( el( 'div', 'cve-section', 'QUESTIONS' ) );
+			var faqSec = el( 'div' );
 
 			var openQ = el(
 				'button',
@@ -4989,7 +5019,7 @@
 				el( 'p', 'cve-note', 'Reword, reorder, add and remove — all of them together, saved once.' )
 			);
 
-			panel.appendChild( faqSec );
+			contentFrag.appendChild( faqSec );
 		}
 
 		// Repeating card/list items (rooms, services, team members...). Only
@@ -5000,8 +5030,8 @@
 		// offers both.
 		if ( current.collection ) {
 			var collectionUnit = current.collection;
-			var collectionSec = el( 'div', 'cve-sec' );
-			collectionSec.appendChild( el( 'div', 'cve-sec-title', 'ITEMS' ) );
+			contentFrag.appendChild( el( 'div', 'cve-section', 'ITEMS' ) );
+			var collectionSec = el( 'div' );
 
 			var openItems = el(
 				'button',
@@ -5017,7 +5047,17 @@
 				el( 'p', 'cve-note', 'Edit, reorder, add and remove — all of them together, saved once.' )
 			);
 
-			panel.appendChild( collectionSec );
+			contentFrag.appendChild( collectionSec );
+		}
+
+		// In it goes, above the styling — or at the end when there is no
+		// styling to be above.
+		if ( contentFrag.childNodes.length ) {
+			if ( stylingStart && stylingStart.parentNode === panel ) {
+				panel.insertBefore( contentFrag, stylingStart );
+			} else {
+				panel.appendChild( contentFrag );
+			}
 		}
 
 		// Footer: delete · reset · Cancel / Save
