@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.4
+Stable tag: 1.25.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,13 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.5 =
+This edition is derived from Visual Edit Pro 1.25.5.
+* Fixed: a button whose label sits beside an arrow or an icon had no editable
+  text at all — no caret and no panel field, because both routes refused an
+  element with children. The words are now written into the element's own text
+  nodes, so the arrow stays exactly where it was.
 
 = 1.25.4 =
 This edition is derived from Visual Edit Pro 1.25.4.

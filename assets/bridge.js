@@ -185,6 +185,60 @@
 		return true;
 	}
 
+	/**
+	 * An element's own words — its direct text nodes, and nothing its
+	 * children say.
+	 *
+	 * @param {Element} el
+	 * @return {string}
+	 */
+	function ownText( el ) {
+		var out = '';
+		for ( var i = 0; i < el.childNodes.length; i++ ) {
+			if ( 3 === el.childNodes[ i ].nodeType ) {
+				out += el.childNodes[ i ].nodeValue;
+			}
+		}
+		return out.trim();
+	}
+
+	/**
+	 * Write words into an element without disturbing its elements.
+	 *
+	 * `el.textContent = value` is the obvious way and it deletes the arrow, the
+	 * icon and every other child along with the old words — which is why both
+	 * sides of this used to refuse an element with children outright, leaving
+	 * a button whose label sat beside an arrow uneditable in a panel that
+	 * offered to style it six different ways.
+	 *
+	 * The first text node takes the value and the rest are emptied, keeping
+	 * the whitespace that separated the label from what follows it: dropping
+	 * the trailing space is how `Book a Call →` becomes `Book a Call→`.
+	 *
+	 * @param {Element} el
+	 * @param {string}  value
+	 * @return {void}
+	 */
+	function setOwnText( el, value ) {
+		var nodes = [];
+		for ( var i = 0; i < el.childNodes.length; i++ ) {
+			if ( 3 === el.childNodes[ i ].nodeType ) {
+				nodes.push( el.childNodes[ i ] );
+			}
+		}
+		if ( ! nodes.length ) {
+			el.insertBefore( el.ownerDocument.createTextNode( value ), el.firstChild );
+			return;
+		}
+		var original = nodes[ 0 ].nodeValue || '';
+		var lead = ( /^\s*/.exec( original ) || [ '' ] )[ 0 ];
+		var tail = ( /\s*$/.exec( original ) || [ '' ] )[ 0 ];
+		nodes[ 0 ].nodeValue = lead + value + ( original.trim() ? tail : '' );
+		for ( var j = 1; j < nodes.length; j++ ) {
+			nodes[ j ].nodeValue = '';
+		}
+	}
+
 	function inferKind( el ) {
 		var tag = el.tagName ? el.tagName.toLowerCase() : '';
 		if ( tag === 'a' ) {
@@ -236,7 +290,21 @@
 		var kind = inferKind( el );
 		if ( kind !== 'container' ) {
 			el.setAttribute( KIND_ATTR, kind );
-			if ( kind === 'text' && el.children.length ) {
+			// A LINK gets this too, and did not.
+			//
+			// inferKind() answers 'link' for every <a> before it ever asks
+			// whether the contents are text, so `kind === 'text'` was never
+			// true for one — and startEdit() refuses an element with children
+			// that is not marked rich. The result: a button whose label sits
+			// beside an arrow or an icon, which is most of them in a modern
+			// design, could be selected, restyled and re-pointed but its words
+			// could not be changed. No caret, no message, nothing to try.
+			//
+			// For text the check is implied: with children, kind is only
+			// 'text' when isRichTextBlock() already said so. A link has to be
+			// asked, because <a><img></a> is a link too and typing over a
+			// picture is not an edit anyone means.
+			if ( el.children.length && ( 'text' === kind || ( 'link' === kind && isRichTextBlock( el ) ) ) ) {
 				el.setAttribute( 'data-cve-rich', '1' );
 			}
 		}
@@ -1209,6 +1277,14 @@
 		var isFormControl = 'INPUT' === el.tagName || 'TEXTAREA' === el.tagName || 'SELECT' === el.tagName;
 		if ( 'INPUT' === el.tagName || 'TEXTAREA' === el.tagName ) {
 			fields.placeholder = el.getAttribute( 'placeholder' ) || '';
+		}
+		if ( kind === 'text' || kind === 'link' ) {
+			// The element's OWN words, without whatever its children say. A
+			// button reads `Book a Free Fit Call →` because the arrow is a
+			// span beside the label; offering that as the editable text would
+			// have someone retype the arrow to keep it, and lose it the once
+			// they did not.
+			fields.ownText = ownText( el );
 		}
 		if ( kind === 'link' ) {
 			fields.text = ( el.textContent || '' ).trim();
@@ -2756,9 +2832,12 @@
 		}
 		if ( data.type === 'set-text-live' ) {
 			el = findById( data.id );
-			if ( el && el.children.length === 0 ) {
+			if ( el ) {
 				finishEdit( true );
-				el.textContent = data.value;
+				// Children are kept — see setOwnText(). Refusing them, which
+				// is what this did, is what made the panel's Text field
+				// unavailable on any button with an arrow beside its label.
+				setOwnText( el, data.value );
 			}
 			return;
 		}

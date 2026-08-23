@@ -624,10 +624,29 @@
 			return { ok: false, error: 'Target not found: ' + patch.id };
 		}
 		if ( patch.kind === 'set-text' ) {
-			if ( el.children.length > 0 ) {
-				return { ok: false, error: 'Element has nested markup.' };
+			// The element's own text nodes, leaving its elements alone —
+			// `el.textContent = value` would take the arrow beside a button's
+			// label with it, which is why this used to refuse the whole patch.
+			// Kept in step with setOwnText() in bridge.js: the frame shows the
+			// change and this writes the same change to the source, so the two
+			// must agree about what "the text" is.
+			var words = [];
+			for ( var w = 0; w < el.childNodes.length; w++ ) {
+				if ( 3 === el.childNodes[ w ].nodeType ) {
+					words.push( el.childNodes[ w ] );
+				}
 			}
-			el.textContent = patch.value;
+			if ( ! words.length ) {
+				el.insertBefore( el.ownerDocument.createTextNode( patch.value ), el.firstChild );
+			} else {
+				var was = words[ 0 ].nodeValue || '';
+				var lead = ( /^\s*/.exec( was ) || [ '' ] )[ 0 ];
+				var tail = ( /\s*$/.exec( was ) || [ '' ] )[ 0 ];
+				words[ 0 ].nodeValue = lead + patch.value + ( was.trim() ? tail : '' );
+				for ( var x = 1; x < words.length; x++ ) {
+					words[ x ].nodeValue = '';
+				}
+			}
 		} else if ( patch.kind === 'set-inner-html' ) {
 			el.innerHTML = patch.value;
 		} else if ( patch.kind === 'set-link' ) {
@@ -4810,11 +4829,22 @@
 		}
 
 		// Editable text field in the panel itself — mirrors the inline caret,
-		// so text can be changed either way. Rich blocks (nested markup) stay
-		// inline-only to avoid flattening their formatting.
-		if ( ( target.kind === 'text' || target.kind === 'link' ) && target.editableNow && ! target.rich && ! target.holdsField ) {
+		// so text can be changed either way.
+		//
+		// Nested markup no longer bars it. It used to, to avoid flattening the
+		// formatting, and the price was that a button whose label sits beside
+		// an arrow — most buttons in a modern design — had no editable text at
+		// all: not in the panel, and not inline either, because startEdit()
+		// refuses children as well. The words are written into the element's
+		// own text nodes now and its elements are left alone, so there is
+		// nothing to flatten.
+		//
+		// Block mode is still excluded: its set-text op replaces a block's
+		// whole inner HTML, so the same edit there really would flatten.
+		if ( ( target.kind === 'text' || target.kind === 'link' ) && target.editableNow && ! target.holdsField
+			&& ( ! target.rich || ! config.blockMode ) ) {
 			panel.appendChild(
-				textRow( 'Text', target.fields.text || '', function ( value ) {
+				textRow( 'Text', ( target.fields.ownText !== undefined ? target.fields.ownText : target.fields.text ) || '', function ( value ) {
 					current.fields.text = value;
 					postToFrame( { type: 'set-text-live', id: current.id, value: value } );
 					recordPatch( { id: current.id, kind: 'set-text', value: value } );
