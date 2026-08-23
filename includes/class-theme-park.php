@@ -136,6 +136,7 @@ class Clara_VE_Theme_Park {
 		add_filter( 'wp_get_nav_menu_items', array( __CLASS__, 'hide_items_pointing_at_parked' ) );
 		add_filter( 'get_user_option_nav_menu_recently_edited', array( __CLASS__, 'forget_parked_recent_menu' ) );
 		add_action( 'load-nav-menus.php', array( __CLASS__, 'leave_parked_menu_screen' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'explain_empty_menu_screen' ) );
 	}
 
 	/**
@@ -334,6 +335,79 @@ class Clara_VE_Theme_Park {
 		}
 		wp_safe_redirect( admin_url( 'nav-menus.php' ) );
 		exit;
+	}
+
+	/**
+	 * Say why the menu screen is empty when this class is the reason.
+	 *
+	 * Hiding a departed theme's menus is right, but it leaves a screen that
+	 * offers to create your first menu on a site that already has three — and
+	 * nothing on it says so. Someone who has just changed theme reads that as
+	 * their menus having been lost, and goes looking. This is the one place
+	 * that knows the real answer, so it is the one place that can give it.
+	 *
+	 * Deliberately narrow: only when the list is empty AND something was
+	 * actually taken out of it. A theme that simply has no menus yet gets the
+	 * ordinary WordPress screen, because that is the ordinary situation.
+	 *
+	 * @return void
+	 */
+	public static function explain_empty_menu_screen() {
+		if ( ! function_exists( 'get_current_screen' ) || ! current_user_can( 'edit_theme_options' ) ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( ! $screen || 'nav-menus' !== (string) $screen->id ) {
+			return;
+		}
+		$parked = self::parked_themes();
+		if ( ! $parked || wp_get_nav_menus() ) {
+			return;
+		}
+
+		// What the screen would hold if this class were not filtering it. The
+		// internal flag is how the rest of the class asks that question.
+		$was            = self::$internal;
+		self::$internal = true;
+		$hidden         = wp_get_nav_menus();
+		self::$internal = $was;
+		if ( ! $hidden ) {
+			return; // Genuinely no menus. Not our doing, not our message.
+		}
+
+		$names = array();
+		foreach ( $parked as $slug ) {
+			$theme   = wp_get_theme( $slug );
+			$names[] = $theme->exists() ? $theme->get( 'Name' ) : $slug;
+		}
+
+		printf(
+			'<div class="notice notice-info is-dismissible"><p><strong>%s</strong> %s</p></div>',
+			esc_html(
+				sprintf(
+					/* translators: %d: number of menus belonging to themes that are not active. */
+					_n(
+						'%d menu belongs to a theme that is not active.',
+						'%d menus belong to themes that are not active.',
+						count( $hidden ),
+						'visual-edit-lite'
+					),
+					count( $hidden )
+				)
+			),
+			esc_html(
+				sprintf(
+					/* translators: %s: theme name, or a comma-separated list of them. */
+					_n(
+						'That theme is %s, and its menus come back the moment it is active again.',
+						'Those themes are %s, and their menus come back the moment they are active again.',
+						count( $names ),
+						'visual-edit-lite'
+					),
+					implode( ', ', $names )
+				)
+			) . ' ' . esc_html__( 'Nothing has been deleted. A menu you make here belongs to the site and stays through every theme.', 'visual-edit-lite' )
+		);
 	}
 
 	/**

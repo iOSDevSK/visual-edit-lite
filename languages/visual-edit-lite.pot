@@ -1778,6 +1778,22 @@ msgstr ""
 msgid "Page not found (404)"
 msgstr ""
 
+#: includes/class-theme-park.php:389
+msgid "%d menu belongs to a theme that is not active."
+msgid_plural "%d menus belong to themes that are not active."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-theme-park.php:401
+msgid "That theme is %s, and its menus come back the moment it is active again."
+msgid_plural "Those themes are %s, and their menus come back the moment they are active again."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-theme-park.php:409
+msgid "Nothing has been deleted. A menu you make here belongs to the site and stays through every theme."
+msgstr ""
+
 #: includes/class-tokens.php:680
 msgid "No article on this side"
 msgstr ""
