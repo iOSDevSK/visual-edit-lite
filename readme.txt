@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.1
+Stable tag: 1.25.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,23 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.2 =
+This edition is derived from Visual Edit Pro 1.25.2.
+* New: the style panel folds — each heading opens and closes, and remembers
+  which you left open.
+* New: padding, margin and border on every element, not only on wrappers.
+* Fixed: panel section headings were unstyled here while Pro styled them.
+* New: the greyed-out words inside a form field can be changed — click the
+  field and the panel offers what it shows before anyone types.
+* New: a form's own words are editable again — its labels, its button and any
+  small print under it. Those are the design's own wording; only the parts
+  WordPress owns stay sealed.
+* Fixed: clicking a box that contains a form, a post list or a menu said the
+  words in it "come from the post" and "change with every article". Only one of
+  those four cases is a post — on a contact form it was simply untrue, and it
+  sent people looking in Posts for text that was never there. Each now says
+  what it is actually holding.
 
 = 1.25.1 =
 This edition is derived from Visual Edit Pro 1.25.1, and brings across

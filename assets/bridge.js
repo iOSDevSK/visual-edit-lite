@@ -214,10 +214,18 @@
 		if ( ! form ) {
 			return '';
 		}
-		// Inside a zone the inner markup is hydrated output with no path of its
-		// own; the zone element carries it.
+		// Whichever of the two actually carries the path. A posts/menu/article
+		// zone still holds it, so it wins; a FORM zone's wrapper has yielded
+		// its slot to the <form> (see sourceExternalChild), so there the form
+		// carries it and preferring the wrapper returns nothing.
+		//
+		// That is not hypothetical: preferring the wrapper unconditionally is
+		// what silently emptied every form's connection panel the moment the
+		// wrapper stopped being stamped — the settings were still there, the
+		// path to reach them was ''.
 		var zone = form.closest ? form.closest( '[' + SKIP_ATTR + ']' ) : null;
-		return ( zone || form ).getAttribute( PATH_ATTR ) || '';
+		var zonePath = zone ? ( zone.getAttribute( PATH_ATTR ) || '' ) : '';
+		return zonePath || form.getAttribute( PATH_ATTR ) || '';
 	}
 
 	// ---- Source-path + kind stamping (pristine DOM === parsed source DOM) ----
@@ -247,8 +255,34 @@
 	// An element the rendered WordPress document adds around/beside the stored
 	// source. It occupies a physical DOM slot, but no slot in editor.js's parsed
 	// source string, so it must be skipped without advancing the logical index.
+	// The hidden fields the form runtime appends (class-tokens.php) — they are
+	// in the rendered DOM and in no stored source, so they must not take a
+	// path. A closed list rather than "any hidden input", because a design's
+	// OWN hidden input does exist in the source and removing its slot would
+	// shift every sibling after it.
+	var FORM_RUNTIME_FIELDS = {
+		clara_ve_nonce: 1, form_id: 1, to: 1, redirect: 1,
+		form_type: 1, list_id: 1, cve_ts: 1,
+	};
+
 	function sourceExternalChild( child, parent ) {
 		if ( child.classList && child.classList.contains( 'wp-block-template-part' ) ) {
+			return true;
+		}
+		// A form zone's wrapper stands exactly where the <form> stands in the
+		// stored source, so the two cannot both hold the slot. The wrapper
+		// yields it: the form takes the path, and its interior — labels,
+		// button text, the small print — becomes addressable and therefore
+		// editable. Only for FORMS. A posts zone renders its one stored card
+		// template N times, so there is no single source element to align an
+		// interior path against, and it keeps the slot as before.
+		if ( 'form' === ( child.getAttribute && child.getAttribute( ZONE_ATTR ) ) ) {
+			return true;
+		}
+		if (
+			child.tagName === 'INPUT' && child.type === 'hidden' &&
+			FORM_RUNTIME_FIELDS[ child.name ] && child.closest( '[' + ZONE_ATTR + '="form"]' )
+		) {
 			return true;
 		}
 		if ( parent === document.body && detachedFrontSiteBlocks ) {
@@ -271,12 +305,19 @@
 	// recursed into: in the STORED source the whole zone is a single text
 	// node (the token), so descending into its hydrated markup would stamp
 	// paths that don't exist on the source side at all.
-	function stampSubtree( el, path ) {
+	function stampSubtree( el, path, startIndex ) {
 		var children = el.children;
-		var sourceIndex = 0;
+		var sourceIndex = startIndex || 0;
 		for ( var i = 0; i < children.length; i++ ) {
 			var child = children[ i ];
 			if ( sourceExternalChild( child, el ) ) {
+				// A yielded form wrapper is transparent, not absent: its own
+				// children are stamped as if they were this element's, so the
+				// <form> lands on the slot the wrapper gave up.
+				if ( 'form' === ( child.getAttribute && child.getAttribute( ZONE_ATTR ) ) ) {
+					stampSubtree( child, path, sourceIndex );
+					sourceIndex += child.children.length;
+				}
 				continue;
 			}
 			var childPath = path.length ? path + '-' + sourceIndex : String( sourceIndex );
@@ -411,6 +452,23 @@
 		return inMenuZone( el ) ? 'menu' : null;
 	}
 
+	/**
+	 * The kind of zone an element CONTAINS, as opposed to one it sits inside.
+	 *
+	 * zoneOf() looks upward and answers for the element's own context; this
+	 * looks down. A container that holds a hydrated zone is style-only —
+	 * holdsGeneratedField() decides that — but until now the panel could not
+	 * say WHICH zone it held, so every one of them was explained with the
+	 * article wording: "the words here come from the post, so they change with
+	 * every article". Clicked on a box holding a contact form, that is simply
+	 * untrue — the labels are the design's own words, in the stored source,
+	 * and no post exists anywhere near them.
+	 */
+	function heldZoneOf( el ) {
+		var skipEl = el.querySelector && el.querySelector( '[' + SKIP_ATTR + ']' );
+		return skipEl ? ( skipEl.getAttribute( ZONE_ATTR ) || null ) : null;
+	}
+
 	function rgbToHex( value ) {
 		var m = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec( value || '' );
 		if ( ! m ) {
@@ -457,6 +515,17 @@
 			marginLeft: computed.marginLeft,
 			marginRight: computed.marginRight,
 			borderRadius: computed.borderRadius,
+			// The three the BORDER panel needs, reported per VISIBLE side.
+			//
+			// A form field in this design is a line under the text and nothing
+			// else, so the four sides differ and the shorthand computes to
+			// "0px 0px 1px 0px" — truthy, parsed as 0, and the panel said the
+			// field had no border while a 1px line sat under it. So: if the
+			// sides agree, that value; if they do not, the side that is
+			// actually drawn, which is the one a person means.
+			borderWidth: visibleBorder( computed, 'Width' ),
+			borderStyle: visibleBorder( computed, 'Style' ),
+			borderColor: rgbToHex( visibleBorder( computed, 'Color' ) ),
 			width: computed.width,
 			height: computed.height,
 			display: computed.display,
@@ -1108,6 +1177,15 @@
 		var holdsField = holdsGeneratedField( el );
 		var editableNow = ! holdsField && ( kind === 'image' || el.children.length === 0 || el.hasAttribute( 'data-cve-rich' ) );
 		var fields = {};
+		// A form control's placeholder is design copy like any label — the
+		// words a visitor reads before they type. It is an ATTRIBUTE, so no
+		// caret can reach it; the panel offers it instead. Reported for the
+		// control itself, independent of `kind`, because an <input> is not a
+		// text leaf and would otherwise carry no fields at all.
+		var isFormControl = 'INPUT' === el.tagName || 'TEXTAREA' === el.tagName || 'SELECT' === el.tagName;
+		if ( 'INPUT' === el.tagName || 'TEXTAREA' === el.tagName ) {
+			fields.placeholder = el.getAttribute( 'placeholder' ) || '';
+		}
 		if ( kind === 'link' ) {
 			fields.text = ( el.textContent || '' ).trim();
 			fields.href = el.getAttribute( 'href' ) || '';
@@ -1179,6 +1257,11 @@
 			menuZone: inMenuZone( el ),
 			menuLocation: menuLocationFor( el ),
 			holdsField: holdsField,
+			heldZone: holdsField ? heldZoneOf( el ) : null,
+			// A control is a container by shape — no children, no text — so
+			// the type panel skipped it. But its font, size and colour are
+			// exactly what the visitor reads, and what ::placeholder inherits.
+			formControl: isFormControl,
 			// href comes from the post (the category link) or is built from a
 			// placeholder (share, prev/next). Everything about the link stays
 			// editable except the address itself — typing one in would freeze
@@ -1512,6 +1595,29 @@
 			generic: 'has-background',
 		},
 	};
+
+	/**
+	 * The border value a person would name for an element whose sides differ.
+	 *
+	 * Equal sides answer for themselves. Unequal ones — a field underlined and
+	 * open on the other three — are described by the side that is drawn: the
+	 * first with a non-zero width, falling back to the bottom, which is where
+	 * this pattern almost always lives.
+	 */
+	function visibleBorder( computed, prop ) {
+		var sides = [ 'Top', 'Right', 'Bottom', 'Left' ];
+		var widths = sides.map( function ( s ) { return parseFloat( computed[ 'border' + s + 'Width' ] ) || 0; } );
+		var same = widths.every( function ( w ) { return w === widths[ 0 ]; } );
+		if ( same ) {
+			return computed[ 'borderTop' + prop ];
+		}
+		for ( var i = 0; i < sides.length; i++ ) {
+			if ( widths[ i ] > 0 ) {
+				return computed[ 'border' + sides[ i ] + prop ];
+			}
+		}
+		return computed[ 'borderBottom' + prop ];
+	}
 
 	function post( message ) {
 		window.parent.postMessage( Object.assign( { ns: 'clara-ve' }, message ), '*' );
@@ -2282,7 +2388,19 @@
 			rememberOriginalMedia( el );
 			var target = targetFrom( el );
 			post( { type: 'select', target: target } );
-			if ( ! target.menuZone && ! target.zone && ! target.holdsField && ( target.kind === 'text' || target.kind === 'link' ) ) {
+			// A form zone owns its SUBMISSION, not its wording. The labels,
+			// the button and the small print are the design's own words,
+			// sitting in the stored source exactly where they were written —
+			// so a text leaf inside one is editable like any other. What the
+			// zone still governs is the form element itself and its controls,
+			// which are not text leaves and so never reach this branch.
+			//
+			// Menus and post cards are the opposite case and keep the block:
+			// their words come from WordPress records, and typing over them
+			// would be overwritten by the next render.
+			var zoneBlocksEditing =
+				target.zone && ! ( 'form' === target.zone && ( target.kind === 'text' || target.kind === 'link' ) );
+			if ( ! target.menuZone && ! zoneBlocksEditing && ! target.holdsField && ( target.kind === 'text' || target.kind === 'link' ) ) {
 				startEdit( el, ev );
 			}
 		},
@@ -2567,6 +2685,17 @@
 			if ( el && el.children.length === 0 ) {
 				finishEdit( true );
 				el.textContent = data.value;
+			}
+			return;
+		}
+		if ( data.type === 'set-placeholder' ) {
+			el = findById( data.id );
+			if ( el && ( 'INPUT' === el.tagName || 'TEXTAREA' === el.tagName ) ) {
+				if ( data.value ) {
+					el.setAttribute( 'placeholder', data.value );
+				} else {
+					el.removeAttribute( 'placeholder' );
+				}
 			}
 			return;
 		}

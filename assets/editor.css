@@ -1077,3 +1077,55 @@
 	text-transform: uppercase;
 	color: #8b8b93;
 }
+
+/* ---- Panel section headings ---- */
+/* The base rule was missing here while Pro has had it — a derivation gap, so
+   Lite's panel headings rendered as plain body text. */
+.cve-section {
+	margin: 14px 0 8px;
+	color: #8e8e93;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+}
+
+/* A folding section heading. The whole row is the hit target, not a small
+   chevron — the pointer is already on the word. */
+.cve-section-fold {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	cursor: pointer;
+	user-select: none;
+	padding: 2px 0;
+	border-radius: 4px;
+}
+
+.cve-section-fold:hover {
+	color: #c7c7cc;
+}
+
+.cve-section-fold:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.cve-section-fold::after {
+	content: '';
+	width: 6px;
+	height: 6px;
+	border-right: 1.5px solid currentColor;
+	border-bottom: 1.5px solid currentColor;
+	transform: rotate(45deg) translate(-1px, -1px);
+	transition: transform 0.12s ease;
+	flex: 0 0 auto;
+}
+
+.cve-section-fold[aria-expanded='false']::after {
+	transform: rotate(-45deg) translate(-1px, 1px);
+}
+
+.cve-secbody[hidden] {
+	display: none;
+}

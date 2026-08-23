@@ -641,6 +641,15 @@
 					el.removeAttribute( 'rel' );
 				}
 			}
+		} else if ( patch.kind === 'set-placeholder' ) {
+			// Empty clears it rather than writing placeholder="" — an empty
+			// attribute still counts as "has a placeholder" to a stylesheet
+			// using :placeholder-shown, and the design did not ask for one.
+			if ( patch.value ) {
+				el.setAttribute( 'placeholder', patch.value );
+			} else {
+				el.removeAttribute( 'placeholder' );
+			}
 		} else if ( patch.kind === 'set-form-token' ) {
 			// Always strip first, so switching type replaces the token rather
 			// than nesting a second one around the first.
@@ -3568,6 +3577,7 @@
 			menuFoot.appendChild( menuSave );
 			panel.appendChild( menuFoot );
 
+			collapsibleSections( panel );
 			body.appendChild( panel );
 			positionPanel( panel, target.rect );
 			makeDraggable( panel, head );
@@ -3585,7 +3595,37 @@
 			menu: { title: 'MENU ZONE', hint: 'This menu is populated from a WordPress menu and can’t be edited here.', linkText: 'All Menus', linkUrl: config.menusUrl },
 			article: { title: 'ARTICLE FIELD', hint: 'This comes from the post itself and changes with every article, so it can’t be edited here. Style the box around it instead — that applies to all articles.', linkText: 'All Posts', linkUrl: config.postsUrl },
 		};
-		if ( target.zone && ZONE_COPY[ target.zone ] ) {
+		// Static text inside a form zone is edited, not explained — see the
+		// matching carve-out in bridge.js. Showing FORM ZONE over a label the
+		// user just put a caret in would contradict the caret.
+		// A form control's placeholder, offered before the zone's own notice.
+		// It has to come FIRST: the zone branch below ends in a return, so
+		// anything after it never renders for exactly the elements that have
+		// a placeholder to change.
+		if ( 'string' === typeof target.fields.placeholder ) {
+			panel.appendChild( el( 'div', 'cve-section', 'PLACEHOLDER' ) );
+			panel.appendChild(
+				el( 'p', 'cve-note', 'The greyed-out words shown before anyone types. Leave it empty for none.' )
+			);
+			panel.appendChild(
+				textRow( 'Shows', target.fields.placeholder, function ( value ) {
+					current.fields.placeholder = value;
+					postToFrame( { type: 'set-placeholder', id: current.id, value: value } );
+					recordPatch( { id: current.id, kind: 'set-placeholder', value: value } );
+				} )
+			);
+		}
+
+		// A form zone never takes the informational branch. That branch builds
+		// a self-contained panel and RETURNS, so everything after it — the
+		// background, the size, the padding, the border, the type — never
+		// renders. For post cards and menus that is right: their content is
+		// WordPress's and the panel is there to say so. A form is different.
+		// Its fields are the design's own elements and styling them is
+		// ordinary work, so it goes down the ordinary path and the form's
+		// settings are appended there instead.
+		var zoneIsInformational = target.zone && 'form' !== target.zone;
+		if ( zoneIsInformational && ZONE_COPY[ target.zone ] ) {
 			var zoneCopy = ZONE_COPY[ target.zone ];
 			panel.appendChild( el( 'div', 'cve-section', zoneCopy.title ) );
 			panel.appendChild( el( 'p', 'cve-note', zoneCopy.hint ) );
@@ -3663,6 +3703,7 @@
 			}
 			panel.appendChild( zoneFoot );
 
+			collapsibleSections( panel );
 			body.appendChild( panel );
 			positionPanel( panel, target.rect );
 			makeDraggable( panel, head );
@@ -3674,7 +3715,13 @@
 		// pressing it here selects it instead of loading anything — the paging
 		// script is deliberately absent from the preview, where appended cards
 		// would exist in the canvas but not in the saved source.
-		if ( target.formPath ) {
+		// Only on the FORM itself. formPathFor() answers for anything INSIDE a
+		// form — that is what makes a click on a field able to find its form —
+		// but where it submits to and where it goes afterwards belong to the
+		// form, not to one of its fields. Offered on every field, the same
+		// three settings appear four times over and each looks like it
+		// governs the box it was opened from.
+		if ( target.formPath && target.formPath === target.id ) {
 			appendFormSection( panel, target.formPath );
 		}
 
@@ -4072,7 +4119,11 @@
 		// page have nowhere to go: blockPatchesFrom() cannot translate them and
 		// refuses the whole queue at Save. A block's own box controls come from
 		// blockStyleSection() below, built from what the block supports.
-		if ( ! config.blockMode && ( target.kind === 'container' || target.holdsField ) ) {
+		// Every element, not only containers. A heading has margins, a label
+		// has padding and a field is a border — the box is not something only
+		// wrappers have, and gating these on `kind` meant the most commonly
+		// restyled elements on a page could not be nudged at all.
+		if ( ! config.blockMode ) {
 			panel.appendChild( el( 'div', 'cve-section', 'BACKGROUND' ) );
 			panel.appendChild( colorRow( 'Color', 'backgroundColor', target.styles.backgroundColor ) );
 			var contGrid = el( 'div', 'cve-grid' );
@@ -4122,18 +4173,73 @@
 			marGrid.appendChild( stepperRow( '←', 'marginLeft', target.styles.marginLeft, 4, 'px' ) );
 			marGrid.appendChild( stepperRow( '→', 'marginRight', target.styles.marginRight, 4, 'px' ) );
 			panel.appendChild( marGrid );
+
+			// BORDER. Block mode has had this all along inside
+			// blockStyleSection(); a source-mode page had no way to reach it,
+			// which on a form is the whole design — those fields are a line
+			// under the text and nothing else.
+			panel.appendChild( el( 'div', 'cve-section', 'BORDER' ) );
+			panel.appendChild( colorRow( 'Colour', 'borderColor', target.styles.borderColor ) );
+			// Radius is not repeated here — BACKGROUND already carries it, and
+			// two controls for one property disagree the moment either moves.
+			var bordGrid = el( 'div', 'cve-grid' );
+			bordGrid.appendChild( stepperRow( 'Width', 'borderWidth', target.styles.borderWidth, 1, 'px' ) );
+			panel.appendChild( bordGrid );
+			panel.appendChild(
+				selectRow(
+					'Style',
+					'borderStyle',
+					[
+						{ value: 'none', label: 'None' },
+						{ value: 'solid', label: 'Solid' },
+						{ value: 'dashed', label: 'Dashed' },
+						{ value: 'dotted', label: 'Dotted' },
+					],
+					target.styles.borderStyle
+				)
+			);
 		}
 
 		// This box's words come from the post, so there is no text to type here —
 		// but everything about how they LOOK is on the table. Say so, or the
 		// absent text field reads as a broken panel.
+		// This box holds something WordPress fills in, so there is no text to
+		// type here — but everything about how it LOOKS is on the table. Say
+		// so, or the absent text field reads as a broken panel.
+		//
+		// Say it about the RIGHT thing. This branch used to explain every held
+		// zone as post content — "the words come from the post, they change
+		// with every article" — which on a box holding a contact form is
+		// simply untrue: those labels are the design's own words and no post
+		// is involved. A panel that misdescribes what it is looking at is
+		// worse than a terse one, because it sends people looking in Posts
+		// for text that is not there.
 		if ( target.holdsField ) {
-			panel.appendChild( el( 'div', 'cve-section', 'FROM THE POST' ) );
+			var HELD_COPY = {
+				form: {
+					title: 'HOLDS A FORM',
+					note: 'The form inside this box is wired to WordPress, so its fields can’t be typed over here. How the box LOOKS is set below.',
+				},
+				posts: {
+					title: 'HOLDS POST CARDS',
+					note: 'The cards inside this box are built from your WordPress posts, so their words and images can’t be typed over here. How the box LOOKS is set below.',
+				},
+				menu: {
+					title: 'HOLDS A MENU',
+					note: 'The menu inside this box comes from a WordPress menu, so its links can’t be typed over here. How the box LOOKS is set below.',
+				},
+				article: {
+					title: 'FROM THE POST',
+					note: 'The words and images here come from the post, so they change with every article and can’t be typed over. How they LOOK is set here, and applies to every article.',
+				},
+			};
+			var held = HELD_COPY[ target.heldZone ] || HELD_COPY.article;
+			panel.appendChild( el( 'div', 'cve-section', held.title ) );
 			panel.appendChild(
 				el(
 					'p',
 					'cve-note',
-					'The words and images here come from the post, so they change with every article and can’t be typed over. How they LOOK is set here, and applies to every article.'
+					held.note
 				)
 			);
 		}
@@ -4163,7 +4269,12 @@
 			if ( target.kind === 'text' && target.editableNow ) {
 				panel.appendChild( el( 'p', 'cve-note', 'Edit text directly in the page — Enter commits, Esc cancels.' ) );
 			}
-		} else if ( target.kind === 'text' || target.kind === 'link' ) {
+		} else if ( target.kind === 'text' || target.kind === 'link' || target.formControl ) {
+			// A form control reaches here on purpose. By shape it is a
+			// container — no children, no text — so it fell through to the box
+			// sections alone and its type could not be touched. Yet the words
+			// a visitor reads in a field, and everything ::placeholder
+			// inherits, are set exactly here.
 			panel.appendChild( el( 'div', 'cve-section', 'TYPOGRAPHY' ) );
 			panel.appendChild(
 				selectRow( 'Font', 'fontFamily', fontOptions(), target.styles.fontFamily, fontValue )
@@ -4382,9 +4493,94 @@
 		foot.appendChild( save );
 		panel.appendChild( foot );
 
+		collapsibleSections( panel );
 		body.appendChild( panel );
 		positionPanel( panel, target.rect );
 		makeDraggable( panel, head );
+	}
+
+	/**
+	 * Fold the panel's sections.
+	 *
+	 * Everything a source-mode element can be styled with adds up to a column
+	 * taller than the window, and the thing someone came to change is usually
+	 * one row of it. So each heading becomes a toggle over the rows beneath
+	 * it, up to the next heading — the footer is deliberately outside, or
+	 * Save would fold away with the last section.
+	 *
+	 * The first section stays open so the panel never opens as a list of
+	 * closed labels, and every choice after that is remembered by section
+	 * name: someone who works on spacing all day should not reopen PADDING on
+	 * every click.
+	 */
+	var SECTION_MEMORY = 'clara-ve-open-sections';
+
+	function sectionMemory() {
+		try {
+			return JSON.parse( window.localStorage.getItem( SECTION_MEMORY ) || '{}' ) || {};
+		} catch ( e ) {
+			return {};
+		}
+	}
+
+	function rememberSection( name, open ) {
+		try {
+			var all = sectionMemory();
+			all[ name ] = !! open;
+			window.localStorage.setItem( SECTION_MEMORY, JSON.stringify( all ) );
+		} catch ( e ) {
+			/* a browser refusing storage is not a reason to refuse the toggle */
+		}
+	}
+
+	function collapsibleSections( panel ) {
+		var heads = [].slice.call( panel.children ).filter( function ( n ) {
+			return n.classList && n.classList.contains( 'cve-section' );
+		} );
+		var remembered = sectionMemory();
+		heads.forEach( function ( head, index ) {
+			var name = ( head.textContent || '' ).trim();
+			var bodyEl = document.createElement( 'div' );
+			bodyEl.className = 'cve-secbody';
+			var node = head.nextSibling;
+			while ( node ) {
+				var isBoundary = node.classList &&
+					( node.classList.contains( 'cve-section' ) || node.classList.contains( 'cve-foot' ) );
+				if ( isBoundary ) {
+					break;
+				}
+				var next = node.nextSibling;
+				bodyEl.appendChild( node );
+				node = next;
+			}
+			head.parentNode.insertBefore( bodyEl, head.nextSibling );
+
+			var open = Object.prototype.hasOwnProperty.call( remembered, name )
+				? !! remembered[ name ]
+				: 0 === index;
+
+			head.classList.add( 'cve-section-fold' );
+			head.setAttribute( 'role', 'button' );
+			head.setAttribute( 'tabindex', '0' );
+
+			var paint = function () {
+				bodyEl.hidden = ! open;
+				head.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+			};
+			var toggle = function () {
+				open = ! open;
+				paint();
+				rememberSection( name, open );
+			};
+			paint();
+			head.addEventListener( 'click', toggle );
+			head.addEventListener( 'keydown', function ( ev ) {
+				if ( 'Enter' === ev.key || ' ' === ev.key ) {
+					ev.preventDefault();
+					toggle();
+				}
+			} );
+		} );
 	}
 
 	function closePanelSilent() {
