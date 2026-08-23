@@ -3722,25 +3722,48 @@
 		return row;
 	}
 
+	/**
+	 * A labelled <select>.
+	 *
+	 * `options` may be plain strings, which is what most callers pass and what
+	 * this took for a long time, or `{ value, label }` for a control whose
+	 * stored value is not what a person should be reading — `none` is the CSS
+	 * for it, "None" is the word.
+	 *
+	 * Accepting both is a repair, not a flourish. The BORDER Style row passed
+	 * objects to a function that did `o.textContent = opt`, so every choice in
+	 * it read `[object Object]` — and worse, `options.indexOf( initial )` then
+	 * missed too, so the current value was prepended as an extra option and
+	 * the only thing selectable was the value already set. The control could
+	 * not change anything, on every element, in every raw-HTML theme.
+	 */
 	function selectRow( label, key, options, initial, mapValue, previewFn ) {
 		previewFn = previewFn || previewStyle;
 		var row = el( 'div', 'cve-field' );
 		row.appendChild( el( 'span', 'cve-field-label', label ) );
 		var select = document.createElement( 'select' );
 		select.className = 'cve-select';
-		options.forEach( function ( opt ) {
+		var choices = options.map( function ( opt ) {
+			return ( opt && 'object' === typeof opt )
+				? { value: opt.value, label: opt.label }
+				: { value: opt, label: opt };
+		} );
+		var values = choices.map( function ( choice ) {
+			return choice.value;
+		} );
+		choices.forEach( function ( choice ) {
 			var o = document.createElement( 'option' );
-			o.value = opt;
-			o.textContent = opt;
+			o.value = choice.value;
+			o.textContent = choice.label;
 			select.appendChild( o );
 		} );
-		if ( options.indexOf( initial ) === -1 && initial ) {
+		if ( values.indexOf( initial ) === -1 && initial ) {
 			var extra = document.createElement( 'option' );
 			extra.value = initial;
 			extra.textContent = initial;
 			select.insertBefore( extra, select.firstChild );
 		}
-		select.value = initial || options[ 0 ];
+		select.value = initial || values[ 0 ];
 		select.addEventListener( 'change', function () {
 			previewFn( key, mapValue ? mapValue( select.value ) : select.value );
 		} );
