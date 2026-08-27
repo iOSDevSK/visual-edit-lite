@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.9
+Stable tag: 1.25.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,13 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.25.12 =
+This edition is derived from Visual Edit Pro 1.25.12.
+* Maintenance release, keeping the version in step with the edition it is
+  derived from. The three Pro releases since 1.25.9 corrected that edition's
+  licence check and its bundled update channel — machinery Lite does not
+  contain — so nothing in the editor changes here.
 
 = 1.25.9 =
 This edition is derived from Visual Edit Pro 1.25.9.
