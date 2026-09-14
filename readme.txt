@@ -204,6 +204,11 @@ the plugin is deleted.
 == Changelog ==
 
 = 1.27.0 =
+* **A theme converted from HTML no longer white-screens its visitors.** Such a
+  theme carries its own form runtime that asks this plugin about Cloudflare
+  Turnstile as soon as it is loaded; this edition has no Turnstile and had no
+  answer, so every page holding a form died with a critical error — the public
+  page, not only the editor. It now answers "off", which is the truth.
 * On a theme converted from HTML, form submissions were being accepted and
   silently thrown away: the theme and the plugin signed the anti-spam timestamp
   in two different shapes, and the visitor saw a thank-you either way. They are
@@ -492,8 +497,9 @@ so all of it ships here:
 Block themes now edit the way converted themes do: the page, one toolbar, one
 popup. Forms became editable blocks, and where a form sends is signed into the
 page and checked for every form. If your theme was converted from HTML, this
-release also restores form delivery — submissions were being accepted and
-discarded. Nothing needs migrating.
+release is important: pages with forms were showing visitors a critical error,
+and submissions that got through were being discarded. Both are fixed. Nothing
+needs migrating.
 
 = 1.19.8 =
 Staggered and carousel card lists are editable as collections again, listing

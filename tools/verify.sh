@@ -298,6 +298,16 @@ docker cp "$SRC/tests/form-blocks-wp.php" "$WP:/tmp/form-blocks-wp.php" >/dev/nu
 if docker exec "$WP" php /tmp/form-blocks-wp.php /var/www/html; then pass "form blocks render, submit safely and survive the plugin going away"
 else bad "form blocks regression"; fi
 
+# --------------------------------------------------- 5c. the theme contract ---
+# A converted theme's own runtime delegates to this plugin whenever the class
+# is loaded. A method it calls and this edition lacks is a fatal on the PUBLIC
+# page, not a missing feature — and nothing else in this gate can see it,
+# because the gate renders no converted theme.
+step "Theme contract"
+docker cp "$SRC/tests/theme-contract-api.php" "$WP:/tmp/theme-contract-api.php" >/dev/null
+if docker exec "$WP" php /tmp/theme-contract-api.php /var/www/html; then pass "every method a converted theme's runtime delegates to exists"
+else bad "a converted theme would fatal the public page"; fi
+
 # ------------------------------------------------------------- 6. no noise ---
 step "Runtime"
 curl -s -o /dev/null -w '' "http://localhost:$PORT/" || true

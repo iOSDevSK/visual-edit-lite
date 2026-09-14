@@ -684,6 +684,33 @@ class Clara_VE_Form_Settings {
 		return ! empty( $key );
 	}
 
+	/**
+	 * Cloudflare Turnstile: not a feature of this edition.
+	 *
+	 * These two exist because a theme converted from HTML carries its own form
+	 * runtime that delegates to this class whenever it is loaded — it asks
+	 * `Clara_VE_Form_Settings::turnstile_enabled()` the moment the class
+	 * exists, having no way to know which edition it is talking to. Without
+	 * them that is a fatal on the PUBLIC page: every page holding a [wp-form]
+	 * token white-screens for visitors, not just in the editor.
+	 *
+	 * `false` and `''` are the truthful answers rather than placeholders. This
+	 * edition has no challenge to render and nothing to verify one with, and
+	 * the converted theme's own rule is that a widget with nothing checking it
+	 * is worse than no widget: told "off", it renders none and signs its
+	 * timestamp with the challenge flag clear.
+	 *
+	 * @return bool
+	 */
+	public static function turnstile_enabled() {
+		return false;
+	}
+
+	/** @return string Empty: there is no Turnstile in this edition. */
+	public static function turnstile_site_key() {
+		return '';
+	}
+
 	// ---- Mailer getters ----
 
 	/** @return bool Whether the consent note is switched on. */

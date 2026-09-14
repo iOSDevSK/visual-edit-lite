@@ -238,6 +238,34 @@ running install and neither works: a form block inside a **synced pattern**
 `core/html` block carrying the `clara-ve-key` marker. Both lose their form tags
 to the same kses pass before they are ever stored.
 
+#### After the review: a third converted-theme fatal
+
+Found by using the plugin rather than reading it, the same afternoon. A theme
+converted from HTML carries its own copy of the form runtime, and that copy
+delegates to this plugin the moment the class is loaded — it asks
+`Clara_VE_Form_Settings::turnstile_enabled()` with no way to know which edition
+it is talking to. **Pro has that method; this edition never did.** The result
+was `Call to undefined method` inside `the_content`, so every page holding a
+`[wp-form]` token showed visitors "There has been a critical error on this
+website" — the public page, not the editor.
+
+Two methods now answer, truthfully, that there is no Turnstile here. More to
+the point: nothing in the gate could have caught it, because the gate renders
+no converted theme. `tests/theme-contract-api.php` now asserts that every
+method such a runtime delegates to exists, and runs in the gate. That is a
+tripwire, not a substitute — **the real fix is a converted theme in the gate**,
+and it is not built.
+
+This is the third defect found in the converted-theme path in one day, after
+the timestamp and the delegated exemption. All three were invisible to a gate
+that only ever renders a block theme, and that is the single most useful thing
+this assessment learned about its own testing.
+
+The same session finally produced the primary evidence this document said it
+lacked: a real form on the live converted theme `claire-hayes`, scraped from
+the public page, submitted over HTTP after a genuine five-second pause, stored
+as one submission with its four fields and the theme recorded against it.
+
 #### Found and not yet fixed
 
 From the same review, ranked, with the code to look at. None is reachable by an
