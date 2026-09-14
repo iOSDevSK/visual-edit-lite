@@ -32,6 +32,13 @@ it is just an unconnected HTML form.
 - **Send to** — where notifications go for this form. Leave blank to use the
   site-wide address, which is shown as the placeholder so an empty box does
   not read as "goes nowhere".
+
+  Two limits, both deliberate. **Send to** and **List** are honoured only on a
+  page whose author administers the site — otherwise anyone who can publish
+  could point a form at themselves, or at the owner's mailing list. And on a
+  theme converted from HTML they currently fall back to the site-wide address
+  either way, until the converter signs the choice into the page it generates.
+  In both cases the form still works; it is the address that falls back.
 - **Then go to** — the page shown after submitting. This is a **page picker**,
   not a text field, with a "Somewhere else…" escape hatch for an external URL.
   It is a picker because the first version was a text field and forms shipped

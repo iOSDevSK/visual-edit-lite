@@ -72,6 +72,30 @@ foreach ($files as $file) {
         $entries[$key]['refs'][] = $rel . ':' . $line;
     }
 }
+
+// The native Gutenberg extension is deliberately shipped without a build
+// step, so collect its ordinary __( 'literal', 'visual-edit-lite' ) calls as
+// well. WordPress.org can then generate the per-script JSON catalog used by
+// wp_set_script_translations().
+foreach (glob('assets/*.js') as $file) {
+    $source = file_get_contents($file);
+    $patterns = array(
+        '/\b__\(\s*\'((?:\\\\.|[^\'\\\\])*)\'\s*,\s*\'visual-edit-lite\'\s*\)/',
+        '/\b__\(\s*"((?:\\\\.|[^"\\\\])*)"\s*,\s*"visual-edit-lite"\s*\)/',
+    );
+    foreach ($patterns as $pattern) {
+        preg_match_all($pattern, $source, $matches, PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $index => $matched) {
+            $single = stripcslashes($matched[0]);
+            $offset = $matches[0][$index][1];
+            $line   = 1 + substr_count(substr($source, 0, $offset), "\n");
+            $key    = $single;
+            if (!isset($entries[$key])) $entries[$key] = array('ctx'=>null,'single'=>$single,'plural'=>null,'refs'=>array());
+            $entries[$key]['refs'][] = str_replace('\\', '/', $file) . ':' . $line;
+        }
+    }
+}
+
 $esc = function ($s) {
     $s = str_replace(array('\\', '"', "\t"), array('\\\\', '\\"', '\\t'), $s);
     return str_replace("\n", '\\n', $s);
@@ -79,7 +103,9 @@ $esc = function ($s) {
 $out  = "# Copyright (C) 2026 Filip Dvoran\n";
 $out .= "# This file is distributed under the GPL-2.0-or-later.\n";
 $out .= "msgid \"\"\nmsgstr \"\"\n";
-$out .= "\"Project-Id-Version: Visual Edit Lite 1.19.6\\n\"\n";
+$plugin_file = file_get_contents( 'visual-edit-lite.php' );
+$version     = preg_match( '/^[ \t*#@]*Version:\s*(.+)$/mi', $plugin_file, $match ) ? trim( $match[1] ) : 'dev';
+$out .= '"Project-Id-Version: Visual Edit Lite ' . $esc( $version ) . "\\n\"\n";
 $out .= "\"Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\\n\"\n";
 $out .= "\"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n\"\n";
 $out .= "\"Language-Team: LANGUAGE <LL@li.org>\\n\"\n";

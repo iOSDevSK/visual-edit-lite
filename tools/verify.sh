@@ -54,6 +54,23 @@ trap cleanup EXIT
 # Cheap checks first: no point booting WordPress to learn that a function is
 # missing. build-plugin.sh runs this too; here it fails fast and by name.
 php "$SRC/tools/check-js-symbols.php" "$SRC"/assets/*.js || die "a called function has no definition"
+php "$SRC/tests/native-history.php" || die "native history adapter/storage regression"
+if command -v node >/dev/null; then
+  node "$SRC/tests/popup-values.mjs" || die "shared popup values regression"
+  node "$SRC/tests/workspace-model.mjs" || die "workspace model regression"
+  node "$SRC/tests/form-css-congruence.mjs" || die "form CSS editor/site congruence regression"
+  node "$SRC/tests/runtime-delegation.mjs" || die "theme runtime delegation regression"
+  # The rest of the dependency-free node suite. Left out of the gate for a
+  # while, which is how tests/import-dir-names.mjs sat broken from the day the
+  # plugin file was renamed: nothing ran it. A test not in the gate is a test
+  # that will rot.
+  node "$SRC/tests/collection-congruence.mjs" || die "collection congruence regression"
+  node "$SRC/tests/collection-editor.mjs" || die "collection editor regression"
+  node "$SRC/tests/import-dir-names.mjs" || die "import folder naming regression"
+  node "$SRC/tests/parked-heal.mjs" || die "parked-set derivation regression"
+  # form-convert.cjs, workspace-popup.cjs, ve-api.cjs and workspace-history.cjs
+  # need jsdom: run them by hand with a node_modules path.
+fi
 
 command -v docker >/dev/null || die "docker is required"
 docker info >/dev/null 2>&1 || die "docker is installed but not running"
@@ -196,6 +213,22 @@ $out[] = array( "block mode ships", class_exists( "Clara_VE_Block_Gate" ) && cla
 $out[] = array( "block editing helpers ship", class_exists( "Clara_VE_Block_Stamp" ) && class_exists( "Clara_VE_Block_Patch" ) );
 $out[] = array( "motion, patterns and responsive ship", class_exists( "Clara_VE_Motion" ) && class_exists( "Clara_VE_Patterns" ) && class_exists( "Clara_VE_Responsive" ) );
 $out[] = array( "the active block theme is recognised as a block theme", function_exists( "wp_is_block_theme" ) && wp_is_block_theme() );
+$out[] = array( "native Gutenberg integration ships", class_exists( "Clara_VE_Native_Gutenberg" ) );
+$out[] = array( "block themes use native Gutenberg", Clara_VE_Native_Gutenberg::is_native_mode() );
+$out[] = array( "native Gutenberg sidebar is registered", false !== has_action( "enqueue_block_editor_assets", array( "Clara_VE_Native_Gutenberg", "enqueue" ) ) );
+$out[] = array( "native SEO route ships", in_array( "/clara-ve/v1/native/seo/(?P<post>\\d+)", $routes, true ) );
+$responsive_meta = get_registered_meta_keys( "post" );
+$out[] = array( "responsive data is available to Gutenberg", ! empty( $responsive_meta[Clara_VE_Responsive::META]["show_in_rest"] ) );
+$out[] = array( "responsive data participates in core revisions", ! empty( $responsive_meta[Clara_VE_Responsive::META]["revisions_enabled"] ) );
+$responsive_probe = Clara_VE_Responsive::sanitize_meta( wp_json_encode( array(
+    "cve-r-abcd1234" => array( "mobile" => array(
+        "spacing.padding.top" => "12px",
+        "typography.fontSize" => "18px;body{display:none}",
+    ) ),
+) ) );
+$responsive_probe = json_decode( $responsive_probe, true );
+$out[] = array( "native responsive meta keeps valid values", isset( $responsive_probe["cve-r-abcd1234"]["mobile"]["spacing.padding.top"] ) );
+$out[] = array( "native responsive meta rejects CSS injection", ! isset( $responsive_probe["cve-r-abcd1234"]["mobile"]["typography.fontSize"] ) );
 
 // The product name as a USER sees it. Pro hardcodes "Visual Edit Pro" into
 // the admin-bar node, and it shipped that way in Lite because no gate looked
@@ -206,6 +239,11 @@ clara_ve_admin_bar_link( $bar );
 $node  = $bar->get_node( "clara-visual-edit" );
 $title = $node ? trim( wp_strip_all_tags( $node->title ) ) : "";
 $out[] = array( "admin bar says \"Visual Edit Lite\" (got: " . $title . ")", "Visual Edit Lite" === $title );
+$out[] = array( "admin bar opens the VE workspace on a block theme", $node && false !== strpos( $node->href, "page=visual-edit" ) );
+$out[] = array( "block themes render the runtime host", false !== strpos( $html, "cve-workspace-frame" ) );
+$out[] = array( "portable block extras ship", class_exists( "Clara_VE_Block_Extras" ) );
+$paragraph_type = WP_Block_Type_Registry::get_instance()->get_registered( "core/paragraph" );
+$out[] = array( "block extras schema reaches registered core blocks", isset( $paragraph_type->attributes["claraVe"] ) );
 
 // The sidebar menu, for the same reason: Pro labels it after the screen, so
 // the derivation has to rename it and nothing static would notice if it did
@@ -253,6 +291,12 @@ while IFS='|' read -r verdict label; do
 done <<< "$ASSERT"
 [ "$SAW_SENTINEL" = "1" ] || bad "the assertion block did not run to completion"
 
+
+# ----------------------------------------------------------- 5b. form blocks ---
+step "Form blocks"
+docker cp "$SRC/tests/form-blocks-wp.php" "$WP:/tmp/form-blocks-wp.php" >/dev/null
+if docker exec "$WP" php /tmp/form-blocks-wp.php /var/www/html; then pass "form blocks render, submit safely and survive the plugin going away"
+else bad "form blocks regression"; fi
 
 # ------------------------------------------------------------- 6. no noise ---
 step "Runtime"

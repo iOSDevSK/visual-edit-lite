@@ -9,29 +9,33 @@ different lists.
 |---|---|
 | WordPress | 6.6 or newer |
 | PHP | 7.4 or newer |
-| Tested up to | WordPress 7.0 |
+| Tested up to | WordPress 7.1 |
 
 No build step, no Composer, no npm, no external PHP libraries.
 
 ## Capabilities
 
-Editing requires **both** of these:
+The raw-HTML editor requires **both** of these:
 
 - `edit_theme_options`
 - `unfiltered_html`
 
-Both are checked together on every editing screen and every editing REST
-route. The reason is simple: the editor round-trips raw HTML between the
-browser and the database, so anyone who can use it can put arbitrary markup on
-the site. `unfiltered_html` is the capability WordPress already uses to mean
-exactly that, so it is the one used here rather than inventing a new one.
+Both are checked together on its editing screen and REST routes. The reason is
+simple: that editor round-trips raw HTML between the browser and the database,
+so anyone who can use it can put arbitrary markup on the site.
+
+On a native block theme, Gutenberg applies WordPress's capability for each
+entity: `edit_post` for a page or post and `edit_theme_options` for templates,
+template parts, navigation and Global Styles. Native editing does not require
+`unfiltered_html` unless the block being used requires it itself.
 
 Two admin screens sit one tier higher, at `manage_options`, because they hold
 credentials or personal data:
 
 | Screen | Capability |
 |---|---|
-| Visual Edit (the editor) | `edit_theme_options` + `unfiltered_html` |
+| Visual Edit (raw-HTML editor) | `edit_theme_options` + `unfiltered_html` |
+| Visual Edit (native Site Editor) | `edit_theme_options` |
 | Import Content | `edit_theme_options` + `unfiltered_html` |
 | SEO & AI Readiness | `edit_theme_options` |
 | Form Settings, SEO & Sharing, Subscribers | `manage_options` |
@@ -42,10 +46,8 @@ WordPress removes `unfiltered_html` from site administrators on multisite and
 gives it only to Super Admins. That is a deliberate WordPress security
 decision, not something this plugin sets.
 
-The consequence: **on a multisite install, an ordinary site administrator will
-not be able to use the editor.** They will see the menu but the screen will
-refuse. Either grant the capability deliberately, or accept that editing is a
-Super Admin task on that install.
+The consequence applies to the raw-HTML editor. Native Gutenberg editing keeps
+WordPress's normal multisite capability rules.
 
 There is a quieter consequence worth knowing if you ever script changes:
 saving without `unfiltered_html` writes the stored source but silently skips
@@ -57,10 +59,9 @@ user (`wp --user=1 …`).
 
 This is the requirement that decides whether the plugin is useful to you.
 
-**Visual Edit edits raw HTML that the theme carries.** So it needs a theme
-whose pages are markup rather than blocks, and which declares what that markup
-means through the `clara_ve_theme_contract` filter. That contract is open and
-written down in full, so any theme can satisfy it, hand-written or generated.
+Visual Edit has two theme drivers. A native block theme uses Gutenberg and
+needs no VE contract. A converted theme uses the raw HTML it carries and must
+declare that markup through the `clara_ve_theme_contract` filter.
 
 In practice most such themes come from a converter that turns a finished HTML
 site — built in Lovable, Bolt, aidesigner.ai, v0.dev, Claude design, or
@@ -69,15 +70,14 @@ markup.
 
 ### What it does not work with
 
-Not Gutenberg block themes, not Elementor, not Divi, not Beaver Builder, not
-an ordinary WordPress theme.
+Elementor, Divi and Beaver Builder remain outside both drivers. They store
+content in their own proprietary structures rather than native blocks or the
+converted theme contract.
 
-This is not a compatibility gap to be closed later; it is what the plugin
-*is*. A page builder stores your page as its own data — blocks, widgets,
-shortcodes — and generates markup from that data when someone visits. Visual
-Edit stores your page as the markup itself and edits that markup in place.
-The two designs are opposites. A theme with no raw HTML in it gives the editor
-nothing to point at.
+Those builders own their data and editing interface. Gutenberg blocks use
+WordPress's native entities, while the raw-HTML driver owns only sources from a
+theme that explicitly declares the VE contract; neither driver can safely
+rewrite another builder's private data model.
 
 ### What a theme has to provide
 
@@ -107,9 +107,9 @@ useful amount of it still runs:
 - structured data, `llms.txt`, AI-crawler rules
 - the SEO & AI Readiness report
 
-What will not work is the editing canvas: no front-page override, no
-click-to-edit, no dynamic tokens. The page picker will offer entries whose
-template parts do not exist.
+On an ordinary native block theme the full Site Editor opens. On a classic
+theme without the converter contract, the raw-HTML editing canvas still has no
+source it can safely own.
 
 ## Optional services
 

@@ -100,6 +100,20 @@ it is not. Plugins load in alphabetical order, so `visual-edit` loads before
 Yoast existed, and every page would ship two titles, two descriptions and two
 canonicals.
 
+### Which plugin wins, and when
+
+Two different rules, and the difference matters:
+
+| What happens | Does it overwrite Yoast / Rank Math? |
+|---|---|
+| You install an SEO plugin later, and Visual Edit back-fills it | **No.** Only empty fields are filled |
+| An import writes search metadata | **No.** Same rule |
+| **You type in Visual Edit's own SEO panel and save** | **Yes.** That page's title, description, canonical, Open Graph, Twitter and noindex are written through to the SEO plugin's own post meta |
+
+The last row is deliberate — a value typed into a panel that then did not
+appear on the page would be worse — but it is worth knowing before you edit
+the same page in both places. Whichever one you typed in last wins.
+
 ### If you install an SEO plugin later
 
 Everything you have already set is **copied into it automatically**, on the

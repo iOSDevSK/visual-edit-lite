@@ -109,6 +109,13 @@ from the browser's request. Restyle the card and page two follows.
 The form's own markup is untouched. Hidden fields are injected for security
 and routing, the `action` is rewritten, and that is all.
 
+`to`, `type` and `list` decide where a submission goes and are visible in the
+page source, so they are signed into the form (`cve_delivery`) and verified on
+the way back. A form whose recipient or list was retyped in the browser is
+still accepted — it simply goes to the address in Form Settings instead, the
+same as an old page cached before you changed the form. A converted theme that
+renders and delivers its own forms is unaffected; it never carried this field.
+
 **Field naming**: any field with a `name` is captured. A group of checkboxes
 or a `<select multiple>` needs a shared name ending in `[]` —
 `name="interests[]"` — or only the last value survives.

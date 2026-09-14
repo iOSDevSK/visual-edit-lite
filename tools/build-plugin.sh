@@ -141,6 +141,7 @@ rsync -a \
   --exclude 'tools/' \
   --exclude 'assets-source/' \
   --exclude '*.zip' \
+  --exclude 'PLAN-*.md' \
   "$SRC/" "$STAGE/$SLUG/"
 
 # Plugin Check's file_type rule forbids archives inside a plugin, and the

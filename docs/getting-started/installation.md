@@ -5,6 +5,10 @@ later.
 
 ## What you should have
 
+For a native Gutenberg block theme, install and activate the plugin on the
+existing site; no content bundle or theme contract is required. The steps
+below describe delivery of a converted raw-HTML site.
+
 Two things:
 
 - **the theme ZIP** — your converted site's design, with its content inside it
@@ -53,7 +57,7 @@ Lite**, with:
 
 | Item | What it is |
 |---|---|
-| Visual Edit Lite | the editor itself |
+| Visual Edit Lite | the VE workspace hosting Gutenberg on a block theme; the visual preview editor on a converted theme |
 | Form Submissions | everything visitors have sent |
 | Form Settings | recipient, anti-spam, email delivery, mailing list |
 | Subscribers | mailing-list signups and their consent record |

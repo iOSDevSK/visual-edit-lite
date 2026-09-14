@@ -1,15 +1,13 @@
 # Visual Edit documentation
 
-Visual Edit is the editing layer for a WordPress site converted from
-hand-written or AI-generated HTML. It edits the raw markup the theme already
-carries, in place, so the page a visitor sees stays identical to the design it
-came from.
+Visual Edit is an editing layer for native Gutenberg block themes and for
+WordPress sites converted from hand-written or AI-generated HTML. Block themes
+open in the VE workspace hosting the WordPress editor. Converted
+themes keep their raw markup and use the click-to-edit preview.
 
-**It needs a theme whose pages are raw HTML and which declares the
-`clara_ve_theme_contract` filter.** That contract is open and documented, so
-any theme can satisfy it. See
-[Requirements](getting-started/requirements.md) for what that means and what
-still works without one.
+A native block theme needs no VE contract. A converted raw-HTML theme declares
+the `clara_ve_theme_contract` filter; that contract is open and documented.
+See [Requirements](getting-started/requirements.md) for the two drivers.
 
 ---
 
@@ -78,6 +76,8 @@ still works without one.
   theme must provide for the editor to work.
 - **[REST API](developer/rest-api.md)** — all routes, their arguments and
   returns, and what protects the public ones.
+- **[Editor API](developer/editor-api.md)** — `window.ClaraVE`: operations,
+  events and popup hooks shared by both editors.
 - **[Hooks and filters](developer/hooks-and-filters.md)** — what the plugin
   fires for you, and every core hook it attaches to.
 - **[Data model](developer/data-model.md)** — tables, options, post meta,
@@ -87,6 +87,9 @@ still works without one.
 - **[Constants](developer/constants.md)** — what can be set in `wp-config.php`.
 - **[Extending](developer/extending.md)** — what is pluggable and what
   requires editing the source. Honestly.
+- **[Workspace parity](developer/workspace-parity.md)** — the development
+  record for the block-theme workspace: what each release changed, what was
+  verified and on which WordPress, and what was not.
 
 ## Reference
 
@@ -96,3 +99,6 @@ still works without one.
   what uninstalling removes and what it keeps.
 - **[Troubleshooting](reference/troubleshooting.md)** — symptoms and their
   causes.
+- **[Production readiness](reference/production-readiness.md)** — whether this
+  release can go on a live site, who it is worth installing for, what the
+  release gate and Plugin Check actually reported, and the known limitations.

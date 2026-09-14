@@ -152,11 +152,17 @@ Two tiers.
 **Always removed**, no setting involved:
 
 - stored credentials — SMTP password and all mail provider API keys
-- scheduled background jobs
-- every cached value
+- every cached value (the plugin's transients)
+- any parked page is put back first, for everyone, because the code that could
+  restore it is about to be deleted
 
 Credentials go unconditionally because encrypted credentials with no software
 left to read them are pure liability.
+
+> **On multisite, uninstall only cleans the site it runs on.** Every other site
+> in the network keeps its `clara_ve_*` rows — including its encrypted API keys
+> — until the plugin is deleted from each one. If you are removing it network
+> wide, the by-hand list below is what to run per site.
 
 **Removed only if you opted in** — Form Settings → Uninstall → *"Also delete
 all stored data"*, off by default:

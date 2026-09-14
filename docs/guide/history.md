@@ -1,5 +1,52 @@
 # History
 
+## Gutenberg workspace
+
+Open **↺ History** beside Undo and Redo in the VE toolbar. It docks beside the
+page, the way the converted-theme editor's history does. These serve different
+purposes: Undo/Redo reverses current editing actions; History keeps saved
+versions across editor sessions. This is a local WordPress history, not a
+GitHub connection or a log of every click.
+
+Choose the document: the current page/post or template, referenced template
+parts, navigation or synced patterns, other edited documents, or Global Styles.
+Each document has its own versions with an ID, timestamp, short hash and a
+click-to-edit name. The most recent matching saved version is marked Current.
+
+1. Choose a version and click **Restore**.
+2. Confirm replacing this document's content in the editor. Unsaved changes
+   are explicitly indicated.
+3. The toolbar shows **Version restored — Save to keep it** with an **Undo**
+   button. Close History to review the restored document. **Undo** returns to the work
+   you had immediately before restoring; **Redo** loads the version again.
+4. Use the normal **Save** and WordPress publish review to persist the change.
+
+Restore does not itself publish, reload the editor, discard other documents or
+delete newer versions. Saving the restored content creates a normal saved
+version unless it is already the most recent recorded state. A late response
+is ignored after document navigation; concurrent content changes stop restore
+and show an error instead of overwriting newer work.
+
+History records successful canonical REST saves, not autosaves or failed saves.
+It includes block markup and VE attributes, plus legacy responsive metadata
+where available. Global Styles versions contain only their styles/settings.
+It does not restore titles, publication status, SEO, arbitrary plugin metadata,
+media files or the separately saved VE Google Fonts selection.
+
+The latest ten saves plus the oldest **Original** are available. Up to 300
+entries are retained per document, preserving the oldest. Original means the
+first captured state, not necessarily the theme's factory design; versions
+lost before tracking began cannot be reconstructed. Existing VE page/post
+history is reused where present.
+
+Save, restore and re-save were verified on a live WordPress 7.1 block theme:
+the document returned byte-for-byte to the version restored.
+
+## Converted HTML-theme editor
+
+The existing HTML editor keeps its original direct-restore behavior described
+below. Unlike the Gutenberg workspace, restoring here updates the live source.
+
 Every page keeps its own version history. Open it with the **↺** button in the
 editor toolbar.
 

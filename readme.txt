@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.25.12
+Stable tag: 1.27.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,11 +12,12 @@ Click-to-edit visual editing for WordPress — static-HTML themes and Gutenberg 
 
 == Description ==
 
-Visual Edit Lite is the editing companion for a WordPress site built from a
-static HTML design — a hand-written site, or one exported from Lovable, Bolt,
-v0.dev, aidesigner.ai or a Claude design. The theme keeps every page's markup
-byte-for-byte identical to the original; this plugin is what makes those pages
-editable, by clicking rather than by rebuilding them in a page builder.
+Visual Edit Lite adds a floating inspector and site tools to the native Gutenberg editor
+on a block theme. It is also the editing companion for a WordPress site built
+from a static HTML design — a hand-written site, or one exported from Lovable,
+Bolt, v0.dev, aidesigner.ai or a Claude design. A converted theme keeps every
+page's markup byte-for-byte identical to the original and the plugin makes
+those pages editable by clicking.
 
 If you have brought an HTML site into WordPress and want the client to edit it
 without touching the markup — or without the design surviving a page builder —
@@ -33,11 +34,10 @@ source, unminified and uncompiled.
 
 * **Point-and-click editing** of text, links, images and video, directly on
   the live page, with a git-like per-page edit history.
-* **Gutenberg block themes too.** On a block theme the editor works on core
-  block markup instead of raw HTML: whole sections can be added, copied, moved
-  and removed, the block supports panel is available, and every write passes a
-  validation gate first — block markup fails silently at parse time in ways
-  HTML does not.
+* **Gutenberg workspace on block themes.** Visual Edit hosts the native editor
+  and adds a floating inspector with typography, Google Fonts and styling.
+  Native controls remain available for blocks, patterns, templates, navigation
+  and Global Styles. See the development acceptance matrix for current limits.
 * **Repeating content** (FAQ lists, service cards, team members, portfolio
   tiles) managed as a list: reorder, edit, add and remove items together.
 * **Forms** — a designed HTML form is connected by clicking, never rebuilt.
@@ -75,25 +75,24 @@ run next.
 
 = What this plugin needs =
 
-A theme whose pages are raw HTML and which declares its contract with the
-plugin through the `clara_ve_theme_contract` filter. The contract is fully
-documented in the plugin's own `docs/developer/theme-requirements.md`, so any
-theme can satisfy it — hand-written or generated. On a theme that does not,
-the editor still loads, but the canvas has nothing it recognises to edit.
+A native Gutenberg block theme, or a theme whose pages are raw HTML and which
+declares its contract through the `clara_ve_theme_contract` filter. The
+contract for converted themes is fully documented in
+`docs/developer/theme-requirements.md`.
 
 Forms, email delivery, mailing lists, SEO, redirects and llms.txt do not
 depend on the theme at all and work anywhere.
 
 == Important notes ==
 
-* **Editing requires the `unfiltered_html` capability**, because raw HTML
-  round-trips through the editor. On multisite only Super Admins have it by
-  default, so ordinary site administrators will not see the editor.
+* **Raw-HTML editing requires `unfiltered_html`**, because markup round-trips
+  through that editor. Native Gutenberg mode uses WordPress's normal
+  permissions for the page, template or other entity being edited.
 * **Deactivating** the plugin keeps all data and reverts the front page to the
   theme's shipped design until reactivation; other pages keep their edited
   content.
 * **Deleting** the plugin always removes stored secrets (SMTP password,
-  provider API keys) and scheduled jobs. Everything else — submissions,
+  provider API keys) and its own transients. Everything else — submissions,
   subscribers, edit history, page sources — is kept unless "also delete all
   stored data" is enabled under Visual Edit Lite → Form Settings → Uninstall.
 * **Visual Edit Pro**, the paid edition, shares this plugin's data format and
@@ -203,6 +202,149 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.27.0 =
+* On a theme converted from HTML, form submissions were being accepted and
+  silently thrown away: the theme and the plugin signed the anti-spam timestamp
+  in two different shapes, and the visitor saw a thank-you either way. They are
+  delivered again, and stored.
+* Where a form sends is signed into the page and checked on the way back, for
+  every form — including one a converted theme renders and hands over. Until
+  that theme signs the value itself, a per-form **Send to** on such a site falls
+  back to the address in Form Settings rather than being taken from the request.
+* A media bundle can no longer place a file in the uploads folder that you
+  could not upload by hand: the extension has to be one this site allows.
+* **Send to** and **List** on a form block are honoured only on a page whose
+  author administers the site. Anyone who can publish could otherwise point a
+  form at their own address, or at your mailing list. A form in a template part
+  is unchanged.
+* Forms are marked in green — the whole form, its fields and a *Form* label,
+  in both editors and without clicking anything first. Everything else stays
+  blue, so it is clear at a glance which part of a page collects answers.
+* Block themes are now edited the way converted themes are: the page, one dark
+  toolbar and one popup. WordPress's block toolbar, sidebar and breadcrumb bar
+  no longer compete with it; **⋯ → Show WordPress controls** brings them back.
+  The WordPress admin bar and side menu stay available.
+* A sidebar WordPress remembered from an earlier session no longer opens over
+  the workspace. The Search appearance dialog says when the theme or the
+  site-wide SEO settings keep Visual Edit from printing titles and
+  descriptions on the public site.
+* Clicking the block that is already selected reopens its popup after Apply
+  or Cancel. Undo reverts one popup session at a time, and Reset styles is
+  its own undo step. A responsive value can be set again after it was cleared
+  and saved. Number fields ignore text that is not a number.
+* Clicking a photo that sits under a theme's overlay or tint (a hero image
+  behind its heading layer) selects the image, as in the HTML editor, so it
+  can be replaced. Empty decorative groups no longer show WordPress's
+  "Select a layout" placeholder over the design.
+* WordPress's own editor UI shown inside Visual Edit (the Advanced tab,
+  sidebars opened from ⋯, dropdowns, colour pickers and native dialogs)
+  follows the popup design: the same type, rounded dark fields, grey labels,
+  uppercase section titles, buttons, tabs and menus. Colours are measured after every change, so
+  native controls stay readable while swatches and style previews keep their
+  real colours. Menus, selects and scrollbars in the
+  dark UI no longer show dark text, white tracks or double borders.
+* Clicking a block outlines and labels it and opens the popup beside it, at the
+  height of the click, without covering it. The popup stays put while you
+  scroll, can be pinned, and is a bottom sheet on phones.
+* The popup is organised into Content, Style, Section and Advanced tabs, with a
+  path to parent blocks, Duplicate / Move / Delete, bold, italic and link for
+  text selected on the page, an items list for containers, and "Add a section
+  after this one".
+* Style has a Desktop / Tablet / Mobile switch that edits the same fields per
+  screen and switches the preview. The separate Responsive section is gone.
+* Sections locked by WordPress (theme patterns, template parts) offer **Unlock
+  design** — WordPress's own "Enable editing all patterns" setting, per session.
+* **＋ Section** adds one of the theme's own sections with previews.
+* History docks beside the page and says when a restored version still needs
+  Save.
+* The toolbar is reduced to page, device, undo/redo, History, Section, status,
+  preview, More and Save.
+* The converted-theme popup gains the same Content / Style / Section tabs, opens
+  beside the clicked element, calls its button Apply, and offers RADIUS on every
+  element rather than only boxes that hold a field.
+* New `window.ClaraVE` editor API shared by both editors, with operations,
+  events, `clara_ve.popup.groups` / `clara_ve.popup.footer` /
+  `clara_ve.toolbar.more` filters, and the `clara_ve_workspace_config`,
+  `clara_ve_workspace_enqueue` and `clara_ve_native_entity_saved` PHP hooks.
+* The front-end block editor writes small-screen values into a block's
+  `claraVe` attribute when the block already uses it, and shows those values.
+* The Gutenberg sidebar integration is no longer loaded inside the workspace,
+  where its panel appeared a second time inside the popup's native settings.
+* Linking selected text from the popup: Enter applies the link, Esc closes the
+  address field, an address without a scheme gets https://, an empty address
+  says so instead of doing nothing, and the link still lands on the words
+  picked first when the page selection changes while typing. Links inside
+  running text get a dotted underline in the editor only, since many themes
+  style them exactly like the text around them.
+* A link inside the workspace that leads to any other screen (the dashboard, a
+  list, the site) opens in the whole window instead of showing a second admin
+  bar and menu inside the workspace.
+* Document ▾ lists only content that can be opened (Global Styles and menu
+  items no longer appear and fail to load), hides Previous/Next when there is
+  one page of results, shows load errors readably in the dark menu, and
+  WordPress's own site management opens as a labelled link in the whole
+  window instead of replacing the workspace inside its frame.
+* Native colour palettes inside the workspace show their real colours again
+  (the dark skin had recoloured every swatch to the text colour), with room
+  around the palette and a faint ring so dark theme colours stay visible.
+* The block inserter shows separate rounded tiles with readable icons; block
+  icons were painted near-black on the dark panel.
+* Style any form from the popup: Form labels, Form fields and Form button
+  groups (colours, fonts, sizes, case, letter spacing, field border shape and
+  colour, border while typing, placeholder colour, button hover, corners).
+  They work on what every form is made of, so a theme's shortcode form,
+  Contact Form 7, WPForms or a hand-written HTML form all take the same
+  settings, and they are saved on the block like other Visual Edit styling.
+* Shortcode blocks show what the shortcode puts on the page on the workspace
+  canvas instead of WordPress's text box; the shortcode itself is edited in
+  the popup's Content tab.
+* More › Site styles opens WordPress's Styles panel again on WordPress 7,
+  which shows it only while a template is on screen: the page is shown inside
+  its template while the panel is open and returns to the page alone after.
+* Notices in Visual Edit's dark dialogs and menus are coloured by kind
+  (error, success, warning), and Esc still closes Search appearance after
+  saving (focus used to fall back to the page).
+* Editable forms. A new Form block with field, text area, choice list,
+  checkbox, row and send-button blocks: labels, notes, placeholders, choices,
+  required fields, field names and the button text are edited in the popup
+  (or WordPress's sidebar), fields are added from the form's popup and
+  reordered or removed under Items. Submissions go to Form Submissions and are
+  emailed to the Form Settings address — a recipient posted with the form is
+  ignored — with the spam checks of connected forms; "Go to page" and
+  "Message" set what happens after sending. The form is saved as plain HTML,
+  so it stays visible (without sending) if the plugin is switched off.
+* "Make this form editable" on a shortcode or HTML block holding a form turns
+  it into form blocks, keeping its class names and so its look, its redirect
+  and its thank-you sentence; its form styling carries over. One Undo step.
+* A form says what it is for — "Contact form" or "Mailing list", the same two words in both editors — with the list picked by name and an optional address for that one form. A signup now reaches the mailing list and the Subscribers screen instead of arriving as an enquiry. What the form was set to is signed into the page, so a visitor cannot retype it into somewhere else; that now covers connected `[wp-form]` forms as well as form blocks, and an unsigned or altered one falls back to the address in Form Settings rather than being refused.
+* Each form field keeps its own name in submissions: a second Email, a pasted
+  or a duplicated field is numbered (email-2) instead of overwriting the first
+  one's value, and renaming a label later does not move its column.
+
+= 1.26.1 =
+* Fixed repeated dropdown arrows and light disabled fields in the dark VE popup
+  caused by WordPress admin select styles.
+* Content-only editing now exposes permitted text/media controls instead of
+  disabling the whole panel. Design controls remain restricted by WordPress.
+* Recheck block editing mode and bindings when asynchronous media choices return.
+* Added Gutenberg save history, per-document staged restores and native Undo/Redo.
+* Fixed Google Fonts preview stylesheet duplication and removal.
+* Development build: packaged live save/reload acceptance remains outstanding.
+
+= 1.26.0 =
+* Gutenberg block themes now open WordPress's complete native Site and Post
+  Editors from Visual Edit Lite. This covers every registered block, nested
+  editing, Query Loops, navigation, patterns, templates, template parts and
+  Global Styles through their native WordPress controls.
+* Added a Visual Edit Lite Gutenberg sidebar with per-page search appearance,
+  Media Library selection for sharing images and shortcuts to site tools.
+* Added selected-block movement and responsive controls to Gutenberg. Page
+  responsive values share Gutenberg's save state and undo/redo stack, render
+  in the editor preview, and are included in VE history.
+* Native Gutenberg saves now feed the existing VE page history while core
+  keeps revisions for templates, parts and Global Styles. Autosaves are not
+  recorded as explicit saves.
 
 = 1.25.12 =
 This edition is derived from Visual Edit Pro 1.25.12.
@@ -345,6 +487,13 @@ so all of it ships here:
   call and no bundled updater anywhere in the code.
 
 == Upgrade Notice ==
+
+= 1.27.0 =
+Block themes now edit the way converted themes do: the page, one toolbar, one
+popup. Forms became editable blocks, and where a form sends is signed into the
+page and checked for every form. If your theme was converted from HTML, this
+release also restores form delivery — submissions were being accepted and
+discarded. Nothing needs migrating.
 
 = 1.19.8 =
 Staggered and carousel card lists are editable as collections again, listing

@@ -4,7 +4,11 @@ What the plugin exposes for you, and every WordPress hook it attaches to.
 
 ## What the plugin fires
 
-Three. They exist for real reasons rather than as a speculative API.
+Twelve, and every one exists for a reason something actually needed rather
+than as a speculative API. Three of them — `clara_ve_workspace_config`,
+`clara_ve_workspace_enqueue` and `clara_ve_native_entity_saved` — belong with
+the editor and are documented in the [editor API](editor-api.md); the other
+nine are below.
 
 ### `clara_ve_source_saved` (action)
 
@@ -67,6 +71,79 @@ add_filter( 'clara_ve_trusted_proxies', function ( $ranges ) {
 > you control or trust completely. Trusting a forwarded header unconditionally
 > is exploitable, and was measurably so before the range check existed.
 
+### `clara_ve_theme_contract` (filter)
+
+```php
+apply_filters( 'clara_ve_theme_contract', array $contract );
+```
+
+**The declaration surface for a converted theme** — the one hook a raw-HTML
+theme must answer. Everything the plugin cannot know about somebody else's
+markup is declared here: which substrings a save must preserve, which elements
+are navigation zones, which parts exist. A theme that declares nothing gets
+theme-agnostic behaviour only, and menu management stays visibly off.
+
+Its shape is specified in [theme requirements](theme-requirements.md); a block
+theme needs none of it.
+
+### `clara_ve_required_anchors` (filter)
+
+```php
+apply_filters( 'clara_ve_required_anchors', string[] $anchors, string $key );
+```
+
+The substrings a page must still contain for a save to be accepted — the guard
+that stops an edit from silently deleting a whole section. Defaults to the
+anchors the contract declares for that key.
+
+**Back-compatibility only.** Themes generated before the contract existed
+declare anchors through this filter alone, so it still runs. New themes should
+declare `anchors` in `clara_ve_theme_contract` instead.
+
+### `clara_ve_block_gate_violations` (filter)
+
+```php
+apply_filters( 'clara_ve_block_gate_violations', string[] $violations, array $block );
+```
+
+Saved-HTML problems for one parsed block. **Any entry you add rejects the
+write**, so a site or an add-on can teach the gate about block types this
+plugin does not know. `$block` is one `parse_blocks()` node.
+
+### `clara_ve_menu_zone_markup` (filter)
+
+```php
+apply_filters( 'clara_ve_menu_zone_markup', ?string $rendered, array $zone, array $tree, string $inner );
+```
+
+**Render one navigation zone yourself**, for markup a generic renderer cannot
+reproduce — dropdown wrappers, labelled sub-groups. Return a string to take
+over; return `null` and the structural renderer handles it. `$tree` is the
+menu as a two-level array, `$zone` is `{ location, selector, label }`.
+
+### `clara_ve_seed_menus` (filter)
+
+```php
+apply_filters( 'clara_ve_seed_menus', array[] $seeds );
+```
+
+Menus to scaffold on activation when nothing is assigned yet. Default: none —
+the plugin does not guess. Shape:
+`[ { location, name, items: [ { title, url, children?: [ { title, url } ] } ] } ]`.
+
+### `clara_ve_ignore_theme_owner` (filter)
+
+```php
+apply_filters( 'clara_ve_ignore_theme_owner', bool $ignore, string $owner );
+```
+
+Bypasses the foreign-data guard, which otherwise refuses to let one theme
+write over content another theme owns.
+
+> Returning `true` restores the pre-guard behaviour **wholesale, including the
+> destructive parts**. Only for a developer who knows both themes share a
+> markup contract.
+
 ## WordPress hooks the plugin attaches to
 
 Relevant if you are debugging an interaction with another plugin.
@@ -88,9 +165,19 @@ All three block filters bail immediately on any block lacking the
 
 | Hook | Purpose |
 |---|---|
-| `replace_editor` | Redirect a tagged Page's edit screen into the Visual Editor. Bypass with `?clara_ve_bypass=1` |
-| `page_row_actions`, `manage_pages_columns`, `manage_pages_custom_column` | The "Visual Editor" column and the bypass link |
+| `admin_menu` page `visual-edit` | On a native block theme, render the full-window VE workspace hosting the Site or Post Editor in a same-origin frame |
+| `enqueue_block_editor_assets` | In the workspace: the VE toolbar, popup, history and `window.ClaraVE`. In the plain WordPress editor: the VE sidebar, SEO panel, movement and responsive controls |
+| `replace_editor` | In raw mode, redirect a tagged Page's edit screen into the Visual Editor. Bypass with `?clara_ve_bypass=1` |
+| `page_row_actions`, `manage_pages_columns`, `manage_pages_custom_column` | Native Gutenberg links on block themes; Visual Editor and bypass links in raw mode |
 | `show_admin_bar` | Suppressed inside the edit preview at `template_redirect` priority −1, so core's `html { margin-top: 32px }` never registers |
+
+### Native Gutenberg save bridge
+
+| Hook | Purpose |
+|---|---|
+| `rest_dispatch_request` | Capture the VE baseline before a canonical entity save (pages, posts, templates, parts, navigation, synced patterns, Global Styles) |
+| `rest_request_after_callbacks` | Add the saved content and responsive rules to VE history on success; autosaves, revisions and failures are ignored |
+| `rest_api_init` | Register the per-post native SEO endpoint |
 
 ### SEO
 
@@ -150,3 +237,10 @@ see plugin-driven ones. Use `clara_ve_source_saved` instead.
 
 - [REST API](rest-api.md)
 - [Extending](extending.md) — what these hooks do and do not let you do
+
+## Editor extension hooks
+
+`clara_ve_workspace_config` (filter), `clara_ve_workspace_enqueue` (action)
+and `clara_ve_native_entity_saved` (action), plus the JavaScript filters
+`clara_ve.popup.groups`, `clara_ve.popup.footer`, `clara_ve.toolbar.more` and `clara_ve.form.blocks`,
+are documented with `window.ClaraVE` in the [editor API](editor-api.md).

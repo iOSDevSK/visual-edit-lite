@@ -5,23 +5,42 @@ honest version.
 
 ## The short answer
 
-**There is no plugin API.** Visual Edit exposes three hooks, all of them
-read-only signals. Nothing accepts a registered handler.
+**There is a small API, and it stops well short of a plugin platform.** Since
+1.27 the editor exposes `window.ClaraVE` — a documented operation vocabulary
+with a write path — and four JavaScript filters that accept render callbacks,
+so a panel can be added to the popup without patching it. On the PHP side
+there are twelve hooks: some are read-only signals, several accept a handler
+that changes behaviour, and one (`clara_ve_theme_contract`) is how a converted
+theme declares itself at all.
 
-That is a description of what exists, not a promise about what should. If you
-need one of the things listed under "requires editing the source", you are
-forking or patching.
+What there is not is an extension point for most of the plugin's own
+behaviour. If you need something under "requires editing the source" below,
+you are forking or patching.
 
 ## What is genuinely pluggable
 
-### The three hooks
+### The editor, from JavaScript
 
-`clara_ve_source_saved`, `clara_ve_content_imported`,
-`clara_ve_trusted_proxies`. See
-[Hooks and filters](hooks-and-filters.md).
+`window.ClaraVE` — selection, operations, documents, history and events,
+identical in both editors — plus `clara_ve.popup.groups`,
+`clara_ve.popup.footer`, `clara_ve.toolbar.more` and `clara_ve.form.blocks`,
+which take render callbacks. See the [editor API](editor-api.md).
 
-They cover: invalidating anything you derive from page content, reacting to an
-import, and trusting a CDN other than Cloudflare.
+### The PHP hooks
+
+Read-only signals: `clara_ve_source_saved`, `clara_ve_content_imported`,
+`clara_ve_native_entity_saved` — invalidate whatever you derive from page
+content, react to an import, react to a native save.
+
+Hooks that change behaviour: `clara_ve_theme_contract` (a converted theme's
+whole declaration), `clara_ve_required_anchors` (what a save must preserve),
+`clara_ve_block_gate_violations` (reject a write the gate would allow),
+`clara_ve_menu_zone_markup` (render a navigation zone yourself),
+`clara_ve_seed_menus` (menus to scaffold on activation),
+`clara_ve_trusted_proxies` (trust a CDN other than Cloudflare),
+`clara_ve_ignore_theme_owner` (bypass the foreign-data guard),
+`clara_ve_workspace_config` and `clara_ve_workspace_enqueue` (add to the
+workspace). See [Hooks and filters](hooks-and-filters.md).
 
 ### Mail, via WordPress core
 

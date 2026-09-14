@@ -10,7 +10,7 @@ existing install from its data and invalidate every exported content package.
 
 ### `{prefix}clara_ve_history`
 
-Per-page version history. Schema version 2, installed idempotently on `init`.
+Per-page version history. Schema version 3, installed idempotently on `init`.
 
 | Column | Type | |
 |---|---|---|
@@ -19,6 +19,7 @@ Per-page version history. Schema version 2, installed idempotently on `init`.
 | `content` | LONGBLOB | The markup, gzip-compressed |
 | `content_hash` | CHAR(64) | SHA-256. Used for no-op detection and HEAD marking |
 | `pseudo` | LONGTEXT | Decorative styling map as JSON |
+| `responsive` | LONGTEXT | Responsive block rules as JSON |
 | `message` | VARCHAR(255) | Custom label, or NULL for automatic |
 | `kind` | VARCHAR(20) | `save` or `restore` |
 | `restored_from_id` | BIGINT UNSIGNED | |
@@ -33,7 +34,7 @@ HEAD is derived by comparing hashes against the live source, not by row order.
 
 ### `{prefix}clara_ve_optins`
 
-Mailing-list signups and their consent record. Schema version 1.
+Mailing-list signups and their consent record. Schema version 2 (`Clara_VE_Optin::DB_VERSION`); version 1 had no `theme` column.
 
 | Column | Type | |
 |---|---|---|
@@ -100,6 +101,73 @@ import — the only thing that survives the theme's directory being deleted),
 `_entity_logo`, `_entity_extra`, `clara_ve_seo_same_as`,
 `_default_og_image`, `_title_separator`, `clara_ve_geo_ai_crawlers`
 
+## Block attribute `claraVe`
+
+Registered on every block type, so it travels with the block through copies,
+patterns, revisions and template parts. Rendered by `Clara_VE_Block_Extras`,
+which puts a content-addressed `cve-r-<hash>` class on the block and prints
+its rules once per page. Values are validated on every render; anything
+outside the grammar is dropped.
+
+| Key | Shape |
+|---|---|
+| `responsive` | `{ tablet \| mobile: { 'typography.fontSize': '22px', … } }` |
+| `ornaments` | `{ before \| after: { content, color, font-size, font-family, font-weight, line-height, hidden } }` |
+| `form` | `{ label, field, focus, placeholder, button, buttonHover }` — see below |
+
+`form` styles every form inside the block through what forms are made of —
+`label`/`legend`, text inputs/`select`/`textarea`, submit buttons — never a
+theme's or plugin's class names, so it applies to a theme shortcode, Contact
+Form 7, WPForms or a hand-written form alike. Properties per target:
+
+| Target | Properties |
+|---|---|
+| `label` | `color`, `font-family`, `font-size`, `font-weight`, `letter-spacing`, `text-transform` |
+| `field` | `color`, `background-color`, `font-family`, `font-size`, `border` (`underline` \| `box` \| `none`), `border-color`, `border-width`, `border-radius` |
+| `focus` | `border-color` |
+| `placeholder` | `color` |
+| `button` | `color`, `background-color`, `border-color`, `border-radius`, `font-size`, `letter-spacing`, `text-transform` |
+| `buttonHover` | `color`, `background-color` |
+
+Colours, font families and sizes may be theme presets (`var:preset|color|slug`).
+A block whose output has no element of its own at render time — a shortcode
+block (still `[shortcode]` when blocks render), an HTML block with several
+roots, output starting with `<style>` — is wrapped in `<div class="cve-r-…">`.
+The editor preview and the public site share one generator
+(`ClaraVEModel.formCss` / `Clara_VE_Block_Extras::form_css`, kept identical by
+`tests/form-css-congruence.mjs`).
+
+## Form blocks
+
+Registered from PHP (`Clara_VE_Form_Blocks`); the editor script is
+`assets/form-blocks.js`. Every block saves plain form markup; only
+`clara-ve/form` has a render callback, which connects the saved `<form>` via
+`Clara_VE_Tokens::connect_form()` (action `/clara-ve/v1/form-submit`, origin
+token, honeypot, time-trap, consent note) and removes a `data-demo` marker.
+
+`formType`, `listId` and `recipient` are the owner's delivery choice, and they
+travel in the markup where anyone can retype them — so the renderer signs the
+three of them into `cve_delivery` (`wp_hash`) and the endpoint honours only what
+this site rendered. A form left at the defaults sends an enquiry to the Form
+Settings address, which is also what an unsigned or edited submission falls back
+to.
+
+| Block | Attributes | Saves |
+|---|---|---|
+| `clara-ve/form` | `formId` (groups submissions), `formClass`, `wrapperClass`, `redirect` (path or same-site URL), `message`, `formType` (`contact` \| `list`), `listId`, `recipient` | `<div class="wrapperClass"><form class="formClass">…</form></div>`, or the form alone |
+| `clara-ve/form-group` | `groupClass` | `<div class="groupClass">…</div>` |
+| `clara-ve/field` | `type` (text, email, tel, url, number, date) + the field attributes | `<div class="wrapperClass"><label for>label <span class="hintClass">hint</span></label><input></div>` |
+| `clara-ve/textarea` | `rows` + field attributes | as above, `<textarea>` |
+| `clara-ve/select` | `options` (string[]) + field attributes | as above, `<select>` |
+| `clara-ve/checkbox` | field attributes | input before label |
+| `clara-ve/submit` | `text`, `buttonClass` | `<button type="submit">` |
+
+Field attributes: `name` (submission key; derived from the label when empty),
+`inputId`, `label`, `labelClass`, `hint`, `hintClass`, `placeholder`, `required`,
+`wrapperClass` (default `field`), `inline` (label and control sit directly in
+the parent row — saved with `display:contents`). `ClaraVEFormBlocks.fromHtml()`
+converts existing form markup into these blocks (`tests/form-convert.cjs`).
+
 ## Custom post type
 
 ### `clara_ve_submission`
@@ -132,6 +200,7 @@ visitor-typed field.
 | `_clara_ve_parked` | attachments | Names the parked theme. Attachments keep `inherit`, which WordPress relies on, so they are hidden by query filters rather than by status |
 | `_clara_ve_seo` | pages, posts | The whole SEO record as one array: title, description, canonical, noindex, og, twitter, jsonld |
 | `_clara_ve_noindex` | pages, posts | A denormalised mirror of the noindex flag, existing **only** so it can be queried — no meta query can look inside a serialised array, and "every page the owner hid" is exactly what the sitemap and llms.txt need to ask |
+| `_clara_ve_responsive` | pages, posts | Sanitised JSON map of block anchor → breakpoint → property → value. Exposed to authenticated REST edits so Gutenberg saves it with the page; access still requires `edit_post` for that object |
 
 The SEO record is deliberately one array written and read as a unit, so it
 cannot half-update.

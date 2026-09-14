@@ -3,6 +3,10 @@
 Exactly what a theme must provide for the editing canvas to work. A converted
 theme satisfies all of this; this page is for anyone building or debugging one.
 
+These requirements apply only to the raw-HTML driver used by converted VE
+themes. A normal WordPress block theme uses the native Gutenberg Site/Post
+Editor and needs no VE theme contract.
+
 ## Summary
 
 | Requirement | Consequence if missing |
@@ -12,8 +16,52 @@ theme satisfies all of this; this page is for anyone building or debugging one.
 | `.wp-block-post-content` inside it | Ordinary pages not editable |
 | Template parts `header`, `footer`, `article`, `404` | Those keys have nothing to edit |
 | `<!-- clara-ve-key: … -->` marker in each owned HTML block | Tokens never hydrate; saves do not mirror |
-| Per-key structural anchors | Saves refused for that key |
-| `nav.nav-links` / `nav.drawer-nav` | Menu-driven nav silently does nothing |
+| `anchors` in the contract | Only the non-empty guard protects that key |
+| `menus` zones in the contract | Menu management is off, and says so |
+
+## The contract, first
+
+One filter carries everything the plugin cannot work out on its own. Generated
+themes ship it in `inc/visual-edit.php`:
+
+```php
+add_filter( 'clara_ve_theme_contract', function ( $contract ) {
+    $contract['anchors'] = array(
+        'front-page' => array( 'class="hero"' ),
+        'header'     => array( 'site-header' ),
+    );
+    $contract['menus'] = array(
+        array(
+            'location' => 'theme_nav_1',
+            'selector' => 'nav.nav-links',
+            'label'    => 'Header navigation',
+            'active'   => 'is-current',   // optional
+            'rest'     => '',             // optional
+        ),
+    );
+    $contract['parts'] = array(
+        array(
+            'key'         => 'header-2',
+            'area'        => 'header',
+            'label'       => 'Header (variant 2)',
+            'preview_key' => 'signin',
+        ),
+    );
+    return $contract;
+} );
+```
+
+| Key | What it declares |
+|---|---|
+| `anchors` | per visual-edit key, substrings a save must preserve |
+| `menus` | which elements are navigation zones, and which menu location each renders |
+| `parts` | chrome *variant* template parts beyond the standard header and footer |
+
+**The plugin ships no defaults for any of it.** Every markup-specific fact
+belongs to the theme that owns the markup; hardcoded defaults were tried once
+and are exactly what broke every theme that was not the one they came from.
+Several zones may share one location — a desktop nav and its mobile drawer
+rendering the same menu.
 
 ## 1. The front-page pattern
 
@@ -84,17 +132,32 @@ gets saved.
 
 ## 5. Structural anchors
 
-Saving validates that the markup still contains a per-key substring. An empty
-source is always refused.
+Saving validates that the markup still contains the substrings **the theme
+declares** for that key. An empty source is always refused, for every key,
+unconditionally — that guard is the plugin's own and cannot be switched off.
 
-| Key | Required |
-|---|---|
-| `front-page` | `class="hero"` |
-| `header` | `site-header` |
-| `footer` | `site-footer` |
-| `article` | `article-body` **and** `data-cve-specimen` |
-| `404` | `utility` |
-| any tagged page | *(nothing — only the non-empty rule)* |
+Anchors come from the contract:
+
+```php
+'anchors' => array(
+    'front-page' => array( 'class="hero"' ),
+    'header'     => array( 'site-header' ),
+    'footer'     => array( 'site-footer' ),
+),
+```
+
+Declare none and only the non-empty rule applies, which is the right default:
+a theme that declares anchors it does not actually have refuses every save of
+that page.
+
+> **This used to be a hardcoded list** — `class="hero"`, `site-header`,
+> `site-footer`, `utility` — taken from one specific site. In a plugin that
+> converts *any* site that is not a default but a bug shaped like a feature:
+> every generated theme whose markup differed had its front page silently
+> refused at import. The list is now the theme's to declare. The
+> `clara_ve_required_anchors` filter still runs, with the contract's anchors
+> as its default, so themes generated before the contract existed keep
+> working.
 
 Failure message:
 
@@ -110,23 +173,37 @@ Notes:
 - Enforced in two places — the editor save and the importer — from one
   definition
 
-**This is the most theme-coupled part of the plugin.** A theme using different
-class names for these sections will have its saves refused for those keys. The
-anchors exist to catch a save that has destroyed a page's structure, which is
-worth the coupling, but it is coupling.
+Anchors exist to catch a save that has destroyed a page's structure. Declare
+the few substrings that would only disappear if something went wrong — a
+section wrapper, not a class that a redesign might rename.
 
 ## 6. Navigation
 
-For menu-driven navigation, the header must use:
+Menu-driven navigation needs the theme to say **which elements are navigation**,
+in the contract's `menus` array — one entry per zone:
 
-- `<nav class="nav-links">` — desktop
-- `<nav class="drawer-nav">` — mobile drawer
+```php
+'menus' => array(
+    array(
+        'location' => 'theme_nav_1',       // nav menu location slug
+        'selector' => 'nav.nav-links',     // "tag.class", "tag", or [data-ve-nav="1"]
+        'label'    => 'Header navigation',
+        'active'   => 'is-current',        // optional: the class the design
+        'rest'     => '',                  // gives the current page's link
+    ),
+),
+```
 
-Both are matched. If the theme uses different class names, assigning a
-WordPress menu does nothing — no error, the menu simply never appears. The
-drawer is matched separately from the header's key marker because it is an
-unmarked sibling block; matching only the marker left the burger menu showing
-stale links while the desktop nav showed the WordPress menu's.
+Declare nothing and menu management is **visibly off** — the plugin says so on
+its own screens rather than letting somebody build a menu that connects to no
+markup. A mobile drawer is its own zone with its own entry; it is an unmarked
+sibling of the header block, so matching only the header's key marker once
+left the burger menu showing stale links while the desktop nav showed the
+WordPress menu's.
+
+> `nav.nav-links` and `nav.drawer-nav` above are an **example**, not a
+> requirement. They used to be hardcoded — one specific site's markup — which
+> meant menu management silently did nothing on every other theme.
 
 Generated submenu markup uses the classes `has-sub`, `nav-sub`,
 `drawer-label`, `drawer-sub`.

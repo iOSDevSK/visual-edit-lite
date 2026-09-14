@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Visual Edit Lite 1.19.6\n"
+"Project-Id-Version: Visual Edit Lite 1.27.0\n"
 "Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -78,7 +78,7 @@ msgstr ""
 
 #: includes/class-block-patch.php:87
 #: includes/class-block-patch.php:146
-#: includes/class-responsive.php:150
+#: includes/class-responsive.php:162
 #: includes/class-rest.php:988
 #: includes/class-rest.php:1019
 msgid "This page is not edited as blocks."
@@ -144,48 +144,59 @@ msgstr ""
 msgid "That block is not shaped the way this editor knows how to change. Open the page in WordPress instead."
 msgstr ""
 
-#: includes/class-block-patch.php:639
+#: includes/class-block-patch.php:614
+#: includes/class-responsive.php:170
+msgid "That is not a screen size this editor offers."
+msgstr ""
+
+#: includes/class-block-patch.php:617
+#: includes/class-responsive.php:173
+msgid "That is not a property that can differ by screen."
+msgstr ""
+
+#: includes/class-block-patch.php:630
+#: includes/class-block-supports.php:883
+#: includes/class-responsive.php:184
+msgid "That is not a value this editor can store for %s."
+msgstr ""
+
+#: includes/class-block-patch.php:696
 msgid "That is not a movement this editor offers."
 msgstr ""
 
-#: includes/class-block-patch.php:652
+#: includes/class-block-patch.php:709
 msgid "%s takes no classes of its own, so it cannot be given movement."
 msgstr ""
 
-#: includes/class-block-patch.php:728
-#: includes/class-block-supports.php:285
+#: includes/class-block-patch.php:785
+#: includes/class-block-supports.php:290
 msgid "%1$s has no %2$s to set."
 msgstr ""
 
-#: includes/class-block-patch.php:745
+#: includes/class-block-patch.php:802
 msgid "That is not a value this site defines for %s."
 msgstr ""
 
-#: includes/class-block-patch.php:932
+#: includes/class-block-patch.php:989
 msgid "That block has no picture in it."
 msgstr ""
 
-#: includes/class-block-patch.php:1004
+#: includes/class-block-patch.php:1061
 msgid "That block has no picture to link."
 msgstr ""
 
-#: includes/class-block-patch.php:1043
+#: includes/class-block-patch.php:1100
 msgid "That block has no link in it."
 msgstr ""
 
-#: includes/class-block-supports.php:261
+#: includes/class-block-supports.php:266
 msgid "That is not a set of styles."
 msgstr ""
 
-#: includes/class-block-supports.php:412
-#: includes/class-block-supports.php:425
-#: includes/class-block-supports.php:465
+#: includes/class-block-supports.php:417
+#: includes/class-block-supports.php:430
+#: includes/class-block-supports.php:470
 msgid "That block is not shaped the way this editor knows how to change."
-msgstr ""
-
-#: includes/class-block-supports.php:857
-#: includes/class-responsive.php:172
-msgid "That is not a value this editor can store for %s."
 msgstr ""
 
 #: includes/class-bundle-reader.php:67
@@ -230,99 +241,115 @@ msgstr ""
 
 #: includes/class-editor-page.php:20
 #: includes/class-editor-page.php:21
-#: visual-edit-lite.php:974
-#: visual-edit-lite.php:2309
-#: visual-edit-lite.php:2323
+#: visual-edit-lite.php:978
+#: visual-edit-lite.php:2321
+#: visual-edit-lite.php:2339
+#: visual-edit-lite.php:2351
+#: visual-edit-lite.php:2376
+#: assets/gutenberg.js:58
+#: assets/gutenberg.js:314
 msgid "Visual Edit Lite"
 msgstr ""
 
-#: includes/class-editor-page.php:296
+#: includes/class-editor-page.php:346
 msgid "You need theme-editing and unfiltered HTML permissions to use the visual editor."
 msgstr ""
 
-#: includes/class-editor-page.php:301
+#: includes/class-editor-page.php:355
 msgid "Visual Edit Lite — Front Page"
 msgstr ""
 
-#: includes/class-editor-page.php:302
+#: includes/class-editor-page.php:356
 msgid "Switch page"
 msgstr ""
 
-#: includes/class-editor-page.php:303
+#: includes/class-editor-page.php:357
 msgid "Preview live page in a new tab"
 msgstr ""
 
-#: includes/class-editor-page.php:304
+#: includes/class-editor-page.php:358
 msgid "Toggle edit mode"
 msgstr ""
 
-#: includes/class-editor-page.php:305
+#: includes/class-editor-page.php:359
 msgid "Preview device"
 msgstr ""
 
-#: includes/class-editor-page.php:306
+#: includes/class-editor-page.php:360
 msgid "Desktop — full width"
 msgstr ""
 
-#: includes/class-editor-page.php:307
+#: includes/class-editor-page.php:361
 msgid "Tablet — 820 × 1180"
 msgstr ""
 
-#: includes/class-editor-page.php:308
+#: includes/class-editor-page.php:362
 msgid "Mobile — 390 × 844"
 msgstr ""
 
-#: includes/class-editor-page.php:312
-#: includes/class-editor-page.php:346
+#: includes/class-editor-page.php:366
+#: includes/class-editor-page.php:400
+#: assets/gutenberg.js:70
+#: assets/workspace.js:1430
+#: assets/workspace.js:1459
 msgid "Search appearance"
 msgstr ""
 
-#: includes/class-editor-page.php:313
-#: includes/class-editor-page.php:329
+#: includes/class-editor-page.php:367
+#: includes/class-editor-page.php:383
+#: assets/workspace-history.js:131
+#: assets/workspace-history.js:132
+#: assets/workspace-history.js:135
+#: assets/workspace.js:1449
+#: assets/workspace.js:1449
 msgid "History"
 msgstr ""
 
-#: includes/class-editor-page.php:314
+#: includes/class-editor-page.php:368
 msgid "Duplicate this page"
 msgstr ""
 
-#: includes/class-editor-page.php:315
+#: includes/class-editor-page.php:369
 msgid "Move this page to the trash"
 msgstr ""
 
-#: includes/class-editor-page.php:316
+#: includes/class-editor-page.php:370
 msgid "Discard changes"
 msgstr ""
 
-#: includes/class-editor-page.php:317
+#: includes/class-editor-page.php:371
+#: assets/workspace-history.js:121
+#: assets/workspace.js:1456
 msgid "Save"
 msgstr ""
 
-#: includes/class-editor-page.php:323
+#: includes/class-editor-page.php:377
 msgid "Front page preview"
 msgstr ""
 
-#: includes/class-editor-page.php:350
+#: includes/class-editor-page.php:404
+#: assets/workspace.js:911
 msgid "Loading…"
 msgstr ""
 
-#: includes/class-editor-page.php:361
+#: includes/class-editor-page.php:415
 msgid "Duplicate page"
 msgstr ""
 
-#: includes/class-editor-page.php:373
+#: includes/class-editor-page.php:427
 msgid "Title"
 msgstr ""
 
-#: includes/class-editor-page.php:377
+#: includes/class-editor-page.php:431
 msgid "Address (slug)"
 msgstr ""
 
-#: includes/class-editor-page.php:380
+#: includes/class-editor-page.php:434
 msgid "The copy is created as a draft, so it is not live until you publish it. Everything on the page comes with it — pictures, settings and search appearance."
 msgstr ""
 
-#: includes/class-editor-page.php:381
+#: includes/class-editor-page.php:435
+#: assets/workspace.js:839
 msgid "Duplicate"
 msgstr ""
 
@@ -330,17 +357,40 @@ msgstr ""
 msgid "You can keep at most %d Google fonts."
 msgstr ""
 
-#: includes/class-fonts.php:224
+#: includes/class-fonts.php:232
 msgid "The Google Fonts list could not be loaded."
 msgstr ""
 
-#: includes/class-fonts.php:235
+#: includes/class-fonts.php:243
 msgid "The Google Fonts list was not in the expected format."
+msgstr ""
+
+#: includes/class-form-blocks.php:69
+#: visual-edit-lite.php:2110
+msgid "Sending…"
+msgstr ""
+
+#: includes/class-form-blocks.php:70
+#: visual-edit-lite.php:2111
+msgid "Sent!"
+msgstr ""
+
+#: includes/class-form-blocks.php:71
+#: includes/class-tokens.php:825
+#: visual-edit-lite.php:2112
+#: assets/workspace.js:677
+msgid "Thanks — check your inbox."
+msgstr ""
+
+#: includes/class-form-blocks.php:72
+#: visual-edit-lite.php:2113
+msgid "Something went wrong — please try again."
 msgstr ""
 
 #: includes/class-form-settings.php:130
 #: includes/class-form-settings.php:131
 #: includes/class-form-settings.php:275
+#: assets/workspace.js:682
 msgid "Form Settings"
 msgstr ""
 
@@ -457,6 +507,8 @@ msgid "TLS (recommended)"
 msgstr ""
 
 #: includes/class-form-settings.php:360
+#: assets/gutenberg.js:319
+#: assets/gutenberg.js:333
 msgid "None"
 msgstr ""
 
@@ -521,6 +573,8 @@ msgid "Region"
 msgstr ""
 
 #: includes/class-form-settings.php:490
+#: assets/form-blocks.js:186
+#: assets/workspace.js:671
 msgid "Mailing list"
 msgstr ""
 
@@ -581,6 +635,7 @@ msgid "The file they get"
 msgstr ""
 
 #: includes/class-form-settings.php:547
+#: assets/seo-panel.js:104
 msgid "Choose from Media Library"
 msgstr ""
 
@@ -675,41 +730,41 @@ msgstr ""
 msgid "This is a test email. If you received it, your email delivery settings are working."
 msgstr ""
 
-#: includes/class-forms.php:80
-#: includes/class-forms.php:82
+#: includes/class-forms.php:98
+#: includes/class-forms.php:100
 msgid "Form Submissions"
 msgstr ""
 
-#: includes/class-forms.php:83
+#: includes/class-forms.php:101
 msgid "Submission"
 msgstr ""
 
-#: includes/class-forms.php:135
+#: includes/class-forms.php:153
 msgid "This page has been open too long — please reload it and send the form again."
 msgstr ""
 
-#: includes/class-forms.php:138
+#: includes/class-forms.php:156
 msgid "Security check failed — please reload the page and try again."
 msgstr ""
 
-#: includes/class-forms.php:163
+#: includes/class-forms.php:181
 msgid "Please wait a moment before submitting again."
 msgstr ""
 
-#: includes/class-forms.php:211
+#: includes/class-forms.php:253
 #: includes/class-import-plan.php:1478
 msgid "%1$s — %2$s"
 msgstr ""
 
-#: includes/class-forms.php:438
+#: includes/class-forms.php:522
 msgid "New form submission: %s"
 msgstr ""
 
-#: includes/class-forms.php:476
+#: includes/class-forms.php:560
 msgid "Thanks — we got your message (%s)"
 msgstr ""
 
-#: includes/class-forms.php:479
+#: includes/class-forms.php:563
 msgid "Thanks for getting in touch — your message reached %s and someone will read it shortly.\n\nThis is an automatic confirmation; there's no need to reply to it."
 msgstr ""
 
@@ -1002,6 +1057,8 @@ msgstr ""
 #: includes/class-import-page.php:166
 #: includes/class-parked-page.php:156
 #: includes/class-parked-page.php:404
+#: assets/gutenberg.js:66
+#: assets/workspace.js:1476
 msgid "Pages"
 msgstr ""
 
@@ -1032,6 +1089,8 @@ msgstr ""
 
 #: includes/class-import-page.php:172
 #: includes/class-parked-page.php:409
+#: assets/gutenberg.js:74
+#: assets/workspace.js:1434
 msgid "Form submissions"
 msgstr ""
 
@@ -1067,6 +1126,8 @@ msgid "%d items cannot be imported at all — see the reasons below."
 msgstr ""
 
 #: includes/class-import-page.php:206
+#: assets/form-blocks.js:58
+#: assets/workspace.js:656
 msgid "Type"
 msgstr ""
 
@@ -1088,6 +1149,9 @@ msgstr ""
 
 #: includes/class-import-page.php:229
 #: includes/class-parked-page.php:215
+#: assets/workspace-history.js:117
+#: assets/workspace-history.js:121
+#: assets/workspace.js:859
 msgid "Cancel"
 msgstr ""
 
@@ -1344,6 +1408,59 @@ msgstr ""
 msgid "The result could not be saved to the Media Library."
 msgstr ""
 
+#: includes/class-native-gutenberg.php:80
+msgid "Loading Visual Edit Lite…"
+msgstr ""
+
+#: includes/class-native-gutenberg.php:81
+msgid "Open WordPress editor"
+msgstr ""
+
+#: includes/class-native-gutenberg.php:83
+msgid "Visual Edit Lite workspace"
+msgstr ""
+
+#: includes/class-native-history.php:37
+msgid "History is not available for this document type."
+msgstr ""
+
+#: includes/class-native-history.php:41
+msgid "Invalid history document."
+msgstr ""
+
+#: includes/class-native-history.php:45
+msgid "This editor does not support history access."
+msgstr ""
+
+#: includes/class-native-history.php:52
+msgid "You cannot edit this document."
+msgstr ""
+
+#: includes/class-native-history.php:73
+msgid "The editor did not return editable content."
+msgstr ""
+
+#: includes/class-native-history.php:101
+msgid "That version is not available for this document."
+msgstr ""
+
+#: includes/class-native-history.php:104
+msgid "That version could not be read."
+msgstr ""
+
+#: includes/class-native-history.php:118
+#: assets/workspace-history.js:25
+msgid "Invalid styles snapshot."
+msgstr ""
+
+#: includes/class-native-history.php:132
+msgid "Could not rename that version."
+msgstr ""
+
+#: includes/class-native-history.php:184
+msgid "Save %s"
+msgstr ""
+
 #: includes/class-optin.php:104
 msgid "Everyone who asked to join a list through a form on this site, and whether they confirmed. This is the consent record — the mailing list itself lives at your provider. Unconfirmed rows are deleted automatically after two weeks."
 msgstr ""
@@ -1361,6 +1478,10 @@ msgid "%d records"
 msgstr ""
 
 #: includes/class-optin.php:126
+#: assets/form-blocks.js:164
+#: assets/workspace.js:656
+#: assets/workspace.js:666
+#: assets/workspace.js:666
 msgid "Email"
 msgstr ""
 
@@ -1369,6 +1490,10 @@ msgid "Status"
 msgstr ""
 
 #: includes/class-optin.php:128
+#: assets/form-blocks.js:187
+#: assets/workspace.js:911
+#: assets/workspace.js:915
+#: assets/workspace.js:922
 msgid "List"
 msgstr ""
 
@@ -1402,6 +1527,8 @@ msgid "Delete this record? The consent evidence goes with it."
 msgstr ""
 
 #: includes/class-optin.php:157
+#: assets/workspace.js:842
+#: assets/workspace.js:842
 msgid "Delete"
 msgstr ""
 
@@ -1582,16 +1709,8 @@ msgstr ""
 msgid "Delete permanently…"
 msgstr ""
 
-#: includes/class-responsive.php:155
+#: includes/class-responsive.php:167
 msgid "That is not a block this editor is tracking."
-msgstr ""
-
-#: includes/class-responsive.php:158
-msgid "That is not a screen size this editor offers."
-msgstr ""
-
-#: includes/class-responsive.php:161
-msgid "That is not a property that can differ by screen."
 msgstr ""
 
 #: includes/class-rest.php:344
@@ -1804,11 +1923,6 @@ msgid_plural "%d min read"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-tokens.php:798
-#: visual-edit-lite.php:2102
-msgid "Thanks — check your inbox."
-msgstr ""
-
 #: includes/class-zip.php:41
 msgid "Nothing to archive."
 msgstr ""
@@ -1833,87 +1947,1466 @@ msgstr ""
 msgid "Visual Edit Lite is switched off because Visual Edit Pro is active on this site. Pro already includes everything Lite does — deactivate Lite to clear this notice."
 msgstr ""
 
-#: visual-edit-lite.php:963
+#: visual-edit-lite.php:967
 msgid "Not allowed."
 msgstr ""
 
-#: visual-edit-lite.php:973
+#: visual-edit-lite.php:977
 msgid "This content was written for a different design — its own assets and markers are missing from the active theme, so taking ownership would only put the wrong page back on the site. Activate the theme it belongs to, or give this theme its own WordPress install."
 msgstr ""
 
-#: visual-edit-lite.php:1001
+#: visual-edit-lite.php:1005
 msgid "another theme"
 msgstr ""
 
-#: visual-edit-lite.php:1006
+#: visual-edit-lite.php:1010
 msgid "Visual Edit: this site's editable content belongs to a different theme."
 msgstr ""
 
-#: visual-edit-lite.php:1010
+#: visual-edit-lite.php:1014
 msgid "The stored pages, styles and history were created for %1$s, but %2$s is active. Editing is paused: the plugin will not serve one theme's markup through another's design, and will not overwrite it either. Nothing has been lost."
 msgstr ""
 
-#: visual-edit-lite.php:1017
+#: visual-edit-lite.php:1021
 msgid "This content predates per-theme storage, so it could not be filed under the theme that made it. Activate %s to carry on editing it — that also files it, and from then on both themes can hold their own content on this install side by side."
 msgstr ""
 
-#: visual-edit-lite.php:1021
+#: visual-edit-lite.php:1025
 msgid "Themes"
 msgstr ""
 
-#: visual-edit-lite.php:1033
+#: visual-edit-lite.php:1037
 msgid "This content belongs to %s — take ownership"
 msgstr ""
 
-#: visual-edit-lite.php:1039
+#: visual-edit-lite.php:1043
 msgid "There is no \"take ownership\" here on purpose: this content carries another design's own assets and markers, so claiming it would only put the wrong page back on the site."
 msgstr ""
 
-#: visual-edit-lite.php:1610
+#: visual-edit-lite.php:1614
 msgctxt "post status"
 msgid "Parked with its theme"
 msgstr ""
 
-#: visual-edit-lite.php:1677
+#: visual-edit-lite.php:1680
 msgid "Menus are part of this theme."
 msgstr ""
 
-#: visual-edit-lite.php:1678
-msgid "This theme keeps its navigation in WordPress's own navigation blocks rather than in markup this editor owns, so menus are edited alongside the rest of the theme."
+#: visual-edit-lite.php:1681
+msgid "This theme keeps its navigation in WordPress's own navigation blocks, so Visual Edit opens it alongside the rest of the theme in Gutenberg."
 msgstr ""
 
-#: visual-edit-lite.php:1680
+#: visual-edit-lite.php:1683
 msgid "Open the Site Editor"
 msgstr ""
 
-#: visual-edit-lite.php:1687
+#: visual-edit-lite.php:1690
 msgid "Visual Edit: menu management is off."
 msgstr ""
 
-#: visual-edit-lite.php:1688
+#: visual-edit-lite.php:1691
 msgid "The active theme does not declare its navigation zones (the clara_ve_theme_contract filter), so the plugin cannot know which markup is a menu — a menu created here would not appear on the site. Themes generated by the converter declare this in inc/visual-edit.php."
 msgstr ""
 
-#: visual-edit-lite.php:2100
-msgid "Sending…"
+#: visual-edit-lite.php:2006
+#: assets/form-blocks.js:170
+#: assets/form-blocks.js:185
+#: assets/workspace.js:650
+#: assets/workspace.js:664
+#: assets/workspace.js:1096
+msgid "Form"
 msgstr ""
 
-#: visual-edit-lite.php:2101
-msgid "Sent!"
+#: visual-edit-lite.php:2325
+msgid "Edit the complete site with Visual Edit Lite"
 msgstr ""
 
-#: visual-edit-lite.php:2103
-msgid "Something went wrong — please try again."
-msgstr ""
-
-#: visual-edit-lite.php:2311
+#: visual-edit-lite.php:2326
 msgid "Open the front page in the visual editor"
 msgstr ""
 
-#: visual-edit-lite.php:2363
+#: visual-edit-lite.php:2395
 msgid "Advanced (HTML block &amp; %s)"
 msgstr ""
 
-#: visual-edit-lite.php:2364
+#: visual-edit-lite.php:2396
 msgid "Edit HTML block"
+msgstr ""
+
+#: assets/block-formats.js:6
+msgid "Ornament"
+msgstr ""
+
+#: assets/form-blocks.js:55
+#: assets/workspace.js:652
+msgid "Field"
+msgstr ""
+
+#: assets/form-blocks.js:56
+#: assets/workspace.js:653
+msgid "Label"
+msgstr ""
+
+#: assets/form-blocks.js:57
+#: assets/workspace.js:655
+msgid "Placeholder"
+msgstr ""
+
+#: assets/form-blocks.js:59
+msgid "Choices (one per line)"
+msgstr ""
+
+#: assets/form-blocks.js:60
+#: assets/workspace.js:659
+msgid "Required"
+msgstr ""
+
+#: assets/form-blocks.js:61
+#: assets/workspace.js:661
+msgid "Name in submissions"
+msgstr ""
+
+#: assets/form-blocks.js:130
+msgid "Form field"
+msgstr ""
+
+#: assets/form-blocks.js:131
+msgid "Form text area"
+msgstr ""
+
+#: assets/form-blocks.js:132
+msgid "Form choice list"
+msgstr ""
+
+#: assets/form-blocks.js:133
+msgid "Form checkbox"
+msgstr ""
+
+#: assets/form-blocks.js:136
+#: assets/form-blocks.js:142
+msgid "Form row"
+msgstr ""
+
+#: assets/form-blocks.js:142
+msgid "CSS class"
+msgstr ""
+
+#: assets/form-blocks.js:149
+msgid "Form send button"
+msgstr ""
+
+#: assets/form-blocks.js:152
+#: assets/form-blocks.js:157
+#: assets/form-blocks.js:159
+#: assets/form-blocks.js:166
+msgid "Send"
+msgstr ""
+
+#: assets/form-blocks.js:156
+#: assets/workspace.js:663
+msgid "Button"
+msgstr ""
+
+#: assets/form-blocks.js:156
+#: assets/workspace.js:663
+msgid "Button text"
+msgstr ""
+
+#: assets/form-blocks.js:163
+msgid "Name"
+msgstr ""
+
+#: assets/form-blocks.js:165
+#: assets/workspace.js:666
+#: assets/workspace.js:677
+msgid "Message"
+msgstr ""
+
+#: assets/form-blocks.js:171
+msgid "A form whose fields, texts and button are edited like the rest of the page. Submissions go to Form Submissions and are emailed to the Form Settings address."
+msgstr ""
+
+#: assets/form-blocks.js:186
+#: assets/workspace.js:671
+msgid "Does"
+msgstr ""
+
+#: assets/form-blocks.js:186
+#: assets/workspace.js:671
+msgid "Contact form"
+msgstr ""
+
+#: assets/form-blocks.js:187
+msgid "The list id at your provider. The Visual Edit popup offers the names instead."
+msgstr ""
+
+#: assets/form-blocks.js:188
+#: assets/workspace.js:674
+msgid "Send to"
+msgstr ""
+
+#: assets/form-blocks.js:188
+msgid "Leave empty for the address in Form Settings."
+msgstr ""
+
+#: assets/form-blocks.js:189
+msgid "After sending, go to"
+msgstr ""
+
+#: assets/form-blocks.js:189
+msgid "A page address such as /thank-you/. Empty: stay on the page and show the message."
+msgstr ""
+
+#: assets/form-blocks.js:190
+msgid "Message after sending"
+msgstr ""
+
+#: assets/gutenberg.js:59
+msgid "Gutenberg integration"
+msgstr ""
+
+#: assets/gutenberg.js:61
+msgid "You are editing the complete block theme. Gutenberg saves pages, templates, template parts, navigation, patterns and Global Styles in their native WordPress records."
+msgstr ""
+
+#: assets/gutenberg.js:62
+msgid "This page uses the complete native Gutenberg editor. Select a block to find Visual Edit movement and responsive controls in the block inspector."
+msgstr ""
+
+#: assets/gutenberg.js:65
+msgid "Edit the complete site"
+msgstr ""
+
+#: assets/gutenberg.js:67
+#: assets/workspace.js:1476
+msgid "Posts"
+msgstr ""
+
+#: assets/gutenberg.js:71
+msgid "More Visual Edit tools"
+msgstr ""
+
+#: assets/gutenberg.js:73
+#: assets/workspace.js:1433
+#: assets/workspace.js:1461
+msgid "SEO & sharing settings"
+msgstr ""
+
+#: assets/gutenberg.js:251
+msgid "Inherit (for example 24px)"
+msgstr ""
+
+#: assets/gutenberg.js:316
+msgid "Entrance movement"
+msgstr ""
+
+#: assets/gutenberg.js:320
+msgid "Fade"
+msgstr ""
+
+#: assets/gutenberg.js:321
+msgid "Fade up"
+msgstr ""
+
+#: assets/gutenberg.js:322
+msgid "Fade down"
+msgstr ""
+
+#: assets/gutenberg.js:323
+msgid "Zoom"
+msgstr ""
+
+#: assets/gutenberg.js:324
+msgid "Slide left"
+msgstr ""
+
+#: assets/gutenberg.js:325
+msgid "Slide right"
+msgstr ""
+
+#: assets/gutenberg.js:330
+msgid "Hover effect"
+msgstr ""
+
+#: assets/gutenberg.js:334
+msgid "Lift"
+msgstr ""
+
+#: assets/gutenberg.js:335
+msgid "Grow"
+msgstr ""
+
+#: assets/gutenberg.js:336
+msgid "Soften"
+msgstr ""
+
+#: assets/gutenberg.js:337
+msgid "Dim"
+msgstr ""
+
+#: assets/gutenberg.js:342
+msgid "Responsive values"
+msgstr ""
+
+#: assets/gutenberg.js:344
+msgid "Screen"
+msgstr ""
+
+#: assets/gutenberg.js:347
+msgid "Mobile (600px and below)"
+msgstr ""
+
+#: assets/gutenberg.js:348
+msgid "Tablet (781px and below)"
+msgstr ""
+
+#: assets/gutenberg.js:352
+msgid "Padding top"
+msgstr ""
+
+#: assets/gutenberg.js:353
+msgid "Padding right"
+msgstr ""
+
+#: assets/gutenberg.js:354
+msgid "Padding bottom"
+msgstr ""
+
+#: assets/gutenberg.js:355
+msgid "Padding left"
+msgstr ""
+
+#: assets/gutenberg.js:356
+msgid "Margin top"
+msgstr ""
+
+#: assets/gutenberg.js:357
+msgid "Margin bottom"
+msgstr ""
+
+#: assets/gutenberg.js:358
+msgid "Font size"
+msgstr ""
+
+#: assets/gutenberg.js:360
+msgid "Text alignment"
+msgstr ""
+
+#: assets/gutenberg.js:363
+#: assets/workspace.js:138
+#: assets/workspace.js:153
+#: assets/workspace.js:190
+#: assets/workspace.js:472
+#: assets/workspace.js:597
+#: assets/workspace.js:604
+#: assets/workspace.js:746
+msgid "Inherit"
+msgstr ""
+
+#: assets/gutenberg.js:364
+msgid "Left"
+msgstr ""
+
+#: assets/gutenberg.js:365
+msgid "Center"
+msgstr ""
+
+#: assets/gutenberg.js:366
+msgid "Right"
+msgstr ""
+
+#: assets/gutenberg.js:370
+#: assets/workspace.js:713
+#: assets/workspace.js:793
+msgid "Minimum height"
+msgstr ""
+
+#: assets/gutenberg.js:372
+msgid "Hide on this screen size"
+msgstr ""
+
+#: assets/gutenberg.js:376
+msgid "Responsive values are saved with the page and take part in Gutenberg undo and redo."
+msgstr ""
+
+#: assets/seo-panel.js:36
+msgid "Search settings could not be loaded."
+msgstr ""
+
+#: assets/seo-panel.js:65
+msgid "Search appearance saved."
+msgstr ""
+
+#: assets/seo-panel.js:67
+msgid "Search settings could not be saved."
+msgstr ""
+
+#: assets/seo-panel.js:80
+msgid "Search title"
+msgstr ""
+
+#: assets/seo-panel.js:87
+msgid "Meta description"
+msgstr ""
+
+#: assets/seo-panel.js:92
+msgid "Social sharing image URL"
+msgstr ""
+
+#: assets/seo-panel.js:104
+msgid "Replace image"
+msgstr ""
+
+#: assets/seo-panel.js:105
+#: assets/workspace.js:1054
+msgid "Remove"
+msgstr ""
+
+#: assets/seo-panel.js:110
+msgid "Hide from search engines"
+msgstr ""
+
+#: assets/seo-panel.js:115
+msgid "Save search appearance"
+msgstr ""
+
+#: assets/seo-panel.js:116
+msgid "These values are also copied to "
+msgstr ""
+
+#: assets/workspace-history.js:17
+msgid "History response belongs to a different document."
+msgstr ""
+
+#: assets/workspace-history.js:20
+msgid "Wait for the current save to finish before restoring."
+msgstr ""
+
+#: assets/workspace-history.js:22
+msgid "The document changed while the version was loading. Try again."
+msgstr ""
+
+#: assets/workspace-history.js:28
+msgid "Invalid content snapshot."
+msgstr ""
+
+#: assets/workspace-history.js:51
+msgid "Current document"
+msgstr ""
+
+#: assets/workspace-history.js:52
+msgid "Template"
+msgstr ""
+
+#: assets/workspace-history.js:55
+msgid "Template part"
+msgstr ""
+
+#: assets/workspace-history.js:56
+msgid "Synced pattern"
+msgstr ""
+
+#: assets/workspace-history.js:57
+#: assets/workspace.js:1476
+msgid "Navigation"
+msgstr ""
+
+#: assets/workspace-history.js:61
+#: assets/workspace-history.js:62
+msgid "Global Styles"
+msgstr ""
+
+#: assets/workspace-history.js:108
+msgid "Saved versions, not individual clicks. Restore loads one document into the editor; Save publishes it. Other documents are unchanged."
+msgstr ""
+
+#: assets/workspace-history.js:109
+msgid "Document"
+msgstr ""
+
+#: assets/workspace-history.js:110
+msgid "Open a document to see its history."
+msgstr ""
+
+#: assets/workspace-history.js:113
+#: assets/workspace.js:226
+#: assets/workspace.js:1487
+msgid "Retry"
+msgstr ""
+
+#: assets/workspace-history.js:115
+msgid "This document has unsaved changes. Restoring will replace its content in the editor."
+msgstr ""
+
+#: assets/workspace-history.js:116
+msgid "Version loaded. Use Save to apply it, or Undo to return to your previous work."
+msgstr ""
+
+#: assets/workspace-history.js:117
+msgid "Confirm restore"
+msgstr ""
+
+#: assets/workspace-history.js:117
+msgid "Load this version into the editor?"
+msgstr ""
+
+#: assets/workspace-history.js:117
+msgid "Restore version"
+msgstr ""
+
+#: assets/workspace-history.js:121
+msgid "Version name"
+msgstr ""
+
+#: assets/workspace-history.js:121
+msgid "Save name"
+msgstr ""
+
+#: assets/workspace-history.js:121
+msgid "Original"
+msgstr ""
+
+#: assets/workspace-history.js:121
+msgid "Rename version"
+msgstr ""
+
+#: assets/workspace-history.js:123
+msgid "Current saved version"
+msgstr ""
+
+#: assets/workspace-history.js:124
+msgid "Loaded in editor"
+msgstr ""
+
+#: assets/workspace-history.js:125
+msgid "Restore"
+msgstr ""
+
+#: assets/workspace-history.js:127
+msgid "The latest 10 saves and the Original are available. Restoring does not delete newer versions."
+msgstr ""
+
+#: assets/workspace-history.js:132
+msgid "Close history"
+msgstr ""
+
+#: assets/workspace.js:152
+msgid "Decrease"
+msgstr ""
+
+#: assets/workspace.js:161
+msgid "unit"
+msgstr ""
+
+#: assets/workspace.js:162
+msgid "Increase"
+msgstr ""
+
+#: assets/workspace.js:171
+msgid "↘ diagonal"
+msgstr ""
+
+#: assets/workspace.js:171
+msgid "→ left to right"
+msgstr ""
+
+#: assets/workspace.js:171
+msgid "↓ top to bottom"
+msgstr ""
+
+#: assets/workspace.js:171
+msgid "↗ diagonal, upward"
+msgstr ""
+
+#: assets/workspace.js:171
+msgid "← right to left"
+msgstr ""
+
+#: assets/workspace.js:171
+msgid "↑ bottom to top"
+msgstr ""
+
+#: assets/workspace.js:174
+msgid "Gradient preview"
+msgstr ""
+
+#: assets/workspace.js:177
+#: assets/workspace.js:177
+msgid "No gradient"
+msgstr ""
+
+#: assets/workspace.js:179
+msgid "From"
+msgstr ""
+
+#: assets/workspace.js:179
+msgid "To"
+msgstr ""
+
+#: assets/workspace.js:182
+msgid "colour"
+msgstr ""
+
+#: assets/workspace.js:184
+#: assets/workspace.js:800
+msgid "Direction"
+msgstr ""
+
+#: assets/workspace.js:185
+msgid "This gradient has custom stops. Edit them below without replacing the original."
+msgstr ""
+
+#: assets/workspace.js:186
+#: assets/workspace.js:476
+msgid "Custom"
+msgstr ""
+
+#: assets/workspace.js:187
+msgid "Edit gradient stops"
+msgstr ""
+
+#: assets/workspace.js:223
+#: assets/workspace.js:1429
+msgid "Google Fonts"
+msgstr ""
+
+#: assets/workspace.js:227
+msgid "Save fonts updates the font library for the whole site."
+msgstr ""
+
+#: assets/workspace.js:228
+#: assets/workspace.js:1339
+#: assets/workspace.js:1485
+msgid "Search"
+msgstr ""
+
+#: assets/workspace.js:228
+msgid "Search Google Fonts…"
+msgstr ""
+
+#: assets/workspace.js:236
+msgid "Add font"
+msgstr ""
+
+#: assets/workspace.js:238
+msgid "Load more fonts"
+msgstr ""
+
+#: assets/workspace.js:239
+msgid "Save fonts"
+msgstr ""
+
+#: assets/workspace.js:472
+#: assets/workspace.js:597
+msgid "Custom…"
+msgstr ""
+
+#: assets/workspace.js:604
+#: assets/workspace.js:694
+#: assets/workspace.js:700
+msgid "Font"
+msgstr ""
+
+#: assets/workspace.js:637
+#: assets/workspace.js:1018
+#: assets/workspace.js:1018
+msgid "Link"
+msgstr ""
+
+#: assets/workspace.js:638
+#: assets/workspace.js:1021
+msgid "URL"
+msgstr ""
+
+#: assets/workspace.js:639
+msgid "Open in"
+msgstr ""
+
+#: assets/workspace.js:639
+msgid "Same tab"
+msgstr ""
+
+#: assets/workspace.js:639
+msgid "New tab"
+msgstr ""
+
+#: assets/workspace.js:641
+msgid "Media"
+msgstr ""
+
+#: assets/workspace.js:643
+msgid "Choose or replace media"
+msgstr ""
+
+#: assets/workspace.js:644
+msgid "Alternative text"
+msgstr ""
+
+#: assets/workspace.js:646
+#: assets/workspace.js:647
+msgid "Shortcode"
+msgstr ""
+
+#: assets/workspace.js:654
+msgid "Note after the label"
+msgstr ""
+
+#: assets/workspace.js:656
+#: assets/workspace.js:666
+#: assets/workspace.js:684
+#: assets/workspace.js:686
+msgid "Text"
+msgstr ""
+
+#: assets/workspace.js:656
+msgid "Phone"
+msgstr ""
+
+#: assets/workspace.js:656
+msgid "Web address"
+msgstr ""
+
+#: assets/workspace.js:656
+msgid "Number"
+msgstr ""
+
+#: assets/workspace.js:656
+msgid "Date"
+msgstr ""
+
+#: assets/workspace.js:657
+msgid "Choices, one per line"
+msgstr ""
+
+#: assets/workspace.js:659
+msgid "No"
+msgstr ""
+
+#: assets/workspace.js:659
+msgid "Yes"
+msgstr ""
+
+#: assets/workspace.js:660
+msgid "Each field keeps its own name in submissions; a name another field already uses is numbered automatically."
+msgstr ""
+
+#: assets/workspace.js:665
+msgid "Add a field"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "New field"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "Long text"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "Choice list"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "Choose one"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "First choice"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "Second choice"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "Checkbox"
+msgstr ""
+
+#: assets/workspace.js:666
+msgid "I agree"
+msgstr ""
+
+#: assets/workspace.js:669
+msgid "Reorder or remove fields under Section › Items; click a field on the page to change it."
+msgstr ""
+
+#: assets/workspace.js:670
+msgid "Where it goes"
+msgstr ""
+
+#: assets/workspace.js:675
+msgid "After sending"
+msgstr ""
+
+#: assets/workspace.js:676
+msgid "Go to page"
+msgstr ""
+
+#: assets/workspace.js:676
+msgid "Stay on this page"
+msgstr ""
+
+#: assets/workspace.js:680
+msgid "The address is added to a mailing list at your provider, which sends the confirmation and the download."
+msgstr ""
+
+#: assets/workspace.js:681
+msgid "Submissions are stored under Form Submissions and emailed to you. The sender gets a confirmation."
+msgstr ""
+
+#: assets/workspace.js:688
+msgid "Ornaments"
+msgstr ""
+
+#: assets/workspace.js:690
+msgid "Before the text"
+msgstr ""
+
+#: assets/workspace.js:690
+msgid "After the text"
+msgstr ""
+
+#: assets/workspace.js:691
+msgid "Converted to editable text. Use Undo to restore the ornament."
+msgstr ""
+
+#: assets/workspace.js:692
+msgid "Convert to editable text"
+msgstr ""
+
+#: assets/workspace.js:693
+#: assets/workspace.js:694
+msgid "Symbol"
+msgstr ""
+
+#: assets/workspace.js:694
+#: assets/workspace.js:734
+msgid "Colour"
+msgstr ""
+
+#: assets/workspace.js:694
+#: assets/workspace.js:702
+#: assets/workspace.js:735
+#: assets/workspace.js:743
+#: assets/workspace.js:759
+#: assets/workspace.js:792
+msgid "Size"
+msgstr ""
+
+#: assets/workspace.js:699
+#: assets/workspace.js:792
+msgid "Typography"
+msgstr ""
+
+#: assets/workspace.js:701
+msgid "＋ Add Google fonts"
+msgstr ""
+
+#: assets/workspace.js:703
+#: assets/workspace.js:736
+msgid "Weight"
+msgstr ""
+
+#: assets/workspace.js:703
+#: assets/workspace.js:808
+msgid "Style"
+msgstr ""
+
+#: assets/workspace.js:703
+#: assets/workspace.js:737
+#: assets/workspace.js:760
+msgid "Case"
+msgstr ""
+
+#: assets/workspace.js:703
+msgid "Decoration"
+msgstr ""
+
+#: assets/workspace.js:703
+msgid "Line height"
+msgstr ""
+
+#: assets/workspace.js:703
+#: assets/workspace.js:738
+#: assets/workspace.js:761
+msgid "Letter spacing"
+msgstr ""
+
+#: assets/workspace.js:704
+#: assets/workspace.js:704
+#: assets/workspace.js:792
+msgid "Align"
+msgstr ""
+
+#: assets/workspace.js:706
+msgid "Colours"
+msgstr ""
+
+#: assets/workspace.js:707
+#: assets/workspace.js:741
+#: assets/workspace.js:753
+msgid "Text colour"
+msgstr ""
+
+#: assets/workspace.js:708
+#: assets/workspace.js:742
+#: assets/workspace.js:754
+msgid "Background"
+msgstr ""
+
+#: assets/workspace.js:709
+msgid "Gradient"
+msgstr ""
+
+#: assets/workspace.js:712
+#: assets/workspace.js:793
+msgid "Size and spacing"
+msgstr ""
+
+#: assets/workspace.js:714
+msgid "Aspect ratio"
+msgstr ""
+
+#: assets/workspace.js:715
+msgid "Height"
+msgstr ""
+
+#: assets/workspace.js:716
+#: assets/workspace.js:793
+msgid "Padding"
+msgstr ""
+
+#: assets/workspace.js:717
+#: assets/workspace.js:793
+msgid "Margin"
+msgstr ""
+
+#: assets/workspace.js:719
+msgid "Border and shadow"
+msgstr ""
+
+#: assets/workspace.js:720
+#: assets/workspace.js:747
+#: assets/workspace.js:757
+msgid "Border colour"
+msgstr ""
+
+#: assets/workspace.js:721
+#: assets/workspace.js:748
+msgid "Border width"
+msgstr ""
+
+#: assets/workspace.js:722
+msgid "Border style"
+msgstr ""
+
+#: assets/workspace.js:723
+#: assets/workspace.js:750
+#: assets/workspace.js:758
+msgid "Corners"
+msgstr ""
+
+#: assets/workspace.js:724
+msgid "Radius"
+msgstr ""
+
+#: assets/workspace.js:725
+msgid "Shadow"
+msgstr ""
+
+#: assets/workspace.js:727
+msgid "Motion"
+msgstr ""
+
+#: assets/workspace.js:728
+msgid "Entrance"
+msgstr ""
+
+#: assets/workspace.js:729
+msgid "Hover"
+msgstr ""
+
+#: assets/workspace.js:732
+msgid "Form labels"
+msgstr ""
+
+#: assets/workspace.js:733
+msgid "Styles every form inside this block. The fields and their texts come from the form itself."
+msgstr ""
+
+#: assets/workspace.js:740
+msgid "Form fields"
+msgstr ""
+
+#: assets/workspace.js:744
+msgid "Placeholder colour"
+msgstr ""
+
+#: assets/workspace.js:745
+msgid "Border"
+msgstr ""
+
+#: assets/workspace.js:746
+msgid "Shape"
+msgstr ""
+
+#: assets/workspace.js:746
+msgid "Line underneath"
+msgstr ""
+
+#: assets/workspace.js:746
+msgid "Box"
+msgstr ""
+
+#: assets/workspace.js:746
+msgid "No border"
+msgstr ""
+
+#: assets/workspace.js:749
+msgid "Border when typing"
+msgstr ""
+
+#: assets/workspace.js:752
+msgid "Form button"
+msgstr ""
+
+#: assets/workspace.js:755
+msgid "Text colour on hover"
+msgstr ""
+
+#: assets/workspace.js:756
+msgid "Background on hover"
+msgstr ""
+
+#: assets/workspace.js:794
+msgid "Visibility"
+msgstr ""
+
+#: assets/workspace.js:794
+msgid "Hide on phones"
+msgstr ""
+
+#: assets/workspace.js:794
+msgid "Hide on tablets and phones"
+msgstr ""
+
+#: assets/workspace.js:798
+#: assets/workspace.js:799
+msgid "Layout"
+msgstr ""
+
+#: assets/workspace.js:801
+msgid "Justify"
+msgstr ""
+
+#: assets/workspace.js:802
+msgid "Gap"
+msgstr ""
+
+#: assets/workspace.js:804
+msgid "Items"
+msgstr ""
+
+#: assets/workspace.js:805
+#: assets/workspace.js:808
+#: assets/workspace.js:1450
+msgid "Section"
+msgstr ""
+
+#: assets/workspace.js:805
+msgid "Add a section after this one"
+msgstr ""
+
+#: assets/workspace.js:808
+msgid "Content"
+msgstr ""
+
+#: assets/workspace.js:823
+msgid "Visual Edit block settings"
+msgstr ""
+
+#: assets/workspace.js:830
+msgid "Block path"
+msgstr ""
+
+#: assets/workspace.js:832
+#: assets/workspace.js:1051
+msgid "Select"
+msgstr ""
+
+#: assets/workspace.js:835
+msgid "Select the parent block"
+msgstr ""
+
+#: assets/workspace.js:835
+msgid "Select the parent block (Alt+↑)"
+msgstr ""
+
+#: assets/workspace.js:836
+#: assets/workspace.js:836
+msgid "Keep the popup in this place"
+msgstr ""
+
+#: assets/workspace.js:837
+msgid "Close"
+msgstr ""
+
+#: assets/workspace.js:837
+msgid "Close and undo the changes made in this popup"
+msgstr ""
+
+#: assets/workspace.js:838
+msgid "Block actions"
+msgstr ""
+
+#: assets/workspace.js:840
+#: assets/workspace.js:840
+#: assets/workspace.js:1052
+msgid "Move up"
+msgstr ""
+
+#: assets/workspace.js:841
+#: assets/workspace.js:841
+#: assets/workspace.js:1053
+msgid "Move down"
+msgstr ""
+
+#: assets/workspace.js:843
+msgid "Content-only editing: text and media can change, the design is locked by WordPress."
+msgstr ""
+
+#: assets/workspace.js:843
+#: assets/workspace.js:844
+msgid "Unlock design"
+msgstr ""
+
+#: assets/workspace.js:844
+msgid "Editing this block is disabled by WordPress."
+msgstr ""
+
+#: assets/workspace.js:847
+msgid "Advanced"
+msgstr ""
+
+#: assets/workspace.js:847
+msgid "All WordPress settings for this block"
+msgstr ""
+
+#: assets/workspace.js:848
+msgid "Native block and plugin settings. Changes stay in the document; use Undo to revert them."
+msgstr ""
+
+#: assets/workspace.js:850
+msgid "Screen size"
+msgstr ""
+
+#: assets/workspace.js:850
+#: assets/workspace.js:1446
+msgid "Desktop"
+msgstr ""
+
+#: assets/workspace.js:850
+#: assets/workspace.js:1446
+msgid "Tablet"
+msgstr ""
+
+#: assets/workspace.js:850
+#: assets/workspace.js:1446
+msgid "Mobile"
+msgstr ""
+
+#: assets/workspace.js:851
+msgid "These values apply to phones (600px and narrower). Empty fields keep the larger screen’s value."
+msgstr ""
+
+#: assets/workspace.js:851
+msgid "These values apply to tablets and phones (781px and narrower). Empty fields keep the desktop value."
+msgstr ""
+
+#: assets/workspace.js:852
+msgid "Nothing on this block can differ per screen size."
+msgstr ""
+
+#: assets/workspace.js:853
+msgid "Nothing here can be changed from Visual Edit."
+msgstr ""
+
+#: assets/workspace.js:856
+msgid "Reset styles"
+msgstr ""
+
+#: assets/workspace.js:856
+msgid "Remove this block’s own styling"
+msgstr ""
+
+#: assets/workspace.js:859
+msgid "Apply"
+msgstr ""
+
+#: assets/workspace.js:892
+msgid "Make this form editable"
+msgstr ""
+
+#: assets/workspace.js:893
+msgid "There is no form in this block."
+msgstr ""
+
+#: assets/workspace.js:893
+msgid "The form could not be read. Try again."
+msgstr ""
+
+#: assets/workspace.js:893
+msgid "Turns the form into fields you can change here — labels, placeholders, choices, the button — keeping its look. Submissions then go to Form Submissions. Undo restores the original block."
+msgstr ""
+
+#: assets/workspace.js:916
+msgid "No mailing list provider is connected yet — pick one in Form Settings. Until then this form has nowhere to put an address."
+msgstr ""
+
+#: assets/workspace.js:995
+msgid "Select text on the page first"
+msgstr ""
+
+#: assets/workspace.js:1006
+msgid "Enter a web address first."
+msgstr ""
+
+#: assets/workspace.js:1007
+msgid "This address is not allowed."
+msgstr ""
+
+#: assets/workspace.js:1011
+msgid "Select the text on the page again."
+msgstr ""
+
+#: assets/workspace.js:1015
+msgid "Text formatting"
+msgstr ""
+
+#: assets/workspace.js:1016
+#: assets/workspace.js:1016
+msgid "Bold"
+msgstr ""
+
+#: assets/workspace.js:1017
+#: assets/workspace.js:1017
+msgid "Italic"
+msgstr ""
+
+#: assets/workspace.js:1019
+msgid "Select text on the page to format it."
+msgstr ""
+
+#: assets/workspace.js:1028
+msgid "Apply link"
+msgstr ""
+
+#: assets/workspace.js:1029
+msgid "Remove link"
+msgstr ""
+
+#: assets/workspace.js:1056
+msgid "Add item"
+msgstr ""
+
+#: assets/workspace.js:1056
+msgid "Adds a copy of the last item"
+msgstr ""
+
+#: assets/workspace.js:1322
+msgid "Open Visual Edit settings"
+msgstr ""
+
+#: assets/workspace.js:1337
+#: assets/workspace.js:1450
+msgid "Add a section"
+msgstr ""
+
+#: assets/workspace.js:1338
+msgid "Sections come from your theme, so they already match the design. The new section is added after the selected one."
+msgstr ""
+
+#: assets/workspace.js:1339
+msgid "Search sections…"
+msgstr ""
+
+#: assets/workspace.js:1340
+msgid "This theme offers no sections that can be added here."
+msgstr ""
+
+#: assets/workspace.js:1341
+msgid "Theme sections"
+msgstr ""
+
+#: assets/workspace.js:1425
+msgid "Page settings"
+msgstr ""
+
+#: assets/workspace.js:1426
+msgid "Site styles"
+msgstr ""
+
+#: assets/workspace.js:1427
+msgid "Page structure (list view)"
+msgstr ""
+
+#: assets/workspace.js:1428
+msgid "All blocks"
+msgstr ""
+
+#: assets/workspace.js:1431
+msgid "Lock pattern design"
+msgstr ""
+
+#: assets/workspace.js:1431
+msgid "Unlock pattern design"
+msgstr ""
+
+#: assets/workspace.js:1432
+msgid "Hide WordPress controls"
+msgstr ""
+
+#: assets/workspace.js:1432
+msgid "Show WordPress controls"
+msgstr ""
+
+#: assets/workspace.js:1435
+msgid "Open in the WordPress editor"
+msgstr ""
+
+#: assets/workspace.js:1436
+#: assets/workspace.js:1502
+msgid "Back to the dashboard"
+msgstr ""
+
+#: assets/workspace.js:1444
+msgid "Visual Edit"
+msgstr ""
+
+#: assets/workspace.js:1445
+msgid "Your website"
+msgstr ""
+
+#: assets/workspace.js:1445
+msgid "Switch page, template or part"
+msgstr ""
+
+#: assets/workspace.js:1446
+msgid "Device"
+msgstr ""
+
+#: assets/workspace.js:1447
+#: assets/workspace.js:1447
+#: assets/workspace.js:1452
+msgid "Undo"
+msgstr ""
+
+#: assets/workspace.js:1448
+#: assets/workspace.js:1448
+msgid "Redo"
+msgstr ""
+
+#: assets/workspace.js:1449
+msgid "Saved versions and restore"
+msgstr ""
+
+#: assets/workspace.js:1450
+msgid "Add a section from your theme"
+msgstr ""
+
+#: assets/workspace.js:1451
+msgid "Design unlocked"
+msgstr ""
+
+#: assets/workspace.js:1451
+msgid "Lock pattern design again"
+msgstr ""
+
+#: assets/workspace.js:1452
+msgid "Version restored — Save to keep it"
+msgstr ""
+
+#: assets/workspace.js:1453
+msgid "Saving…"
+msgstr ""
+
+#: assets/workspace.js:1453
+msgid "Save failed — changes kept"
+msgstr ""
+
+#: assets/workspace.js:1453
+msgid "unsaved"
+msgstr ""
+
+#: assets/workspace.js:1453
+msgid "Saved"
+msgstr ""
+
+#: assets/workspace.js:1454
+msgid "Preview"
+msgstr ""
+
+#: assets/workspace.js:1454
+msgid "View site"
+msgstr ""
+
+#: assets/workspace.js:1455
+#: assets/workspace.js:1455
+msgid "More"
+msgstr ""
+
+#: assets/workspace.js:1461
+msgid "This site does not print search titles and descriptions from Visual Edit: the theme provides its own, or the site-wide SEO & sharing settings are not enabled yet. Values saved here are kept."
+msgstr ""
+
+#: assets/workspace.js:1463
+msgid "Click anything on the page to change it."
+msgstr ""
+
+#: assets/workspace.js:1463
+msgid "Got it"
+msgstr ""
+
+#: assets/workspace.js:1476
+msgid "Templates"
+msgstr ""
+
+#: assets/workspace.js:1476
+msgid "Template parts"
+msgstr ""
+
+#: assets/workspace.js:1476
+msgid "Synced patterns"
+msgstr ""
+
+#: assets/workspace.js:1478
+msgid "There are unsaved changes. Leave this document?"
+msgstr ""
+
+#: assets/workspace.js:1484
+msgid "Show"
+msgstr ""
+
+#: assets/workspace.js:1485
+msgid "Search…"
+msgstr ""
+
+#: assets/workspace.js:1487
+msgid "Could not load this content."
+msgstr ""
+
+#: assets/workspace.js:1488
+msgid "No results."
+msgstr ""
+
+#: assets/workspace.js:1496
+msgid "Previous"
+msgstr ""
+
+#: assets/workspace.js:1497
+msgid "Next"
+msgstr ""
+
+#: assets/workspace.js:1501
+msgid "Open the WordPress Site Editor"
 msgstr ""

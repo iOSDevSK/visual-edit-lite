@@ -13,3 +13,6 @@ Thumbs.db
 # from it), the .mo/.po a translator produces are theirs to ship.
 *.mo
 .verified
+
+# Working plans — kept out of the package by build-plugin.sh, and out of the repo.
+PLAN-*.md

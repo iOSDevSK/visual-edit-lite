@@ -17,6 +17,33 @@ means:
 
 Everything below follows from those four.
 
+## Two editing drivers
+
+The active theme decides which editor owns the write:
+
+| Theme | Editor | Storage and save path |
+|---|---|---|
+| Converted theme declaring the VE contract | Raw-HTML preview editor | VE source options mirrored to WordPress render targets |
+| Native block theme | VE workspace hosting WordPress Site/Post Editor | Core entities through Gutenberg `core-data` and REST |
+
+The native driver hosts the Site/Post Editor under `admin.php?page=visual-edit`.
+`assets/workspace.js` supplies the VE toolbar and popup, mounted in the actual
+editor registry. The host iframe only exchanges versioned readiness and dirty
+state messages; it never copies or saves a block tree. Gutenberg owns content,
+shared entities, plugin controls, save review, serialization and undo.
+
+New responsive rules and ornaments are stored in the block's `claraVe`
+attribute. The renderer adds generated CSS without modifying saved HTML.
+See [workspace parity](workspace-parity.md) for interfaces and release gates.
+
+Responsive page rules remain data in `_clara_ve_responsive`, exposed as a
+protected REST meta field so Gutenberg can save them with `post_content`.
+Explicit native page/post saves are also copied to VE history. Autosaves are
+excluded; templates and Global Styles use their native WordPress revisions.
+
+The invariants below describe the raw-HTML driver. They do not constrain the
+native driver because Gutenberg owns its addressing and serialisation.
+
 ## Page keys
 
 A **key** is a `sanitize_key()`'d string naming one editable surface. It is the
@@ -168,11 +195,18 @@ One save, one version, regardless of how many edits it contains.
 
 ## Capability model
 
+The native Gutenberg driver follows WordPress's entity capabilities:
+
+- posts and pages require `edit_post` for the selected post;
+- the Site Editor entry point requires `edit_theme_options`.
+
+The raw-HTML driver requires both:
+
 ```php
 current_user_can( 'edit_theme_options' ) && current_user_can( 'unfiltered_html' )
 ```
 
-Raw HTML round-trips through the editor, so anyone who can edit can put
+Raw HTML round-trips through that editor, so anyone who can edit can put
 arbitrary markup on the site. `unfiltered_html` is the capability WordPress
 already uses for exactly that.
 
@@ -184,6 +218,7 @@ See [Security](../reference/security.md).
 |---|---|
 | `visual-edit-lite.php` | Bootstrap, constants, key resolution, render filters, lifecycle |
 | `includes/class-source-store.php` | The source of truth: storage, sync, shape validation |
+| `includes/class-native-gutenberg.php` | Native Site/Post Editor routing, VE sidebar, SEO endpoint and save history bridge |
 | `includes/class-history.php` | Versioning |
 | `includes/class-tokens.php` | Token hydration |
 | `includes/class-rest.php` | Editing REST routes |

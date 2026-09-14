@@ -5,6 +5,9 @@ screen is for.
 
 ## Import the content
 
+This section is for a converted raw-HTML theme. A native block theme already
+stores its content in WordPress; skip to **Make a first edit**.
+
 Your theme carries the site's pages, posts and images inside it. Nothing
 appears until you import them.
 
@@ -45,6 +48,15 @@ header, a broken layout — that is a conversion problem rather than an editing
 one. See [Troubleshooting](../reference/troubleshooting.md).
 
 ## Make a first edit
+
+On a Gutenberg block theme, open **Visual Edit** to enter the VE workspace.
+Select a block to open its dark floating inspector. Typography, Google Fonts,
+styling, movement and responsive values are available there. Use **More block
+settings** for native block controls and **Save** for WordPress's save flow.
+See the [acceptance matrix](../developer/workspace-parity.md) for the current
+development status and remaining compatibility work.
+
+On a converted raw-HTML theme:
 
 1. Open **Visual Edit** from the admin menu (or the admin bar on any page).
 2. Pick a page from the dropdown at the top left.

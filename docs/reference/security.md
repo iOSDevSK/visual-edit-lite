@@ -5,7 +5,7 @@ anti-spam layers — including the one known gap.
 
 ## Capability model
 
-Editing requires **both**:
+The raw-HTML editor requires **both**:
 
 ```php
 current_user_can( 'edit_theme_options' ) && current_user_can( 'unfiltered_html' )
@@ -16,16 +16,23 @@ arbitrary markup on the site. `unfiltered_html` is the capability WordPress
 already uses to mean "trusted with markup", so it is the one used rather than
 inventing a new one.
 
+On a native block theme, the Site and Post Editors keep Gutenberg's normal
+entity permissions. Editing a page or post requires its `edit_post`
+capability; templates, template parts, navigation and Global Styles require
+`edit_theme_options`. The native SEO endpoint also checks `edit_post` for the
+specific page or post in its URL. Responsive metadata is protected by the same
+object-level check.
+
 **On multisite that capability belongs to Super Admins only by default**, so
-ordinary site administrators cannot use the editor there. That is WordPress's
-decision, not this plugin's.
+ordinary site administrators cannot use the raw-HTML editor there. Native
+Gutenberg mode keeps WordPress's multisite rules for each entity.
 
 Screens holding credentials or personal data sit one tier higher at
 `manage_options`: Form Settings, SEO & Sharing, Subscribers.
 
 ## Public REST endpoints
 
-Three routes are unauthenticated. Each is public because it must be, and each
+Four routes are unauthenticated. Each is public because it must be, and each
 has a specific gate.
 
 ### `GET /posts` — blog "load more"
@@ -38,9 +45,38 @@ page key and a page number bounded to 2–500.
 
 ### `POST /submit` — form submissions
 
-Must be anonymous; visitors are not logged in.
+Must be anonymous; visitors are not logged in. `POST /form-submit`, which the
+form blocks use, is the same handler behind a second route.
 
 **The gate:** five layers, below.
+
+**Where a submission goes is not the submitter's to choose.** One form can name
+its own recipient or its own mailing list, and those values travel in the page
+source, so they are signed (`cve_delivery`, a `wp_hash` over form id, recipient,
+type and list) and verified in constant time on the way back. An unsigned or
+altered value is not refused — a page cached before the owner changed the form
+is not an attack — it falls back to the address in Form Settings and to a plain
+contact form. Without this, "Send to" would be a mail relay and "List" a way to
+write into the owner's contacts on request.
+
+A converted theme that renders and delivers its own forms
+(`html2wp_theme_form_handle`) reaches the same handler and the **same check**.
+1.27.0 briefly exempted that path, on the reading that the theme had already
+decided the recipient; it had not. What the filter receives is the raw request
+body the theme forwarded, so a `to` in it is whatever the browser sent, and the
+exemption was an unauthenticated relay waiting for one setting (Minimum fill
+time above zero was the only thing suppressing it). The exemption is gone: one
+signature check, every caller. The cost is that a per-form **Send to** on a
+converted theme falls back to Form Settings until the converter signs it in the
+markup it generates.
+
+The same release fixed the other half of that path. A converted theme signs its
+anti-spam timestamp as `<time>.<flag>.<signature>`; this plugin signs
+`<time>.<signature>` and, until 1.27.0, refused anything that was not exactly
+two parts — so on a converted theme with the default Minimum fill time every
+submission was dropped, silently and before storage. `verify_timestamp()` now
+verifies the signed prefix whatever its length, which reads both forms without
+loosening anything: the signature still covers every field before it.
 
 ### `GET /confirm` — mailing-list double opt-in
 
