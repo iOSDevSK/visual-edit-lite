@@ -14,6 +14,13 @@ class Clara_VE_Forms {
 	const CPT = 'clara_ve_submission';
 
 	/**
+	 * The field that carries the signature over one form's delivery choice.
+	 * Same name on both renderers ([wp-form] tokens and the form blocks), so
+	 * the shared handler below has one thing to verify.
+	 */
+	const DELIVERY_FIELD = 'cve_delivery';
+
+	/**
 	 * Signing domain for the origin token (see origin_field). Kept as the old
 	 * nonce action so a token issued before that change still verifies.
 	 */
@@ -167,7 +174,33 @@ class Clara_VE_Forms {
 		}
 
 		$form_id = isset( $params['form_id'] ) ? sanitize_key( $params['form_id'] ) : 'form';
-		$skip    = array( 'clara_ve_nonce', 'form_id', 'to', 'redirect', 'cve_hp', 'cve_ts', 'form_type', 'list_id' );
+		$skip    = array( 'clara_ve_nonce', 'form_id', 'to', 'redirect', 'cve_hp', 'cve_ts', self::DELIVERY_FIELD, 'form_type', 'list_id' );
+
+		// Where this submission goes. The three values travel in the markup —
+		// that is how one form can name its own address or its own list — so
+		// anyone can retype them on the way back, and an honoured retyped
+		// address is a mail relay, an honoured retyped list id a way to write
+		// into the owner's contacts. Only what THIS site signed is honoured.
+		$recipient = isset( $params['to'] ) ? trim( (string) $params['to'] ) : '';
+		$type      = isset( $params['form_type'] ) ? sanitize_key( (string) $params['form_type'] ) : 'contact';
+		$list      = isset( $params['list_id'] ) ? (string) $params['list_id'] : '';
+		$signature = isset( $params[ self::DELIVERY_FIELD ] ) ? (string) $params[ self::DELIVERY_FIELD ] : '';
+		// Unsigned, or signed for a different set of values: fall back to
+		// Form Settings rather than refusing. A visitor whose page was cached
+		// before the owner changed the form has done nothing wrong, and an
+		// enquiry to the site's own address is the safe reading. This runs for
+		// every caller, the html2wp_theme_form_handle filter included: a
+		// converted theme forwards the raw request body, so "the theme decided
+		// the recipient" is not a thing this side can tell apart from "the
+		// visitor retyped it".
+		if ( '' === $signature || ! hash_equals( self::delivery_signature( $form_id, $recipient, $type, $list ), $signature ) ) {
+			$recipient = '';
+			$type      = 'contact';
+			$list      = '';
+		}
+		$params['to']        = $recipient;
+		$params['form_type'] = 'list' === $type ? 'list' : 'contact';
+		$params['list_id']   = $list;
 
 		$fields = array();
 		foreach ( $params as $key => $value ) {
@@ -258,6 +291,31 @@ class Clara_VE_Forms {
 
 		return self::respond( $redirect );
 	}
+
+	/**
+	 * The signature over one form's delivery choice, and the hidden field that
+	 * carries it. Rendered by Clara_VE_Tokens::connect_form for every form this
+	 * plugin connects, verified in handle_submit above.
+	 *
+	 * @param string $form_id   Form name.
+	 * @param string $recipient Per-form recipient, or ''.
+	 * @param string $type      'contact' or 'list'.
+	 * @param string $list      List id, or ''.
+	 * @return string
+	 */
+	public static function delivery_signature( $form_id, $recipient, $type, $list ) {
+		return wp_hash( 'clara_ve_form_delivery|' . $form_id . '|' . trim( (string) $recipient ) . '|' . $type . '|' . $list );
+	}
+
+	/**
+	 * @see delivery_signature()
+	 * @return string
+	 */
+	public static function delivery_field( $form_id, $recipient, $type, $list ) {
+		return '<input type="hidden" name="' . self::DELIVERY_FIELD . '" value="' .
+			esc_attr( self::delivery_signature( $form_id, $recipient, $type, $list ) ) . '">';
+	}
+
 
 	/**
 	 * Proof that this submission came from a form this site rendered.
@@ -389,15 +447,24 @@ class Clara_VE_Forms {
 	 */
 	private static function verify_timestamp( $value ) {
 		$parts = explode( '.', (string) $value );
-		if ( 2 !== count( $parts ) ) {
+		if ( count( $parts ) < 2 ) {
 			return false;
 		}
-		list( $ts, $sig ) = $parts;
+		// The signature is always the last part; everything before it is the
+		// signed payload, of which the first field is the timestamp. This
+		// plugin signs the timestamp alone ("1757….<sig>"); a converted theme
+		// signs the timestamp plus a flag of its own ("1757….1.<sig>"). Both
+		// use wp_salt( 'auth' ), so verifying the whole prefix reads both —
+		// and a plugin that only understood its own two-part field silently
+		// discarded every submission a converted theme forwarded.
+		$sig  = (string) array_pop( $parts );
+		$ts   = (string) $parts[0];
+		$data = implode( '.', $parts );
 
 		if ( '' === $ts || ! ctype_digit( $ts ) ) {
 			return false;
 		}
-		$expected = hash_hmac( 'sha256', $ts, wp_salt( 'auth' ) );
+		$expected = hash_hmac( 'sha256', $data, wp_salt( 'auth' ) );
 		if ( ! hash_equals( $expected, (string) $sig ) ) {
 			return false;
 		}

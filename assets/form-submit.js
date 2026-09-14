@@ -108,7 +108,8 @@
 						return;
 					}
 					setLabel( button, config.sent || 'Sent!' );
-					message( form, config.thanks || 'Thanks — check your inbox.', false );
+					// A form block can carry its own sentence; everything else says the site-wide one.
+					message( form, form.getAttribute( 'data-cve-thanks' ) || config.thanks || 'Thanks — check your inbox.', false );
 					// Left disabled: the work is done, and a re-enabled button
 					// under a "Sent!" label invites a second submission that
 					// only trips the rate limit.

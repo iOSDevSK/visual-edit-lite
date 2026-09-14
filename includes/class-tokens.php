@@ -755,9 +755,23 @@ class Clara_VE_Tokens {
 	 * @param string $form_html The captured <form>…</form> markup, verbatim.
 	 * @return string
 	 */
-	private static function render_form( $atts, $form_html ) {
+	/**
+	 * Connect a form's markup to the submission backend: action, origin token, honeypot,
+	 * time-trap and consent. Shared by [wp-form] tokens and the form blocks, which pass
+	 * their own endpoint.
+	 *
+	 * @param array  $atts      id, to, redirect, type, list.
+	 * @param string $form_html Markup containing one <form>.
+	 * @param string $action    Submit endpoint; the token endpoint when empty.
+	 * @return string
+	 */
+	public static function connect_form( $atts, $form_html, $action = '' ) {
+		return self::render_form( $atts, $form_html, $action );
+	}
+
+	private static function render_form( $atts, $form_html, $action = '' ) {
 		$form_id = isset( $atts['id'] ) ? sanitize_key( $atts['id'] ) : 'form';
-		$action  = esc_url( rest_url( 'clara-ve/v1/submit' ) );
+		$action  = esc_url( '' !== $action ? $action : rest_url( 'clara-ve/v1/submit' ) );
 
 		if ( preg_match( '/<form\b[^>]*\baction\s*=\s*"[^"]*"/i', $form_html ) ) {
 			$form_html = preg_replace( '/(<form\b[^>]*\baction\s*=\s*")[^"]*(")/i', '$1' . $action . '$2', $form_html, 1 );
@@ -772,15 +786,28 @@ class Clara_VE_Tokens {
 		// action) — reusing it here would collide and 403 every submission.
 		// The same core method is why the value is a site-scoped token rather
 		// than a WP nonce; the full reasoning is on Clara_VE_Forms::origin_field().
+		$to   = trim( (string) ( isset( $atts['to'] ) ? $atts['to'] : '' ) );
+		// sanitize_key here because handle_submit() sanitizes what comes back:
+		// a hand-written token saying type="Contact" would otherwise sign one
+		// spelling and verify another, and silently lose the owner's recipient.
+		$type = sanitize_key( (string) ( isset( $atts['type'] ) ? $atts['type'] : 'contact' ) );
+		$list = (string) ( isset( $atts['list'] ) ? $atts['list'] : '' );
+
 		$hidden  = Clara_VE_Forms::origin_field();
 		$hidden .= '<input type="hidden" name="form_id" value="' . esc_attr( $form_id ) . '">';
-		$hidden .= '<input type="hidden" name="to" value="' . esc_attr( isset( $atts['to'] ) ? $atts['to'] : '' ) . '">';
+		$hidden .= '<input type="hidden" name="to" value="' . esc_attr( $to ) . '">';
 		$hidden .= '<input type="hidden" name="redirect" value="' . esc_attr( isset( $atts['redirect'] ) ? $atts['redirect'] : '' ) . '">';
 		// What this form is FOR. Carried in the markup rather than looked up at
 		// submit time because the source is the single place the owner set it,
 		// and a lookup would need to know which page the post came from.
-		$hidden .= '<input type="hidden" name="form_type" value="' . esc_attr( isset( $atts['type'] ) ? $atts['type'] : 'contact' ) . '">';
-		$hidden .= '<input type="hidden" name="list_id" value="' . esc_attr( isset( $atts['list'] ) ? $atts['list'] : '' ) . '">';
+		$hidden .= '<input type="hidden" name="form_type" value="' . esc_attr( $type ) . '">';
+		$hidden .= '<input type="hidden" name="list_id" value="' . esc_attr( $list ) . '">';
+		// Those three decide where the submission goes and are visible to
+		// whoever fills the form in, so they are signed here and verified in
+		// Clara_VE_Forms::handle_submit(); anything retyped falls back to Form
+		// Settings. Emitted for every form this plugin connects — token or
+		// block — so there is one field and one check, not two of each.
+		$hidden .= Clara_VE_Forms::delivery_field( $form_id, $to, $type, $list );
 		// Honeypot: real visitors never see or fill this field.
 		$hidden .= '<input type="text" name="cve_hp" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">';
 		// Signed render time, for the time-trap in Clara_VE_Forms::handle_submit().
