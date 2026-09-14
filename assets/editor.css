@@ -1508,3 +1508,37 @@ which is usually more than what
 .cve-panel .cve-tab { flex: 1; border: 0; background: transparent; color: #b2b2bb; padding: 6px 4px; border-radius: 8px; font: inherit; font-size: 12px; cursor: pointer; }
 .cve-panel .cve-tab[aria-selected="true"] { background: #45454f; color: #fff; }
 .cve-panel .cve-tab-hidden { display: none !important; }
+
+/* A field's way up to its form.
+   Sits directly under the header, in the form green used everywhere else for
+   "this is a form", so it reads as a place rather than as one more setting. */
+.cve-form-up {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin: 8px 0 2px;
+	padding: 7px 10px;
+	border: 1px solid rgba( 22, 163, 74, 0.45 );
+	border-radius: 8px;
+	background: rgba( 22, 163, 74, 0.12 );
+	color: #a7f3c4;
+	font-size: 12px;
+}
+
+.cve-form-up-btn {
+	border: 0;
+	border-radius: 6px;
+	background: #16a34a;
+	color: #fff;
+	cursor: pointer;
+	font: inherit;
+	font-weight: 600;
+	padding: 4px 9px;
+	white-space: nowrap;
+}
+
+.cve-form-up-btn:hover,
+.cve-form-up-btn:focus-visible {
+	background: #15803d;
+}

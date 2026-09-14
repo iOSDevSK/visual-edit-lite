@@ -204,6 +204,11 @@ the plugin is deleted.
 == Changelog ==
 
 = 1.27.0 =
+* A form whose fields cover it completely — a one-row signup is an input and a
+  button, edge to edge — could not be connected at all: there was no pixel of
+  the form left to click, and what a form does when someone submits it is only
+  offered on the form itself. A field now says **Part of a form** and offers
+  the way up, opening the form on the tab that holds those settings.
 * **A theme converted from HTML no longer white-screens its visitors.** Such a
   theme carries its own form runtime that asks this plugin about Cloudflare
   Turnstile as soon as it is loaded; this edition has no Turnstile and had no

@@ -3065,6 +3065,30 @@
 			finishEdit( data.commit !== false );
 			return;
 		}
+		// Select an element the host names, as if it had been clicked. The one
+		// thing this exists for today: a <form> whose fields cover it edge to
+		// edge — a single-row signup is an input and a button and nothing
+		// else — so there is no pixel of the form left to click, and the
+		// settings that say where it SENDS are only offered on the form
+		// itself. No pointer, so the host places its popup beside the element
+		// rather than at a click.
+		if ( data.type === 'select-path' ) {
+			el = findById( data.id );
+			if ( ! el ) {
+				return;
+			}
+			if ( activeEdit && activeEdit.el !== el ) {
+				finishEdit( true );
+			}
+			clearSelected();
+			el.setAttribute( 'data-cve-selected', 'true' );
+			rememberOriginal( el );
+			rememberOriginalMedia( el );
+			el.scrollIntoView( { block: 'center', behavior: 'smooth' } );
+			post( { type: 'select', target: targetFrom( el ) } );
+			return;
+		}
+
 		if ( data.type === 'deselect' ) {
 			finishEdit( true );
 			clearSelected();

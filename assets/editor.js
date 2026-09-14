@@ -4080,6 +4080,35 @@
 		head.appendChild( close );
 		panel.appendChild( head );
 
+		// A field inside a form: one line up to the form itself.
+		//
+		// Where a form SENDS belongs to the form, not to one of its fields, so
+		// the FORM section is offered on the form alone (see the note beside
+		// appendFormSection below — offered on every field it would appear
+		// four times, each looking like it governs the box it was opened
+		// from). That was fine until a form whose fields cover it completely:
+		// a one-row signup is an input and a button edge to edge, there is no
+		// pixel of <form> left to click, and connecting it became impossible
+		// by clicking — which is the only way this editor works. So the panel
+		// says where it is and offers the way up. One link, not a second copy
+		// of the controls.
+		if ( target.formPath && target.formPath !== target.id ) {
+			var upRow = el( 'div', 'cve-form-up' );
+			upRow.appendChild( el( 'span', '', 'Part of a form' ) );
+			var upBtn = el( 'button', 'cve-form-up-btn', 'Form settings \u2192' );
+			upBtn.title = 'Select the form itself, where you choose what happens when someone submits it';
+			upBtn.addEventListener( 'click', function () {
+				// The form's own panel opens on Section, where FORM is — the
+				// point of the trip. Without this it opens on whatever tab was
+				// last used and the settings the user came for are one more
+				// click away, in a panel they did not choose to open.
+				pendingPanelTab = 'section';
+				postToFrame( { type: 'select-path', id: target.formPath } );
+			} );
+			upRow.appendChild( upBtn );
+			panel.appendChild( upRow );
+		}
+
 		if ( target.menuZone ) {
 			var origTitle = target.fields.text || '';
 			var origUrl = target.fields.href || '';
@@ -5316,6 +5345,9 @@
 		observer.observe( node );
 	}
 	var lastPanelTab = 'content';
+	// Set by the "Form settings" link so the panel it opens lands on the tab
+	// that holds FORM. Consumed once, by the next tabbedPanel().
+	var pendingPanelTab = '';
 	function panelTabFor( name ) {
 		if ( /^(TEXT|LINK|LINK TARGET|SOURCES|POSTER|PLACEHOLDER|LOAD MORE|MENU ITEM|ORNAMENT.*|POSTS ZONE|MENU ZONE|ARTICLE FIELD|HOLDS .*|FROM THE POST)$/.test( name ) ) {
 			return 'content';
@@ -5327,7 +5359,10 @@
 		var tab = 'content';
 		var used = {};
 		[].slice.call( panel.children ).forEach( function ( child ) {
-			if ( child === head || child.classList.contains( 'cve-foot' ) ) {
+			// The header, the footer and the "part of a form" link belong to no
+			// tab: they say where you are and what you can do from here, so
+			// they stay put while the tabs change under them.
+			if ( child === head || child.classList.contains( 'cve-foot' ) || child.classList.contains( 'cve-form-up' ) ) {
 				return;
 			}
 			if ( child.classList.contains( 'cve-section' ) ) {
@@ -5365,7 +5400,9 @@
 			bar.appendChild( button );
 		} );
 		head.parentNode.insertBefore( bar, head.nextSibling );
-		show( used[ lastPanelTab ] ? lastPanelTab : names[0][0] );
+		var wanted = pendingPanelTab && used[ pendingPanelTab ] ? pendingPanelTab : '';
+		pendingPanelTab = '';
+		show( wanted ? wanted : ( used[ lastPanelTab ] ? lastPanelTab : names[0][0] ) );
 	}
 
 	function closePanelSilent() {
