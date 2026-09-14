@@ -54,22 +54,41 @@ php "$SRC/tools/check-js-symbols.php" "$SRC"/assets/*.js >/dev/null \
 # ------------------------------------------------------- Lite purity gates ---
 # Each of these must match NOTHING outside comments that deliberately explain
 # the absence. A hit means the derivation missed something.
+#
+# tools/, docs/ and tests/ are scanned by none of them: none of the three is
+# packed (see the rsync excludes below), and all three have to be able to NAME
+# what Lite does not have in order to document or assert it.
 purity() {
-  local label="$1" pattern="$2"
+  local label="$1" pattern="$2" allow="${3:-}"
   local hits
   hits="$(grep -rniE "$pattern" "$SRC" \
             --include='*.php' --include='*.js' --include='*.css' \
-            --exclude-dir=.git --exclude-dir=tools --exclude-dir=docs \
+            --exclude-dir=.git --exclude-dir=tools --exclude-dir=docs --exclude-dir=tests \
             --exclude=readme.txt --exclude=README.md || true)"
   # visual-edit-lite.php's own "what Lite does not contain" note is allowed to
   # name the removed features; nothing else is.
   hits="$(printf '%s\n' "$hits" | grep -v 'visual-edit-lite\.php:[0-9]*: \* ' || true)"
+  # A named, deliberate exception: the STAND-DOWN for a feature Lite does not
+  # have. Naming it is not having it, and a converted theme asks this plugin
+  # about it by name — see the Turnstile gate below.
+  [ -n "$allow" ] && hits="$(printf '%s\n' "$hits" | grep -vE "$allow" || true)"
   [ -z "$hits" ] || { echo "$hits" >&2; fail "$label"; }
 }
 purity "licence gate survived"      'clara_ve_is_licensed|UNLICENSED_ENTRIES|licenseKey|licenseSignature'
 purity "updater survived"           'updatepulse|UpdatePulse|plugin-update-checker|Puc_v'
 purity "AI code survived"           'Clara_VE_AI_|clara-ve-ai|clara_ve_ai_|ai-chat|ai-image|ai-video|ai-job|openrouter|OpenRouter'
-purity "Turnstile survived"         'turnstile'
+# Turnstile, in two halves.
+#
+# Lite must not IMPLEMENT it — no secret, no verify call, no widget, no posted
+# response read. But it must still ANSWER for it: a theme converted from static
+# HTML carries its own form runtime that calls
+# Clara_VE_Form_Settings::turnstile_enabled() the moment the class exists, and
+# in 1.27.0 the missing method was a fatal on every public page holding a form.
+# So the two stand-down methods in class-form-settings.php are allowed by name,
+# and an implementation is refused wherever it appears.
+purity "Turnstile survived"         'turnstile' 'includes/class-form-settings\.php:'
+purity "Turnstile implementation survived" \
+  'turnstile_secret|turnstile_ok|cf-turnstile-response|challenges\.cloudflare\.com|OPT_TURNSTILE'
 purity "theme export survived"      'Clara_VE_Export_Page|clara_ve_export_theme'
 
 # The gate that runs the OTHER way: something that must still be HERE.

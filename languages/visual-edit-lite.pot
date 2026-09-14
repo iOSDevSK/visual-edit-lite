@@ -290,8 +290,8 @@ msgstr ""
 #: includes/class-editor-page.php:366
 #: includes/class-editor-page.php:400
 #: assets/gutenberg.js:70
-#: assets/workspace.js:1430
-#: assets/workspace.js:1459
+#: assets/workspace.js:1435
+#: assets/workspace.js:1464
 msgid "Search appearance"
 msgstr ""
 
@@ -300,8 +300,8 @@ msgstr ""
 #: assets/workspace-history.js:131
 #: assets/workspace-history.js:132
 #: assets/workspace-history.js:135
-#: assets/workspace.js:1449
-#: assets/workspace.js:1449
+#: assets/workspace.js:1454
+#: assets/workspace.js:1454
 msgid "History"
 msgstr ""
 
@@ -319,7 +319,7 @@ msgstr ""
 
 #: includes/class-editor-page.php:371
 #: assets/workspace-history.js:121
-#: assets/workspace.js:1456
+#: assets/workspace.js:1461
 msgid "Save"
 msgstr ""
 
@@ -711,60 +711,60 @@ msgstr ""
 msgid "•••••••• (saved — leave blank to keep)"
 msgstr ""
 
-#: includes/class-form-settings.php:708
+#: includes/class-form-settings.php:735
 msgid "By submitting this form you agree to us storing and using the details above to reply to you."
 msgstr ""
 
-#: includes/class-form-settings.php:782
+#: includes/class-form-settings.php:809
 #: includes/class-optin.php:92
 #: includes/class-optin.php:193
 #: includes/class-optin.php:220
 msgid "You need administrator permissions."
 msgstr ""
 
-#: includes/class-form-settings.php:791
+#: includes/class-form-settings.php:818
 msgid "Visual Edit — test email"
 msgstr ""
 
-#: includes/class-form-settings.php:792
+#: includes/class-form-settings.php:819
 msgid "This is a test email. If you received it, your email delivery settings are working."
 msgstr ""
 
-#: includes/class-forms.php:98
-#: includes/class-forms.php:100
+#: includes/class-forms.php:87
+#: includes/class-forms.php:89
 msgid "Form Submissions"
 msgstr ""
 
-#: includes/class-forms.php:101
+#: includes/class-forms.php:90
 msgid "Submission"
 msgstr ""
 
-#: includes/class-forms.php:153
+#: includes/class-forms.php:142
 msgid "This page has been open too long — please reload it and send the form again."
 msgstr ""
 
-#: includes/class-forms.php:156
+#: includes/class-forms.php:145
 msgid "Security check failed — please reload the page and try again."
 msgstr ""
 
-#: includes/class-forms.php:181
+#: includes/class-forms.php:170
 msgid "Please wait a moment before submitting again."
 msgstr ""
 
-#: includes/class-forms.php:253
-#: includes/class-import-plan.php:1478
+#: includes/class-forms.php:244
+#: includes/class-import-plan.php:1490
 msgid "%1$s — %2$s"
 msgstr ""
 
-#: includes/class-forms.php:522
+#: includes/class-forms.php:505
 msgid "New form submission: %s"
 msgstr ""
 
-#: includes/class-forms.php:560
+#: includes/class-forms.php:543
 msgid "Thanks — we got your message (%s)"
 msgstr ""
 
-#: includes/class-forms.php:563
+#: includes/class-forms.php:546
 msgid "Thanks for getting in touch — your message reached %s and someone will read it shortly.\n\nThis is an automatic confirmation; there's no need to reply to it."
 msgstr ""
 
@@ -1058,7 +1058,7 @@ msgstr ""
 #: includes/class-parked-page.php:156
 #: includes/class-parked-page.php:404
 #: assets/gutenberg.js:66
-#: assets/workspace.js:1476
+#: assets/workspace.js:1481
 msgid "Pages"
 msgstr ""
 
@@ -1090,7 +1090,7 @@ msgstr ""
 #: includes/class-import-page.php:172
 #: includes/class-parked-page.php:409
 #: assets/gutenberg.js:74
-#: assets/workspace.js:1434
+#: assets/workspace.js:1439
 msgid "Form submissions"
 msgstr ""
 
@@ -1271,105 +1271,105 @@ msgstr ""
 msgid "This site already holds editable content created for %s. Importing another theme's content on top of it would leave the site a mix of two designs, so nothing was imported. Give this theme its own WordPress install, or activate that theme again to keep working on it."
 msgstr ""
 
-#: includes/class-import-plan.php:709
+#: includes/class-import-plan.php:721
 msgid "%d image had the same name as another theme's but different contents, so it was stored separately."
 msgid_plural "%d images had the same names as another theme's but different contents, so they were stored separately."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:721
+#: includes/class-import-plan.php:733
 msgid "%d image added to the Media Library."
 msgid_plural "%d images added to the Media Library."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:771
+#: includes/class-import-plan.php:783
 msgid "%d category added."
 msgid_plural "%d categories added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:849
+#: includes/class-import-plan.php:861
 msgid "%d blog post added."
 msgid_plural "%d blog posts added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:957
+#: includes/class-import-plan.php:969
 msgid "%d page was empty and has been filled from its stored content."
 msgid_plural "%d pages were empty and have been filled from their stored content."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1054
+#: includes/class-import-plan.php:1066
 msgid "%d page added."
 msgid_plural "%d pages added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1062
+#: includes/class-import-plan.php:1074
 msgid "NOT imported — %s"
 msgstr ""
 
-#: includes/class-import-plan.php:1126
+#: includes/class-import-plan.php:1138
 msgid "Freed the address /%s/ from a media file so the imported page could use it."
 msgstr ""
 
-#: includes/class-import-plan.php:1139
+#: includes/class-import-plan.php:1151
 msgid "The address /%1$s/ was already taken by your page \"%2$s\", so the imported page got a slightly different one. Links in the design that point at /%1$s/ will reach your page, not the imported one."
 msgstr ""
 
-#: includes/class-import-plan.php:1162
+#: includes/class-import-plan.php:1174
 msgid "Reused WordPress's own placeholder page \"%s\" so the imported page keeps its proper address."
 msgstr ""
 
-#: includes/class-import-plan.php:1273
+#: includes/class-import-plan.php:1285
 msgid "Menu \"%1$s\" added with %2$d links."
 msgstr ""
 
-#: includes/class-import-plan.php:1287
+#: includes/class-import-plan.php:1299
 msgid "Shown in: %s."
 msgstr ""
 
-#: includes/class-import-plan.php:1293
+#: includes/class-import-plan.php:1305
 msgid "It is not shown anywhere yet: this theme does not register the navigation position it was built for, so there is nothing to attach it to. A theme made by the converter declares that in inc/visual-edit.php."
 msgstr ""
 
-#: includes/class-import-plan.php:1294
+#: includes/class-import-plan.php:1306
 msgid "It is not shown anywhere yet: another menu already occupies that position. Assign it under Appearance → Menus if you want this one instead."
 msgstr ""
 
-#: includes/class-import-plan.php:1317
+#: includes/class-import-plan.php:1329
 msgid "%d setting applied."
 msgid_plural "%d settings applied."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1370
+#: includes/class-import-plan.php:1382
 msgid "Permalinks switched to %s — the imported pages need path-style links to resolve."
 msgstr ""
 
-#: includes/class-import-plan.php:1393
+#: includes/class-import-plan.php:1405
 msgid "The front page is set as a static page, so it can carry its own title, description and social preview."
 msgstr ""
 
-#: includes/class-import-plan.php:1410
+#: includes/class-import-plan.php:1422
 msgid "Note: the bundle used \"%s\" as its blog page. It lists posts through its own design, so do NOT set it under Settings → Reading → Posts page."
 msgstr ""
 
-#: includes/class-import-plan.php:1443
+#: includes/class-import-plan.php:1455
 msgid "%d address from the original site now redirects to its new page, so existing links and search results keep working."
 msgid_plural "%d addresses from the original site now redirect to their new pages, so existing links and search results keep working."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1504
+#: includes/class-import-plan.php:1516
 msgid "%d form submission added."
 msgid_plural "%d form submissions added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1549
+#: includes/class-import-plan.php:1561
 msgid "%d subscriber added."
 msgid_plural "%d subscribers added."
 msgstr[0] ""
@@ -2178,7 +2178,7 @@ msgid "Edit the complete site"
 msgstr ""
 
 #: assets/gutenberg.js:67
-#: assets/workspace.js:1476
+#: assets/workspace.js:1481
 msgid "Posts"
 msgstr ""
 
@@ -2187,8 +2187,8 @@ msgid "More Visual Edit tools"
 msgstr ""
 
 #: assets/gutenberg.js:73
-#: assets/workspace.js:1433
-#: assets/workspace.js:1461
+#: assets/workspace.js:1438
+#: assets/workspace.js:1466
 msgid "SEO & sharing settings"
 msgstr ""
 
@@ -2407,7 +2407,7 @@ msgid "Synced pattern"
 msgstr ""
 
 #: assets/workspace-history.js:57
-#: assets/workspace.js:1476
+#: assets/workspace.js:1481
 msgid "Navigation"
 msgstr ""
 
@@ -2430,7 +2430,7 @@ msgstr ""
 
 #: assets/workspace-history.js:113
 #: assets/workspace.js:226
-#: assets/workspace.js:1487
+#: assets/workspace.js:1492
 msgid "Retry"
 msgstr ""
 
@@ -2566,7 +2566,7 @@ msgid "Edit gradient stops"
 msgstr ""
 
 #: assets/workspace.js:223
-#: assets/workspace.js:1429
+#: assets/workspace.js:1434
 msgid "Google Fonts"
 msgstr ""
 
@@ -2575,8 +2575,8 @@ msgid "Save fonts updates the font library for the whole site."
 msgstr ""
 
 #: assets/workspace.js:228
-#: assets/workspace.js:1339
-#: assets/workspace.js:1485
+#: assets/workspace.js:1344
+#: assets/workspace.js:1490
 msgid "Search"
 msgstr ""
 
@@ -3009,7 +3009,7 @@ msgstr ""
 
 #: assets/workspace.js:805
 #: assets/workspace.js:808
-#: assets/workspace.js:1450
+#: assets/workspace.js:1455
 msgid "Section"
 msgstr ""
 
@@ -3101,17 +3101,17 @@ msgid "Screen size"
 msgstr ""
 
 #: assets/workspace.js:850
-#: assets/workspace.js:1446
+#: assets/workspace.js:1451
 msgid "Desktop"
 msgstr ""
 
 #: assets/workspace.js:850
-#: assets/workspace.js:1446
+#: assets/workspace.js:1451
 msgid "Tablet"
 msgstr ""
 
 #: assets/workspace.js:850
-#: assets/workspace.js:1446
+#: assets/workspace.js:1451
 msgid "Mobile"
 msgstr ""
 
@@ -3213,200 +3213,200 @@ msgstr ""
 msgid "Adds a copy of the last item"
 msgstr ""
 
-#: assets/workspace.js:1322
+#: assets/workspace.js:1327
 msgid "Open Visual Edit settings"
 msgstr ""
 
-#: assets/workspace.js:1337
-#: assets/workspace.js:1450
+#: assets/workspace.js:1342
+#: assets/workspace.js:1455
 msgid "Add a section"
 msgstr ""
 
-#: assets/workspace.js:1338
+#: assets/workspace.js:1343
 msgid "Sections come from your theme, so they already match the design. The new section is added after the selected one."
 msgstr ""
 
-#: assets/workspace.js:1339
+#: assets/workspace.js:1344
 msgid "Search sections…"
 msgstr ""
 
-#: assets/workspace.js:1340
+#: assets/workspace.js:1345
 msgid "This theme offers no sections that can be added here."
 msgstr ""
 
-#: assets/workspace.js:1341
+#: assets/workspace.js:1346
 msgid "Theme sections"
 msgstr ""
 
-#: assets/workspace.js:1425
+#: assets/workspace.js:1430
 msgid "Page settings"
 msgstr ""
 
-#: assets/workspace.js:1426
+#: assets/workspace.js:1431
 msgid "Site styles"
 msgstr ""
 
-#: assets/workspace.js:1427
+#: assets/workspace.js:1432
 msgid "Page structure (list view)"
 msgstr ""
 
-#: assets/workspace.js:1428
+#: assets/workspace.js:1433
 msgid "All blocks"
 msgstr ""
 
-#: assets/workspace.js:1431
+#: assets/workspace.js:1436
 msgid "Lock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1431
+#: assets/workspace.js:1436
 msgid "Unlock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1432
+#: assets/workspace.js:1437
 msgid "Hide WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1432
+#: assets/workspace.js:1437
 msgid "Show WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1435
+#: assets/workspace.js:1440
 msgid "Open in the WordPress editor"
 msgstr ""
 
-#: assets/workspace.js:1436
-#: assets/workspace.js:1502
+#: assets/workspace.js:1441
+#: assets/workspace.js:1507
 msgid "Back to the dashboard"
 msgstr ""
 
-#: assets/workspace.js:1444
+#: assets/workspace.js:1449
 msgid "Visual Edit"
 msgstr ""
 
-#: assets/workspace.js:1445
+#: assets/workspace.js:1450
 msgid "Your website"
 msgstr ""
 
-#: assets/workspace.js:1445
+#: assets/workspace.js:1450
 msgid "Switch page, template or part"
 msgstr ""
 
-#: assets/workspace.js:1446
+#: assets/workspace.js:1451
 msgid "Device"
 msgstr ""
 
-#: assets/workspace.js:1447
-#: assets/workspace.js:1447
 #: assets/workspace.js:1452
+#: assets/workspace.js:1452
+#: assets/workspace.js:1457
 msgid "Undo"
 msgstr ""
 
-#: assets/workspace.js:1448
-#: assets/workspace.js:1448
+#: assets/workspace.js:1453
+#: assets/workspace.js:1453
 msgid "Redo"
 msgstr ""
 
-#: assets/workspace.js:1449
+#: assets/workspace.js:1454
 msgid "Saved versions and restore"
 msgstr ""
 
-#: assets/workspace.js:1450
+#: assets/workspace.js:1455
 msgid "Add a section from your theme"
 msgstr ""
 
-#: assets/workspace.js:1451
+#: assets/workspace.js:1456
 msgid "Design unlocked"
 msgstr ""
 
-#: assets/workspace.js:1451
+#: assets/workspace.js:1456
 msgid "Lock pattern design again"
 msgstr ""
 
-#: assets/workspace.js:1452
+#: assets/workspace.js:1457
 msgid "Version restored — Save to keep it"
 msgstr ""
 
-#: assets/workspace.js:1453
+#: assets/workspace.js:1458
 msgid "Saving…"
 msgstr ""
 
-#: assets/workspace.js:1453
+#: assets/workspace.js:1458
 msgid "Save failed — changes kept"
 msgstr ""
 
-#: assets/workspace.js:1453
+#: assets/workspace.js:1458
 msgid "unsaved"
 msgstr ""
 
-#: assets/workspace.js:1453
+#: assets/workspace.js:1458
 msgid "Saved"
 msgstr ""
 
-#: assets/workspace.js:1454
+#: assets/workspace.js:1459
 msgid "Preview"
 msgstr ""
 
-#: assets/workspace.js:1454
+#: assets/workspace.js:1459
 msgid "View site"
 msgstr ""
 
-#: assets/workspace.js:1455
-#: assets/workspace.js:1455
+#: assets/workspace.js:1460
+#: assets/workspace.js:1460
 msgid "More"
 msgstr ""
 
-#: assets/workspace.js:1461
+#: assets/workspace.js:1466
 msgid "This site does not print search titles and descriptions from Visual Edit: the theme provides its own, or the site-wide SEO & sharing settings are not enabled yet. Values saved here are kept."
 msgstr ""
 
-#: assets/workspace.js:1463
+#: assets/workspace.js:1468
 msgid "Click anything on the page to change it."
 msgstr ""
 
-#: assets/workspace.js:1463
+#: assets/workspace.js:1468
 msgid "Got it"
 msgstr ""
 
-#: assets/workspace.js:1476
+#: assets/workspace.js:1481
 msgid "Templates"
 msgstr ""
 
-#: assets/workspace.js:1476
+#: assets/workspace.js:1481
 msgid "Template parts"
 msgstr ""
 
-#: assets/workspace.js:1476
+#: assets/workspace.js:1481
 msgid "Synced patterns"
 msgstr ""
 
-#: assets/workspace.js:1478
+#: assets/workspace.js:1483
 msgid "There are unsaved changes. Leave this document?"
 msgstr ""
 
-#: assets/workspace.js:1484
+#: assets/workspace.js:1489
 msgid "Show"
 msgstr ""
 
-#: assets/workspace.js:1485
+#: assets/workspace.js:1490
 msgid "Search…"
 msgstr ""
 
-#: assets/workspace.js:1487
+#: assets/workspace.js:1492
 msgid "Could not load this content."
 msgstr ""
 
-#: assets/workspace.js:1488
+#: assets/workspace.js:1493
 msgid "No results."
 msgstr ""
 
-#: assets/workspace.js:1496
+#: assets/workspace.js:1501
 msgid "Previous"
 msgstr ""
 
-#: assets/workspace.js:1497
+#: assets/workspace.js:1502
 msgid "Next"
 msgstr ""
 
-#: assets/workspace.js:1501
+#: assets/workspace.js:1506
 msgid "Open the WordPress Site Editor"
 msgstr ""
