@@ -171,7 +171,13 @@ ASSERT=$(wpcli eval '
 $out = array();
 $out[] = array( "no licence gate", ! function_exists( "clara_ve_is_licensed" ) );
 $out[] = array( "no Pro classes", ! ( class_exists( "Clara_VE_AI_Settings" ) || class_exists( "Clara_VE_AI_Chat" ) || class_exists( "Clara_VE_AI_Jobs" ) || class_exists( "Clara_VE_AI_Image" ) || class_exists( "Clara_VE_AI_Video" ) || class_exists( "Clara_VE_Export_Page" ) ) );
-$out[] = array( "no Turnstile", ! method_exists( "Clara_VE_Form_Settings", "turnstile_enabled" ) );
+// Not "no Turnstile" — that assertion was true and wrong. A converted theme
+// calls turnstile_enabled() by name whenever this class is loaded, so the
+// method absent is a fatal on its public pages, which is what 1.27.0 shipped
+// for an hour. What Lite must not have is an IMPLEMENTATION: the method is
+// here, it stands down, and there is no secret and no verifier behind it.
+$out[] = array( "Turnstile stands down, not missing", method_exists( "Clara_VE_Form_Settings", "turnstile_enabled" ) && false === Clara_VE_Form_Settings::turnstile_enabled() && "" === Clara_VE_Form_Settings::turnstile_site_key() );
+$out[] = array( "no Turnstile implementation", ! method_exists( "Clara_VE_Form_Settings", "turnstile_secret" ) && ! method_exists( "Clara_VE_Forms", "turnstile_ok" ) );
 $routes = array_keys( rest_get_server()->get_routes() );
 $out[] = array( "no ai-* REST routes", 0 === count( preg_grep( "#/ai-#", $routes ) ) );
 $out[] = array( "import-image survives", 0 < count( preg_grep( "#import-image#", $routes ) ) );
