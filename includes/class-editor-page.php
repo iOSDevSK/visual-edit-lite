@@ -150,7 +150,7 @@ class Clara_VE_Editor_Page {
 		return $out;
 	}
 
-	private static function block_presets() {
+	public static function block_presets() {
 		if ( clara_ve_active_theme_is_ours() || ! function_exists( 'wp_get_global_settings' ) ) {
 			return array();
 		}
@@ -249,13 +249,21 @@ class Clara_VE_Editor_Page {
 			return;
 		}
 
-		if ( ! clara_ve_user_can_edit() ) {
+		if ( Clara_VE_Native_Gutenberg::is_native_mode() ? ! current_user_can( 'edit_theme_options' ) : ! clara_ve_user_can_edit() ) {
+			return;
+		}
+		if ( Clara_VE_Native_Gutenberg::is_native_mode() ) {
+			Clara_VE_Native_Gutenberg::enqueue_host();
 			return;
 		}
 
 		wp_enqueue_media();
 		wp_enqueue_style( 'clara-ve-editor', CLARA_VE_URL . 'assets/editor.css', array(), clara_ve_asset_version( 'assets/editor.css' ) );
-		wp_enqueue_script( 'clara-ve-editor', CLARA_VE_URL . 'assets/editor.js', array( 'wp-api-fetch', 'media-editor' ), clara_ve_asset_version( 'assets/editor.js' ), true );
+		wp_enqueue_script( 'clara-ve-popup-values', CLARA_VE_URL . 'assets/popup-values.js', array(), clara_ve_asset_version( 'assets/popup-values.js' ), true );
+		wp_enqueue_script( 'clara-ve-api', CLARA_VE_URL . 'assets/ve-api.js', array(), clara_ve_asset_version( 'assets/ve-api.js' ), true );
+		wp_enqueue_script( 'clara-ve-editor', CLARA_VE_URL . 'assets/editor.js', array( 'wp-api-fetch', 'wp-hooks', 'media-editor', 'clara-ve-popup-values', 'clara-ve-api' ), clara_ve_asset_version( 'assets/editor.js' ), true );
+		/** This action is documented in includes/class-native-gutenberg.php */
+		do_action( 'clara_ve_workspace_enqueue', false, false, 'html' );
 
 		wp_localize_script(
 			'clara-ve-editor',
@@ -334,8 +342,12 @@ class Clara_VE_Editor_Page {
 	}
 
 	public static function render() {
-		if ( ! clara_ve_user_can_edit() ) {
+		if ( Clara_VE_Native_Gutenberg::is_native_mode() ? ! current_user_can( 'edit_theme_options' ) : ! clara_ve_user_can_edit() ) {
 			wp_die( esc_html__( 'You need theme-editing and unfiltered HTML permissions to use the visual editor.', 'visual-edit-lite' ) );
+		}
+		if ( Clara_VE_Native_Gutenberg::is_native_mode() ) {
+			Clara_VE_Native_Gutenberg::render_host();
+			return;
 		}
 		?>
 		<div id="clara-ve-app" class="clara-ve-app">

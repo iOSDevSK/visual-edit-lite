@@ -565,6 +565,14 @@ class Clara_VE_Block_Patch {
 			return new WP_Error( 'clara_ve_no_post', __( 'That page no longer exists.', 'visual-edit-lite' ), array( 'status' => 404 ) );
 		}
 
+		// A block edited in the Visual Edit workspace carries its small-screen
+		// values in its own claraVe attribute — the canonical place, which
+		// travels with copies, patterns and revisions. Keep writing there, so
+		// one block never holds two competing sets of rules.
+		if ( class_exists( 'Clara_VE_Block_Extras' ) && ! empty( $block['attrs']['claraVe']['responsive'] ) && is_array( $block['attrs']['claraVe']['responsive'] ) ) {
+			return self::set_responsive_attribute( $block, $patch );
+		}
+
 		$anchor = self::anchor_of( $block );
 		if ( '' === $anchor ) {
 			$anchor  = Clara_VE_Responsive::new_anchor();
@@ -585,6 +593,55 @@ class Clara_VE_Block_Patch {
 			isset( $patch['path'] ) ? (string) $patch['path'] : '',
 			isset( $patch['value'] ) ? (string) $patch['value'] : ''
 		);
+	}
+
+	/**
+	 * Write one small-screen value into the block's claraVe attribute.
+	 *
+	 * The attribute lives in the block comment only, never in its markup, so
+	 * this cannot make a block invalid. The value passes the same validator
+	 * the front end renders through; anything it would drop is refused here.
+	 *
+	 * @param array $block By reference.
+	 * @param array $patch
+	 * @return true|WP_Error
+	 */
+	private static function set_responsive_attribute( &$block, $patch ) {
+		$breakpoint = isset( $patch['breakpoint'] ) ? (string) $patch['breakpoint'] : '';
+		$path       = isset( $patch['path'] ) ? (string) $patch['path'] : '';
+		$value      = isset( $patch['value'] ) ? (string) $patch['value'] : '';
+		if ( ! isset( Clara_VE_Responsive::BREAKPOINTS[ $breakpoint ] ) ) {
+			return new WP_Error( 'clara_ve_bad_breakpoint', __( 'That is not a screen size this editor offers.', 'visual-edit-lite' ), array( 'status' => 400 ) );
+		}
+		if ( ! isset( Clara_VE_Responsive::PROPERTIES[ $path ] ) ) {
+			return new WP_Error( 'clara_ve_bad_property', __( 'That is not a property that can differ by screen.', 'visual-edit-lite' ), array( 'status' => 400 ) );
+		}
+		$extras = $block['attrs']['claraVe'];
+		if ( '' === $value ) {
+			unset( $extras['responsive'][ $breakpoint ][ $path ] );
+		} else {
+			$extras['responsive'][ $breakpoint ][ $path ] = $value;
+		}
+		$clean = Clara_VE_Block_Extras::clean( array( 'responsive' => $extras['responsive'] ) );
+		if ( '' !== $value && ( isset( $clean['responsive'][ $breakpoint ][ $path ] ) ? $clean['responsive'][ $breakpoint ][ $path ] : null ) !== $value ) {
+			return new WP_Error(
+				'clara_ve_bad_style_value',
+				/* translators: %s: a property such as spacing.padding.top. */
+				sprintf( __( 'That is not a value this editor can store for %s.', 'visual-edit-lite' ), $path ),
+				array( 'status' => 400 )
+			);
+		}
+		if ( empty( $clean['responsive'] ) ) {
+			unset( $extras['responsive'] );
+		} else {
+			$extras['responsive'] = $clean['responsive'];
+		}
+		if ( $extras ) {
+			$block['attrs']['claraVe'] = $extras;
+		} else {
+			unset( $block['attrs']['claraVe'] );
+		}
+		return true;
 	}
 
 	/**

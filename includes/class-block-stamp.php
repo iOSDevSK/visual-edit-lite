@@ -271,14 +271,25 @@ class Clara_VE_Block_Stamp {
 			$tags->set_attribute( self::STORED, wp_json_encode( $stored ) );
 		}
 
-		// Small-screen rules live in the page's meta, not in the block, so the
-		// panel would have no way to show what a block is already tuned to.
-		$anchor = self::anchor_of( $block );
+		// Small-screen rules live in the page's meta (older edits) or in the
+		// block's own claraVe attribute (the workspace), so the panel would
+		// otherwise have no way to show what a block is already tuned to.
+		$screens = array();
+		$anchor  = self::anchor_of( $block );
 		if ( '' !== $anchor ) {
 			$rules = Clara_VE_Responsive::rules( get_queried_object_id() );
 			if ( ! empty( $rules[ $anchor ] ) ) {
-				$tags->set_attribute( 'data-ve-responsive', wp_json_encode( $rules[ $anchor ] ) );
+				$screens = $rules[ $anchor ];
 			}
+		}
+		if ( class_exists( 'Clara_VE_Block_Extras' ) && isset( $block['attrs']['claraVe'] ) ) {
+			$extras = Clara_VE_Block_Extras::clean( $block['attrs']['claraVe'] );
+			if ( ! empty( $extras['responsive'] ) ) {
+				$screens = array_replace_recursive( $screens, $extras['responsive'] );
+			}
+		}
+		if ( $screens ) {
+			$tags->set_attribute( 'data-ve-responsive', wp_json_encode( $screens ) );
 		}
 		return $tags->get_updated_html();
 	}

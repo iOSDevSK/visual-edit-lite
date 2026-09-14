@@ -2754,7 +2754,7 @@
 	];
 
 	function makeGradient( from, to, direction ) {
-		return 'linear-gradient(' + direction + ', ' + from + ' 0%, ' + to + ' 100%)';
+		return window.ClaraVEValues.makeGradient( from, to, direction );
 	}
 
 	// A computed background-image is `none` when there is none, and may be a
@@ -2777,9 +2777,7 @@
 	 * @return {Object|null}
 	 */
 	function parseGradient( css ) {
-		var match = /^linear-gradient\(\s*([^,]+?)\s*,\s*([^\s,]+)\s+0%\s*,\s*([^\s,]+)\s+100%\s*\)$/i
-			.exec( String( css || '' ).trim() );
-		return match ? { direction: match[ 1 ], from: match[ 2 ], to: match[ 3 ] } : null;
+		return window.ClaraVEValues.parseGradient( css );
 	}
 
 	/**
@@ -2809,20 +2807,7 @@
 		// perfectly good gradient stop but has no swatch to show and no
 		// meaning outside the element it is on. Those stay reachable through
 		// Custom rather than being made into a chip that cannot be drawn.
-		var palette = gradientPalette().filter( function ( colour ) {
-			return /^(#|rgb)/i.test( colour.value || '' );
-		} );
-		var out = [];
-		for ( var i = 0; i + 1 < palette.length && out.length < 6; i++ ) {
-			if ( palette[ i ].value === palette[ i + 1 ].value ) {
-				continue;
-			}
-			out.push( {
-				name: palette[ i ].name + ' → ' + palette[ i + 1 ].name,
-				value: makeGradient( palette[ i ].value, palette[ i + 1 ].value, '135deg' ),
-			} );
-		}
-		return out;
+		return window.ClaraVEValues.paletteGradients( gradientPalette() );
 	}
 
 	/**
@@ -4046,14 +4031,29 @@
 		} );
 	}
 
-	function positionPanel( node, rect ) {
+	function positionPanel( node, rect, pointer ) {
 		var frameBox = frame.getBoundingClientRect();
 		var bodyBox = body.getBoundingClientRect();
-		var left = frameBox.left - bodyBox.left + rect.x + rect.width / 2 - 170;
-		var top = frameBox.top - bodyBox.top + rect.y + rect.height + 14;
+		var offsetX = frameBox.left - bodyBox.left, offsetY = frameBox.top - bodyBox.top;
+		var place = window.ClaraVEValues && window.ClaraVEValues.placePopup;
+		if ( place ) {
+			// Beside the element at the height of the click, the same rule the
+			// block-theme popup follows. Coordinates are the panel container's.
+			var spot = place(
+				{ left: offsetX + rect.x, right: offsetX + rect.x + rect.width, top: offsetY + rect.y, bottom: offsetY + rect.y + rect.height },
+				pointer ? { x: offsetX + pointer.x, y: offsetY + pointer.y } : null,
+				{ width: node.offsetWidth || 340, height: Math.min( node.offsetHeight || 420, bodyBox.height - 24 ) },
+				{ width: bodyBox.width, height: bodyBox.height, top: 10 }
+			);
+			node.style.left = spot.left + 'px';
+			node.style.top = spot.top + 'px';
+			return;
+		}
+		var left = offsetX + rect.x + rect.width / 2 - 170;
+		var top = offsetY + rect.y + rect.height + 14;
 		left = Math.max( 10, Math.min( left, bodyBox.width - 360 ) );
 		if ( top + 320 > bodyBox.height ) {
-			top = Math.max( 10, frameBox.top - bodyBox.top + rect.y - 330 );
+			top = Math.max( 10, offsetY + rect.y - 330 );
 		}
 		node.style.left = left + 'px';
 		node.style.top = top + 'px';
@@ -4792,6 +4792,18 @@
 					target.styles.borderStyle
 				)
 			);
+
+			// RADIUS for every element, not only boxes that hold a field: the
+			// section moved out of BACKGROUND and had been left behind there.
+			appendRadiusSection(
+				panel,
+				function ( corner ) {
+					return target.styles[ corner.css ];
+				},
+				function ( corner, value ) {
+					previewStyle( corner.css, value );
+				}
+			);
 		}
 
 		// This box's words come from the post, so there is no text to type here —
@@ -4837,12 +4849,13 @@
 				)
 			);
 
+			// Source mode already added RADIUS with BORDER above.
 			// Each corner on its own. The single control this replaces read
 			// the shorthand, which computes to "8px 8px 0px 0px" as soon as
 			// the corners differ: it parsed as 8, and one nudge wrote 8 to all
 			// four. An element could not be given one rounded corner, and an
 			// element that already had one lost it on the way past.
-			appendRadiusSection(
+			if ( config.blockMode ) appendRadiusSection(
 				panel,
 				function ( corner ) {
 					return target.styles[ corner.css ];
@@ -5158,7 +5171,9 @@
 		cancel.addEventListener( 'click', function () {
 			closePanel( true );
 		} );
-		var save = el( 'button', 'cve-btn cve-btn-save', 'Save' );
+		// Apply, not Save: this keeps the change in the page. The toolbar's
+		// Save publishes — the same two words the block-theme popup uses.
+		var save = el( 'button', 'cve-btn cve-btn-save', 'Apply' );
 		save.addEventListener( 'click', function () {
 			if ( Object.keys( pendingStyles ).length ) {
 				recordPatch( { id: current.id, kind: 'set-style', styles: Object.assign( {}, pendingStyles ) } );
@@ -5186,8 +5201,10 @@
 		panel.appendChild( foot );
 
 		collapsibleSections( panel );
+		tabbedPanel( panel );
 		body.appendChild( panel );
-		positionPanel( panel, target.rect );
+		positionPanel( panel, target.rect, target.pointer );
+		keepPanelVisible( panel );
 		makeDraggable( panel, head );
 	}
 
@@ -5275,6 +5292,82 @@
 		} );
 	}
 
+	/**
+	 * Content, Style and Section: the same three tabs the block-theme popup
+	 * has, laid over the sections this panel already builds. Nothing is
+	 * rebuilt; each node is only tagged with the tab its section belongs to.
+	 */
+	/** When a tab or a section makes the panel taller, it rises instead of running off the bottom. */
+	function keepPanelVisible( node ) {
+		if ( typeof ResizeObserver === 'undefined' ) {
+			return;
+		}
+		var observer = new ResizeObserver( function () {
+			if ( ! node.parentNode ) {
+				observer.disconnect();
+				return;
+			}
+			var box = node.getBoundingClientRect();
+			var host = node.parentNode.getBoundingClientRect();
+			if ( box.bottom > host.bottom - 8 ) {
+				node.style.top = Math.max( 10, host.height - box.height - 8 ) + 'px';
+			}
+		} );
+		observer.observe( node );
+	}
+	var lastPanelTab = 'content';
+	function panelTabFor( name ) {
+		if ( /^(TEXT|LINK|LINK TARGET|SOURCES|POSTER|PLACEHOLDER|LOAD MORE|MENU ITEM|ORNAMENT.*|POSTS ZONE|MENU ZONE|ARTICLE FIELD|HOLDS .*|FROM THE POST)$/.test( name ) ) {
+			return 'content';
+		}
+		return /^(LAYOUT|SECTION|ITEMS|QUESTIONS|FORM)$/.test( name ) ? 'section' : 'style';
+	}
+	function tabbedPanel( panel ) {
+		var head = panel.querySelector( '.cve-head' );
+		var tab = 'content';
+		var used = {};
+		[].slice.call( panel.children ).forEach( function ( child ) {
+			if ( child === head || child.classList.contains( 'cve-foot' ) ) {
+				return;
+			}
+			if ( child.classList.contains( 'cve-section' ) ) {
+				tab = panelTabFor( ( child.textContent || '' ).trim() );
+			}
+			child.setAttribute( 'data-cve-tab', tab );
+			used[ tab ] = true;
+		} );
+		var names = [ [ 'content', 'Content' ], [ 'style', 'Style' ], [ 'section', 'Section' ] ].filter( function ( item ) {
+			return used[ item[0] ];
+		} );
+		if ( names.length < 2 ) {
+			return;
+		}
+		var bar = el( 'div', 'cve-tabs' );
+		bar.setAttribute( 'role', 'tablist' );
+		var buttons = {};
+		function show( name ) {
+			lastPanelTab = name;
+			[].slice.call( panel.querySelectorAll( '[data-cve-tab]' ) ).forEach( function ( node ) {
+				node.classList.toggle( 'cve-tab-hidden', node.getAttribute( 'data-cve-tab' ) !== name );
+			} );
+			Object.keys( buttons ).forEach( function ( key ) {
+				buttons[ key ].setAttribute( 'aria-selected', key === name ? 'true' : 'false' );
+			} );
+		}
+		names.forEach( function ( item ) {
+			var button = el( 'button', 'cve-tab', item[1] );
+			button.type = 'button';
+			button.setAttribute( 'role', 'tab' );
+			button.addEventListener( 'click', function () {
+				show( item[0] );
+			} );
+			buttons[ item[0] ] = button;
+			bar.appendChild( button );
+		} );
+		head.parentNode.insertBefore( bar, head.nextSibling );
+		show( used[ lastPanelTab ] ? lastPanelTab : names[0][0] );
+	}
+
 	function closePanelSilent() {
 		if ( panel ) {
 			panel.remove();
@@ -5317,7 +5410,11 @@
 		}
 
 		if ( data.type === 'select' ) {
+			lastSelection = data.target;
 			openPanel( data.target );
+			if ( window.ClaraVE && window.ClaraVE.emit ) {
+				window.ClaraVE.emit( 'select', apiSelection() );
+			}
 		} else if ( data.type === 'text-commit' ) {
 			recordPatch( { id: data.id, kind: 'set-text', value: data.value } );
 		} else if ( data.type === 'inner-commit' ) {
@@ -6234,4 +6331,111 @@
 			ev.returnValue = '';
 		}
 	} );
+
+	/**
+	 * window.ClaraVE for the raw-HTML editor. Operations queue exactly the
+	 * patches the popup queues and preview them in the page; the toolbar's
+	 * Save publishes them. Style keys are CSS properties (fontSize,
+	 * paddingTop), and the workspace's block paths are translated.
+	 */
+	var lastSelection = null;
+	var BLOCK_STYLE_PATHS = {
+		'typography.fontSize': 'fontSize', 'typography.fontWeight': 'fontWeight', 'typography.lineHeight': 'lineHeight',
+		'typography.letterSpacing': 'letterSpacing', 'typography.textAlign': 'textAlign', 'typography.textTransform': 'textTransform',
+		'typography.fontFamily': 'fontFamily', 'color.text': 'color', 'color.background': 'backgroundColor', 'color.gradient': 'backgroundImage',
+		'spacing.padding.top': 'paddingTop', 'spacing.padding.right': 'paddingRight', 'spacing.padding.bottom': 'paddingBottom', 'spacing.padding.left': 'paddingLeft',
+		'spacing.margin.top': 'marginTop', 'spacing.margin.right': 'marginRight', 'spacing.margin.bottom': 'marginBottom', 'spacing.margin.left': 'marginLeft',
+		'border.width': 'borderWidth', 'border.style': 'borderStyle', 'border.color': 'borderColor', 'dimensions.minHeight': 'minHeight'
+	};
+	function apiSelection() {
+		return lastSelection ? { id: lastSelection.id, name: lastSelection.kind || 'container', title: lastSelection.label || lastSelection.tagName, tagName: lastSelection.tagName, fields: lastSelection.fields || {}, styles: lastSelection.styles || {}, parents: [], sectionName: '' } : null;
+	}
+	function apiOperation( op ) {
+		if ( ! op || typeof op !== 'object' || typeof op.op !== 'string' ) {
+			return 'Invalid operation.';
+		}
+		var id = String( op.id || '' );
+		if ( ! /^path-[0-9-]+$/.test( id ) ) {
+			return 'id must be an element address such as path-0-2-1.';
+		}
+		if ( 'set-text' === op.op ) {
+			var text = String( op.text !== undefined ? op.text : String( op.html || '' ).replace( /<[^>]*>/g, '' ) );
+			postToFrame( { type: 'set-text-live', id: id, value: text } );
+			recordPatch( { id: id, kind: 'set-text', value: text } );
+			return '';
+		}
+		if ( 'set-style' === op.op ) {
+			var styles = {};
+			Object.keys( op.style || {} ).forEach( function ( key ) {
+				var property = BLOCK_STYLE_PATHS[ key.replace( /^style\./, '' ) ] || key;
+				var value = String( op.style[ key ] == null ? '' : op.style[ key ] );
+				if ( /^[a-zA-Z]+$/.test( property ) && ! /[{}<>;]|url\s*\(|expression\s*\(/i.test( value ) ) {
+					styles[ property ] = value;
+				}
+			} );
+			if ( ! Object.keys( styles ).length ) {
+				return 'No usable style values.';
+			}
+			postToFrame( { type: 'preview-style', id: id, styles: styles } );
+			recordPatch( { id: id, kind: 'set-style', styles: styles } );
+			return '';
+		}
+		if ( 'set-link' === op.op ) {
+			if ( op.href && /^\s*(javascript|data|vbscript):/i.test( op.href ) ) {
+				return 'Unsafe link.';
+			}
+			postToFrame( { type: 'set-link', id: id, href: op.href || '', target: op.target || '' } );
+			recordPatch( { id: id, kind: 'set-link', href: op.href || '', target: op.target || '' } );
+			return '';
+		}
+		if ( 'set-image' === op.op ) {
+			if ( typeof op.url !== 'string' || ! op.url ) {
+				return 'url is required.';
+			}
+			postToFrame( { type: 'set-image', id: id, src: op.url, alt: op.alt || '' } );
+			recordPatch( { id: id, kind: 'set-image', src: op.url, alt: op.alt || '', attachmentId: op.attachmentId } );
+			return '';
+		}
+		return 'Not available in the HTML editor: ' + op.op;
+	}
+	function registerApi() {
+		if ( ! window.ClaraVE || ! window.ClaraVE.register ) {
+			return;
+		}
+		window.ClaraVE.register( {
+			mode: 'html',
+			getSelection: apiSelection,
+			select: function () { return false; },
+			openPopup: function () { if ( lastSelection ) { openPanel( lastSelection ); return true; } return false; },
+			closePopup: function () { closePanelSilent(); return true; },
+			apply: function ( ops ) {
+				var result = { applied: [], refused: [] };
+				ops.forEach( function ( op, index ) {
+					var reason = apiOperation( op );
+					if ( reason ) {
+						result.refused.push( { index: index, op: op && op.op, reason: reason } );
+					} else {
+						result.applied.push( index );
+					}
+				} );
+				window.ClaraVE.emit( 'apply', result );
+				return result;
+			},
+			getDocument: function () { return { mode: 'html', type: 'visual-edit-key', id: currentKey, title: currentKey, content: source }; },
+			historyList: function () { return window.wp.apiFetch( { path: '/clara-ve/v1/history?key=' + encodeURIComponent( currentKey ) } ); },
+			historyRestore: function ( versionId ) {
+				return window.wp.apiFetch( { path: '/clara-ve/v1/history/' + encodeURIComponent( versionId ) + '/restore', method: 'POST', data: { key: currentKey } } ).then( function ( res ) {
+					source = res.source;
+					patches = [];
+					setDirty();
+					closePanelSilent();
+					frame.src = reloadUrlForCurrentKey();
+					renderHistory( res.history );
+					window.ClaraVE.emit( 'restore', { key: currentKey, id: versionId } );
+					return true;
+				} );
+			}
+		} );
+	}
+	registerApi();
 } )();

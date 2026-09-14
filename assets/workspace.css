@@ -1,0 +1,518 @@
+/* Scoped VE chrome. Never load the HTML editor's global admin overrides here. */
+.cve-workspace-host { position: fixed; inset: 32px 0 0 160px; z-index: 100; background: #f0f0f1; }
+.folded .cve-workspace-host { left: 36px; }
+/* WordPress narrows the side menu to icons between 783 and 960px (auto-fold). */
+@media only screen and (max-width: 960px) and (min-width: 783px) { .auto-fold .cve-workspace-host { left: 36px; } }
+.cve-workspace-frame { width: 100%; height: 100%; border: 0; display: block; }
+.cve-host-loading { position: absolute; inset: 0 0 auto; padding: 20px; background: #202024; color: #f5f5f7; z-index: 1; }
+.cve-host-loading a { margin-left: 20px; color: #fff; }
+.cve-workspace-host.is-ready .cve-host-loading { display: none; }
+/* Inside the workspace frame the host page owns the admin bar and side menu. */
+.cve-workspace-runtime #wpadminbar, .cve-workspace-document #wpadminbar,
+.cve-workspace-document #adminmenumain, .cve-workspace-document #adminmenuback, .cve-workspace-document #adminmenuwrap,
+.cve-workspace-document #wpfooter { display: none !important; }
+/* The admin bar and menu are hidden, so their reserved space must go too. */
+html.wp-toolbar:has(> body.cve-workspace-runtime), html.wp-toolbar:has(> body.cve-workspace-document) { padding-top: 0 !important; }
+.cve-workspace-document #wpcontent, .cve-workspace-document #wpbody-content { margin-left: 0 !important; padding-left: 0 !important; }
+.cve-workspace-document .interface-interface-skeleton, .cve-workspace-document .edit-site { left: 0 !important; }
+.cve-workspace-document:not(.cve-workspace-runtime) .interface-interface-skeleton { top: 0 !important; }
+.cve-workspace-runtime .edit-site, .cve-workspace-runtime #site-editor { top: 0 !important; padding-top: 0 !important; }
+.cve-workspace-runtime .interface-interface-skeleton { top: 58px !important; }
+.cve-workspace-runtime .edit-site-layout { padding-top: 58px; box-sizing: border-box; }
+.cve-workspace-runtime .edit-site-layout .interface-interface-skeleton { top: 0 !important; }
+
+/* VE mode: WordPress chrome that would compete with the popup stays hidden.
+   "Show WordPress controls" in the More menu removes this class. */
+.cve-workspace-runtime.cve-native-collapsed .editor-header,
+.cve-workspace-runtime.cve-native-collapsed .edit-post-header,
+.cve-workspace-runtime.cve-native-collapsed .edit-site-header,
+.cve-workspace-runtime.cve-native-collapsed .block-editor-block-contextual-toolbar,
+.cve-workspace-runtime.cve-native-collapsed .block-editor-block-list__insertion-point-inserter,
+.cve-workspace-runtime.cve-native-collapsed .interface-interface-skeleton__footer { display: none !important; }
+
+/* Toolbar */
+.cve-w-toolbar { position: fixed; inset: 0 0 auto; height: 58px; z-index: 99990; box-sizing: border-box; display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; padding: 10px 14px; background: #202024; color: #f5f5f7; font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.cve-w-toolbar > * { flex-shrink: 0; }
+.cve-w-toolbar a { color: #e5e5ea; text-decoration: none; padding: 8px; white-space: nowrap; }
+.cve-w-status { margin-left: auto; color: #b2b2bb; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-shrink: 1 !important; }
+.cve-w-doc > button { max-width: 260px; display: inline-flex; gap: 4px; align-items: center; font-weight: 600; }
+.cve-w-doc-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cve-w-chip { border-radius: 999px !important; font-size: 12px; white-space: nowrap; }
+.cve-w-toolbar .cve-w-chip.is-restored { display: inline-flex; gap: 8px; align-items: center; padding: 4px 4px 4px 12px; border: 1px solid #4263eb; background: rgb(66 99 235 / 18%); }
+.cve-w-toolbar .cve-w-chip.is-restored button { padding: 3px 10px; border-radius: 999px; }
+.cve-w-menu-wrap { position: relative; }
+.cve-w-menu { box-sizing: border-box; color-scheme: dark; scrollbar-width: thin; scrollbar-color: #55555f transparent; overflow-x: hidden !important; position: absolute; top: calc(100% + 8px); left: 0; z-index: 99995; min-width: 240px; max-width: min(420px, 92vw); max-height: 70vh; overflow: auto; padding: 8px; border: 1px solid #3a3a42; border-radius: 12px; background: #202024; color: #f5f5f7; box-shadow: 0 18px 50px rgb(0 0 0 / 45%); display: grid; gap: 2px; }
+.cve-w-menu.is-right { left: auto; right: 0; }
+.cve-w-toolbar .cve-w-menu button, .cve-w-toolbar .cve-w-menu a { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 8px 10px; border-radius: 8px; color: #f5f5f7; font: inherit; white-space: normal; }
+.cve-w-toolbar .cve-w-menu button:hover, .cve-w-toolbar .cve-w-menu a:hover { background: #2c2c31; }
+.cve-w-doc .cve-w-menu { width: 380px; padding: 12px; }
+.cve-w-menu .components-notice, .cve-w-popup .components-notice, .cve-w-dialog .components-notice, .cve-w-dock .components-notice { margin: 8px 0; padding: 10px 12px; border: 1px solid #3a3a42; border-radius: 12px; background: #2c2c31; color: #f5f5f7; }
+:is(.cve-w-menu, .cve-w-popup, .cve-w-dialog, .cve-w-dock) .components-notice.is-error { border-color: rgba(248, 113, 113, .35); background: rgba(248, 113, 113, .12); color: #fecaca; }
+:is(.cve-w-menu, .cve-w-popup, .cve-w-dialog, .cve-w-dock) .components-notice.is-success { border-color: rgba(74, 222, 128, .35); background: rgba(74, 222, 128, .1); color: #bbf7d0; }
+:is(.cve-w-menu, .cve-w-popup, .cve-w-dialog, .cve-w-dock) .components-notice.is-warning { border-color: rgba(251, 191, 36, .35); background: rgba(251, 191, 36, .1); color: #fde68a; }
+.cve-w-menu .components-notice__content, .cve-w-popup .components-notice__content, .cve-w-dialog .components-notice__content, .cve-w-dock .components-notice__content { margin: 0; display: grid; gap: 8px; justify-items: start; }
+.cve-w-menu .components-notice button, .cve-w-popup .components-notice button, .cve-w-dialog .components-notice button, .cve-w-dock .components-notice button { width: auto; padding: 6px 12px; border: 1px solid #3a3a42; border-radius: 10px; background: #2c2c32; color: #f5f5f7; }
+.cve-w-exit { display: block; margin-top: 8px; color: #a9c8ff !important; }
+@media (max-width: 1100px) { .cve-w-label { display: none; } }
+
+/* Popup */
+.cve-w-popup, .cve-w-dialog, .cve-w-dock { --wp-components-color-foreground: #f5f5f7; --wp-components-color-background: #202024; --wp-components-color-gray-900: #f5f5f7; color-scheme: dark; background: #202024; color: #f5f5f7; font: 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.cve-w-popup { position: fixed; top: 132px; right: 24px; width: 340px; max-width: calc(100vw - 16px); max-height: min(72vh, calc(100vh - 78px)); display: flex; flex-direction: column; overflow: hidden; padding: 12px 14px 10px; border-radius: 16px; box-sizing: border-box; box-shadow: 0 24px 60px rgb(0 0 0 / 45%); z-index: 99980; }
+.cve-w-popup[style] { right: auto; }
+.cve-w-popup.is-placing { visibility: hidden; }
+.cve-w-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; cursor: grab; user-select: none; touch-action: none; flex-shrink: 0; }
+.cve-w-grip { color: #8e8e93; }
+.cve-w-heading { flex: 1; min-width: 0; display: grid; }
+.cve-w-heading strong { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cve-w-crumbs { display: flex; gap: 4px; align-items: center; flex-wrap: nowrap; overflow: hidden; white-space: nowrap; color: #8e8e93; font-size: 11px; }
+.cve-w-popup .cve-w-crumb { border: 0; background: transparent; padding: 0; color: #a9c8ff; font-size: 11px; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cve-w-popup .cve-w-crumb:hover { background: transparent; text-decoration: underline; }
+.cve-w-popup .cve-w-icon { width: 28px; height: 28px; padding: 0; flex-shrink: 0; }
+.cve-w-popup .cve-w-icon.is-on { border-color: #8bb8ff; background: #2d3a57; }
+.cve-w-actions { display: flex; gap: 6px; margin-bottom: 8px; flex-shrink: 0; }
+.cve-w-actions button:first-child { flex: 1; }
+.cve-w-popup .cve-w-danger:hover { background: #5a2626; border-color: #7a3030; }
+.cve-w-mode-note { display: grid; gap: 8px; padding: 10px 12px; margin: 0 0 8px; border-left: 2px solid #8bb8ff; color: #d3d3da; background: #2c2c31; border-radius: 4px; flex-shrink: 0; }
+.cve-w-tabs { display: flex; gap: 2px; padding: 3px; margin-bottom: 8px; border-radius: 10px; background: #2c2c31; flex-shrink: 0; }
+.cve-w-popup .cve-w-tab { flex: 1; border: 0; background: transparent; color: #b2b2bb; padding: 6px 4px; border-radius: 8px; font-size: 12px; }
+.cve-w-popup .cve-w-tab[aria-selected=true] { background: #45454f; color: #fff; }
+.cve-w-body { flex: 1 1 auto; min-height: 0; overflow: auto; margin: 0 -6px; padding: 0 6px; scrollbar-width: thin; scrollbar-color: #666 #202024; }
+.cve-w-controls { border: 0; min-width: 0; }
+.cve-w-controls[hidden], .cve-w-section > [hidden] { display: none; }
+.cve-w-screens { display: flex; gap: 2px; padding: 3px; margin: 2px 0 6px; border: 1px solid #3a3a42; border-radius: 999px; }
+.cve-w-popup .cve-w-screen { flex: 1; border: 0; border-radius: 999px; background: transparent; padding: 5px 4px; font-size: 12px; color: #b2b2bb; }
+.cve-w-popup .cve-w-screen[aria-pressed=true] { background: #4263eb; color: #fff; }
+.cve-w-sub { margin: 10px 0 2px; color: #8e8e93; font-size: 11px; }
+.cve-w-check input { flex: 0 0 auto; width: auto; }
+.cve-w-format-buttons { display: flex; align-items: center; gap: 6px; margin: 4px 0 6px; }
+.cve-w-popup .cve-w-format-buttons button { width: 32px; height: 28px; padding: 0; }
+.cve-w-popup .cve-w-format-buttons button[aria-pressed=true] { background: #2d3a57; border-color: #8bb8ff; }
+.cve-w-format-bold { font-weight: 700; }
+.cve-w-popup .dashicons, .cve-w-toolbar .dashicons { font-size: 16px; width: 16px; height: 16px; line-height: 1; vertical-align: -3px; }
+.cve-w-actions .dashicons { margin-right: 2px; }
+.cve-w-format-italic { font-style: italic; }
+.cve-w-format-buttons .cve-w-note { font-size: 11px; line-height: 1.3; }
+.cve-w-format-link { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+.cve-w-format-link .cve-w-field { grid-column: 1 / -1; margin: 0; }
+.cve-w-format-link .cve-w-format-error { grid-column: 1 / -1; margin: 0; color: #fca5a5; }
+/* minmax(0, 1fr), not the implicit auto track: an auto track is sized by the
+   longest row, so one long block name widened the whole list past the popup and
+   pushed the × off its right edge — with a horizontal scrollbar as the only
+   clue. The name ellipsises instead; the ▲▼× keep their size. */
+.cve-w-items ol { list-style: none; margin: 6px 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.cve-w-items li { display: flex; gap: 4px; align-items: center; min-width: 0; }
+.cve-w-popup .cve-w-items li > button:not(.cve-w-item-name) { flex: 0 0 auto; }
+.cve-w-popup .cve-w-items li button { padding: 4px 8px; }
+.cve-w-popup .cve-w-items .cve-w-item-name { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cve-w-toolbar button, .cve-w-toolbar select,
+.cve-w-popup button:where(:not(.components-button, .cve-w-native button)), .cve-w-dialog button:where(:not(.components-button)), .cve-w-dock button:where(:not(.components-button)), .cve-w-hint button { border: 1px solid #3a3a42; border-radius: 8px; background: #2c2c31; color: #f5f5f7; padding: 7px 10px; cursor: pointer; font: inherit; }
+.cve-w-toolbar button:hover, .cve-w-popup button:where(:not(.components-button, .cve-w-native button)):hover, .cve-w-dock button:where(:not(.components-button)):hover { background: #393941; }
+.cve-w-toolbar button:disabled, .cve-w-popup button:disabled, .cve-w-dialog button:disabled, .cve-w-dock button:disabled { opacity: .45; cursor: default; }
+.cve-w-popup :focus-visible, .cve-w-toolbar :focus-visible, .cve-w-dialog :focus-visible, .cve-w-dock :focus-visible { outline: 2px solid #8bb8ff; outline-offset: 2px; }
+.cve-w-section { margin: 6px 0; border-top: 1px solid #2f2f35; }
+.cve-w-section:first-of-type { border-top: 0; }
+.cve-w-popup .cve-w-section-title { display: flex; justify-content: space-between; width: 100%; padding: 8px 0 6px; border: 0; border-radius: 0; background: transparent; color: #a7a7ad; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; text-align: left; }
+.cve-w-popup .cve-w-section-title:hover { background: transparent; color: #fff; }
+.cve-w-section-title::after { content: '›'; font-size: 16px; line-height: 1; transition: transform .15s; }
+.cve-w-section-title[aria-expanded=true]::after { transform: rotate(90deg); }
+.cve-w-field { display: flex; align-items: center; gap: 8px; margin: 6px 0; padding: 8px 10px; min-width: 0; border-radius: 9px; background: #2c2c31; }
+.cve-w-field > span { color: #a7a7ad; flex: 0 1 auto; max-width: 50%; overflow-wrap: anywhere; }
+.cve-w-field-area { flex-direction: column; align-items: stretch; }
+.cve-w-field-area textarea { width: 100%; min-height: 72px; padding: 6px 0 0; border: 0; background: transparent; color: #f5f5f7; font: inherit; line-height: 1.5; resize: vertical; box-shadow: none; }
+.cve-w-popup .cve-w-form-add { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cve-w-popup .cve-w-form-add button { width: 100%; height: auto; min-width: 0; min-height: 34px; padding: 6px 10px; white-space: nowrap; text-align: left; line-height: 1.3; }
+.cve-w-field input, .cve-w-field select { flex: 1; min-width: 0; width: 100%; min-height: 24px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #f5f5f7; box-shadow: none; text-align: right; font: inherit; }
+/* WP's disabled-select SVG must not survive our background shorthand reset.
+   Keep a single native arrow, including disabled units and History fields. */
+.cve-w-toolbar select, .cve-w-toolbar select:disabled,
+.cve-w-popup .cve-w-field select, .cve-w-popup .cve-w-field select:disabled,
+.cve-w-dialog .cve-w-field select, .cve-w-dialog .cve-w-field select:disabled,
+.cve-w-dock .cve-w-field select, .cve-w-dock .cve-w-field select:disabled {
+	-webkit-appearance: auto; appearance: auto; background: transparent;
+	background-image: none; background-repeat: no-repeat; text-shadow: none; color: #f5f5f7;
+}
+.cve-w-toolbar select { border: 1px solid #3a3a42; padding: 6px 8px; min-height: 34px; }
+.cve-w-field option { background: #2c2c31; color: #fff; }
+.cve-w-field input[type=color] { max-width: 44px; margin-left: auto; }
+.cve-w-field input::placeholder { color: #74747d; }
+.cve-w-number { gap: 3px; padding: 7px 6px; }
+.cve-w-number > span { flex-shrink: 0; margin-right: auto; }
+.cve-w-number input { width: 42px; flex: 1 1 42px; }
+.cve-w-number select { width: 38px; flex: 0 0 38px; color: #a7a7ad; font-size: 11px; }
+.cve-w-number .cve-w-step { border: 0; background: transparent; padding: 0; width: 22px; min-height: 28px; flex: 0 0 22px; color: #a7a7ad; }
+.cve-w-number select:disabled { opacity: .45; }
+.cve-w-note { color: #a7a7ad; font-size: 12px; }
+.cve-w-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+.cve-w-grid .cve-w-field { margin: 3px 0; }
+.cve-w-richtext { padding: 10px; border-radius: 9px; background: #2c2c31; min-height: 36px; }
+.cve-w-wide { width: 100%; margin: 6px 0; }
+.cve-w-gradient { height: 40px; border: 1px solid #3a3a42; border-radius: 8px; margin: 8px 0; overflow: hidden; background: conic-gradient(#303036 25%, #252529 0 50%, #303036 0 75%, #252529 0) 0 0 / 12px 12px; }
+.cve-w-gradient > div { width: 100%; height: 100%; }
+.cve-w-swatches { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.cve-w-swatches button { width: 30px; height: 24px; border-radius: 4px; padding: 0; }
+.cve-w-swatches button[aria-pressed=true] { outline: 2px solid #8bb8ff; outline-offset: 2px; }
+.cve-w-gradient-stop { display: flex; align-items: center; gap: 6px; border-radius: 9px; background: #2c2c31; padding-right: 8px; margin: 6px 0; }
+.cve-w-gradient-stop .cve-w-field { flex: 1; margin: 0; }
+.cve-w-gradient-stop input[type=color] { width: 26px; height: 24px; border: 0; padding: 0; background: transparent; flex-shrink: 0; }
+.cve-w-gradient-advanced { margin-top: 10px; }
+.cve-w-gradient-advanced summary { cursor: pointer; color: #c5c5cb; margin-bottom: 12px; }
+.cve-w-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #2f2f35; flex-shrink: 0; }
+.cve-w-flex { flex: 1; }
+.cve-w-toolbar .cve-w-primary, .cve-w-popup .cve-w-primary, .cve-w-dock .cve-w-primary { background: #4263eb; border-color: #4263eb; color: #fff; }
+.cve-w-toolbar .cve-w-primary:hover, .cve-w-popup .cve-w-primary:hover { background: #3651d4; }
+
+/* Element label, like the HTML editor's selection */
+.cve-w-badge { position: fixed; z-index: 99970; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 8px; border: 0; border-radius: 6px 6px 6px 0; background: #2563eb; color: #fff; font: 600 11px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; cursor: pointer; box-shadow: 0 2px 6px rgb(0 0 0 / 25%); }
+.cve-w-badge:hover { background: #1d4ed8; }
+.cve-w-badge-form { background: #16a34a; }
+.cve-w-badge-form:hover { background: #15803d; }
+.cve-w-hint { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 99985; display: flex; gap: 12px; align-items: center; padding: 10px 12px 10px 16px; border-radius: 12px; background: #202024; color: #f5f5f7; box-shadow: 0 12px 40px rgb(0 0 0 / 35%); font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+/* Dialogs */
+.cve-w-dialog { min-width: min(560px, 90vw); }
+.cve-w-dialog .components-modal__header { background: #202024; color: #fff; }
+.cve-w-dialog .components-modal__header h1, .cve-w-dialog .components-modal__header-heading { color: #fff; }
+.cve-w-dialog .components-modal__header .components-button { color: #fff; }
+.cve-w-dialog a { color: #a9c8ff; }
+.cve-w-patterns { width: min(980px, 94vw); }
+.cve-w-pattern-grid .block-editor-block-patterns-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.cve-w-pattern-grid .block-editor-block-patterns-list__item-title, .cve-w-pattern-grid .block-editor-block-patterns-list__item [class*=heading] { color: #f5f5f7; }
+.cve-w-pattern-grid .block-editor-block-preview__container { background: #fff; border-radius: 8px; overflow: hidden; min-height: 120px; }
+.cve-w-pattern-grid .block-editor-block-patterns-list__item { padding: 6px; border-radius: 10px; cursor: pointer; }
+.cve-w-pattern-grid .block-editor-block-patterns-list__item:hover { background: #2c2c31; outline: 2px solid #4263eb; }
+.cve-w-font-list { max-height: 360px; overflow: auto; margin: 12px 0; }
+.cve-w-font-list > div { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #393940; padding: 10px 0; }
+.cve-w-font-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.cve-w-site-list { display: grid; gap: 6px; max-height: 45vh; overflow: auto; margin: 12px 0; }
+.cve-w-site-list button { text-align: left; }
+.cve-w-media-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; }
+
+/* History, docked beside the page */
+.cve-w-dock { position: fixed; top: 58px; right: 0; bottom: 0; width: 340px; z-index: 99975; display: flex; flex-direction: column; border-left: 1px solid #2f2f35; box-shadow: -12px 0 30px rgb(0 0 0 / 20%); }
+.cve-w-dock-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #2f2f35; }
+.cve-w-dock-head strong { font-size: 15px; }
+.cve-w-dock-head button { width: 30px; height: 30px; padding: 0; }
+.cve-w-dock-body { flex: 1; overflow: auto; padding: 4px 16px 16px; }
+.cve-workspace-runtime.cve-history-open .edit-site-layout { padding-right: 340px; }
+.cve-workspace-runtime.cve-history-open:not(.site-editor-php) .interface-interface-skeleton { right: 340px !important; }
+.cve-w-dock h3 { color: #f5f5f7; margin: 12px 0 0; font-size: 14px; }
+.cve-w-history-list { list-style: none; margin: 20px 0 20px 8px; padding: 0 0 0 20px; border-left: 1px solid #52525b; }
+.cve-w-history-entry { position: relative; padding: 0 0 24px; display: grid; gap: 8px; justify-items: start; }
+.cve-w-history-entry::before { content: ''; position: absolute; left: -26px; top: 10px; width: 9px; height: 9px; border: 1px solid #9a9aa4; border-radius: 50%; background: #202024; }
+.cve-w-history-entry.is-current::before { background: #8bb8ff; border-color: #8bb8ff; }
+.cve-w-history .cve-w-history-name { border: 0; background: transparent; padding: 4px 0; text-align: left; font-weight: 600; }
+.cve-w-history-badge { padding: 2px 8px; border: 1px solid #52525b; border-radius: 4px; color: #c8daff; font-size: 11px; }
+.cve-w-history-confirm { border: 1px solid #79797f; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.cve-w-history-confirm button + button { margin-left: 8px; }
+.cve-w-history-entry input { background: #2c2c31; border: 1px solid #666; color: #fff; max-width: 100%; }
+
+@media (max-width: 782px) {
+	.cve-workspace-runtime.cve-history-open .edit-site-layout { padding-right: 0; }
+	.cve-workspace-host, .folded .cve-workspace-host { inset: 46px 0 0; }
+	.cve-w-toolbar { padding: 8px; gap: 4px; }
+	.cve-w-toolbar .cve-w-status, .cve-w-toolbar > a, .cve-w-toolbar > select, .cve-w-toolbar .cve-w-chip:not(.is-restored), .cve-w-toolbar > button[aria-label=Redo] { display: none; }
+	.cve-w-toolbar .cve-w-more { margin-left: auto; }
+	.cve-w-doc > button { max-width: 130px; }
+	.cve-w-toolbar button { padding: 7px 9px; }
+	.cve-w-menu { max-width: calc(100vw - 16px); }
+	.cve-w-doc .cve-w-menu { width: calc(100vw - 16px); }
+	/* A bottom sheet on phones: full width, never covering the toolbar. */
+	.cve-w-popup, .cve-w-popup[style] { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0; width: 100%; max-width: none; max-height: 62vh !important; border-radius: 16px 16px 0 0; visibility: visible; }
+	.cve-w-dock { width: 100%; }
+	.cve-workspace-runtime.cve-history-open .interface-interface-skeleton { right: 0 !important; }
+}
+
+/* Dark surfaces: WordPress 7.x components read colours from design tokens
+   (--wpds-*) and a few --wp-components-* variables. Without these, native
+   controls rendered inside VE UI (Advanced inspector, modals) paint dark text
+   on the dark ground or white text on a light pressed state. */
+.cve-w-toolbar, .cve-w-menu, .cve-w-popup, .cve-w-dialog, .cve-w-dock, .cve-dark-native {
+	color-scheme: dark;
+	--wp-components-color-foreground: #f5f5f7;
+	--wp-components-color-foreground-inverted: #202024;
+	--wp-components-color-background: #202024;
+	--wp-components-color-gray-900: #f5f5f7;
+	--wp-components-color-gray-800: #e4e4e8;
+	--wp-components-color-gray-700: #b2b2bb;
+	--wp-components-color-gray-600: #9a9aa3;
+	--wp-components-color-gray-400: #6b6b73;
+	--wp-components-color-gray-300: #4a4a52;
+	--wp-components-color-gray-200: #3a3a42;
+	--wp-components-color-gray-100: #2c2c31;
+	--wp-components-color-accent: #8bb8ff;
+	--wp-components-color-accent-darker-10: #a9c8ff;
+	--wp-components-color-accent-darker-20: #c4d9ff;
+	--wp-components-color-accent-inverted: #202024;
+	--wpds-color-foreground-content-neutral: #f5f5f7;
+	--wpds-color-foreground-content-neutral-weak: #b2b2bb;
+	--wpds-color-foreground-interactive-neutral: #f5f5f7;
+	--wpds-color-foreground-interactive-neutral-active: #ffffff;
+	--wpds-color-foreground-interactive-neutral-strong: #ffffff;
+	--wpds-color-foreground-interactive-neutral-weak: #b2b2bb;
+	--wpds-color-foreground-interactive-neutral-weak-active: #e4e4e8;
+	--wpds-color-foreground-interactive-neutral-disabled: #6b6b73;
+	--wpds-color-foreground-interactive-brand: #8bb8ff;
+	--wpds-color-foreground-interactive-brand-active: #a9c8ff;
+	--wpds-color-background-surface-neutral: #202024;
+	--wpds-color-background-surface-neutral-weak: #26262b;
+	--wpds-color-background-surface-neutral-strong: #2c2c31;
+	--wpds-color-background-interactive-neutral-weak: transparent;
+	--wpds-color-background-interactive-neutral-weak-active: #393941;
+	--wpds-color-background-interactive-neutral-weak-disabled: transparent;
+	--wpds-color-background-interactive-neutral-strong-active: #e4e4e8;
+	--wpds-color-background-interactive-brand-weak: rgb(139 184 255 / 12%);
+	--wpds-color-background-interactive-brand-weak-active: rgb(139 184 255 / 22%);
+	--wpds-color-stroke-surface-neutral: #3a3a42;
+	--wpds-color-stroke-surface-neutral-weak: #303036;
+	--wpds-color-stroke-interactive-neutral: #55555f;
+	--wpds-color-stroke-interactive-neutral-strong: #6b6b73;
+	--wpds-color-stroke-interactive-neutral-active: #8e8e96;
+	--wpds-color-stroke-interactive-neutral-disabled: #3a3a42;
+	--wpds-color-stroke-surface-brand: #8bb8ff;
+	--wpds-color-stroke-interactive-brand: #8bb8ff;
+	--wpds-color-stroke-interactive-brand-active: #a9c8ff;
+	--wpds-color-stroke-focus: #8bb8ff;
+}
+.cve-w-popup *, .cve-w-dialog *, .cve-w-dock * { scrollbar-width: thin; scrollbar-color: #55555f transparent; }
+.cve-w-menu *, .cve-w-menu *::before, .cve-w-menu *::after { box-sizing: border-box; }
+.cve-w-menu .cve-w-field { margin: 4px 0; }
+/* One select look on every dark surface: no native menulist painting (it
+   ignores our text colour on some macOS/Chrome setups), our own chevron. */
+.cve-w-toolbar select, .cve-w-menu select, .cve-w-popup .cve-w-field select, .cve-w-dialog .cve-w-field select, .cve-w-dock .cve-w-field select {
+	-webkit-appearance: none !important; appearance: none !important;
+	text-shadow: none !important;
+	color: #f5f5f7; -webkit-text-fill-color: #f5f5f7;
+	background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23b2b2bb' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 2px center / 12px 12px !important;
+	padding-right: 20px !important;
+}
+.cve-w-toolbar > select, .cve-w-toolbar > * > select:not(.cve-w-field select) { padding-left: 8px; background-position: right 8px center !important; padding-right: 26px !important; }
+.cve-w-menu .cve-w-field select { border: 0 !important; min-height: 24px !important; padding-top: 0; padding-bottom: 0; padding-left: 0; }
+.cve-w-toolbar select:disabled, .cve-w-popup .cve-w-field select:disabled { color: #6b6b73; -webkit-text-fill-color: #6b6b73; }
+.cve-w-field option, .cve-w-toolbar option { background: #2c2c31; color: #f5f5f7; }
+
+/* Gutenberg's own UI shown inside Visual Edit (Advanced tab, sidebars opened
+   from ⋯, dropdowns, popovers, native dialogs, the save panel) follows the
+   popup design. Tokens cover modern components; workspace.js marks the rest
+   (hardcoded light surfaces, dark text, dark icons) with cve-dk-* classes
+   after every change, so no per-selector overrides are needed. */
+.cve-dark-native {
+	color-scheme: dark; background-color: #202024 !important; color: #f5f5f7;
+	--wp-admin-theme-color: #7aa7ff;
+	--wp-admin-theme-color--rgb: 122, 167, 255;
+	--wp-admin-theme-color-darker-10: #9bbcff;
+	--wp-admin-theme-color-darker-10--rgb: 155, 188, 255;
+	--wp-admin-theme-color-darker-20: #b8cfff;
+	--wp-admin-theme-color-darker-20--rgb: 184, 207, 255;
+	--wp-components-color-accent: #7aa7ff;
+	--wp-components-color-accent-darker-10: #9bbcff;
+	--wp-components-color-accent-darker-20: #b8cfff;
+	--wp-components-color-accent-inverted: #0f1115;
+}
+.cve-w-popup .cve-w-native.cve-dark-native { background-color: transparent !important; margin: 8px 0 4px; border-top: 1px solid #3a3a42; }
+.cve-dark-native, .cve-dark-native * { scrollbar-width: thin; scrollbar-color: #55555f transparent; border-color: #3a3a42; }
+.cve-dark-native .components-panel__body, .cve-dark-native .components-panel__header, .cve-dark-native .interface-complementary-area-header,
+.cve-dark-native .components-panel, .cve-dark-native .interface-complementary-area { background-color: transparent; border-color: #3a3a42 !important; }
+.cve-dark-native ::placeholder { color: #8e8e96 !important; }
+.cve-dark-native .cve-dk-surface { background-color: #2c2c31 !important; }
+.cve-dark-native .cve-dk-border { border-color: #3a3a42 !important; }
+.cve-dark-native .cve-dk-text { color: #f5f5f7 !important; -webkit-text-fill-color: #f5f5f7; }
+.cve-dark-native .cve-dk-muted { color: #b2b2bb !important; -webkit-text-fill-color: #b2b2bb; }
+.cve-dark-native .cve-dk-accent { color: #9bbcff !important; -webkit-text-fill-color: #9bbcff; }
+.cve-dark-native .cve-dk-danger { color: #ff8a80 !important; -webkit-text-fill-color: #ff8a80; }
+.cve-dark-native .cve-dk-ink { color: #17171a !important; -webkit-text-fill-color: #17171a; }
+.cve-dark-native .cve-dk-icon { fill: #f5f5f7 !important; }
+.cve-dark-native .cve-dk-icon-ink { fill: #17171a !important; }
+/* Selected states read as light chips on the dark ground, like the popup tabs. */
+
+.cve-dark-native .block-editor-block-styles__variants .block-editor-block-styles__item:not(.is-active):hover { color: #9bbcff; box-shadow: inset 0 0 0 1px #55555f; }
+.cve-dark-native .components-panel__body-toggle.components-button:hover,
+.cve-dark-native .components-button.is-tertiary:hover:not(:disabled):not(.is-pressed):not(.is-active),
+.cve-dark-native .components-button.is-secondary:hover:not(:disabled):not(.is-pressed):not(.is-active) { background-color: #393941 !important; }
+/* The most common native headings are coloured up front, so they never flash dark while the pass catches up. */
+.cve-dark-native .components-panel__body-toggle.components-button, .cve-dark-native .components-panel__body-title,
+.cve-dark-native .components-panel__arrow, .cve-dark-native .block-editor-block-card__title, .cve-dark-native .block-editor-block-card__name,
+.cve-dark-native .components-tools-panel-header, .cve-dark-native .components-base-control__label, .cve-dark-native .interface-complementary-area-header h2 { color: #f5f5f7; fill: currentColor; }
+.cve-dark-native .block-editor-block-card__description { color: #b2b2bb; }
+.cve-dark-native :focus-visible { outline-color: #8bb8ff; }
+
+/* ---------------------------------------------------------------------------
+   Native Gutenberg controls in the Visual Edit skin: the same type, rounded
+   dark fields, grey labels, uppercase section titles, buttons and tabs as the
+   popup's own controls.
+   ------------------------------------------------------------------------ */
+.cve-dark-native { font: 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: normal; }
+.cve-dark-native :is(button, input, select, textarea, label, legend, h2, h3, h4, p, span, div, a):not([class*="dashicons"]):not(.block-editor-block-preview__container *):not([style*="font-family"]) { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.cve-dark-native .components-popover__content, .cve-dark-native .components-modal__frame { font-size: 13px; }
+
+/* Sections: panels and tools panels read like the popup's collapsible groups. */
+.cve-w-popup .cve-dark-native .components-panel__body,
+.cve-w-popup .cve-dark-native .block-editor-block-card { padding-left: 0 !important; padding-right: 0 !important; }
+.cve-dark-native .components-panel__body { border-top: 1px solid #2f2f35 !important; border-bottom: 0 !important; }
+.cve-dark-native .components-panel__body.is-opened { padding-bottom: 10px !important; }
+.cve-dark-native .components-panel__body > .components-panel__body-title { margin: 0 !important; background: transparent !important; }
+.cve-dark-native .components-panel__body-toggle.components-button,
+.cve-dark-native .components-tools-panel-header :is(h2, .components-heading),
+.cve-dark-native .block-editor-block-inspector__advanced .components-panel__body-toggle.components-button {
+	color: #a7a7ad !important; font-size: 11px !important; font-weight: 600 !important; letter-spacing: .12em !important; text-transform: uppercase !important; line-height: 1.4 !important;
+}
+.cve-w-popup .cve-dark-native .components-panel__body-toggle.components-button { padding: 10px 28px 8px 0 !important; height: auto !important; }
+.cve-dark-native .components-panel__body-toggle.components-button:hover { background: transparent !important; color: #fff !important; }
+.cve-dark-native .components-panel__body-toggle .components-panel__arrow { right: 0 !important; fill: #a7a7ad !important; color: #a7a7ad !important; }
+.cve-dark-native .components-tools-panel { border-top: 1px solid #2f2f35 !important; row-gap: 8px !important; column-gap: 6px !important; }
+.cve-w-popup .cve-dark-native .components-tools-panel { padding: 0 0 12px !important; }
+.cve-dark-native .components-tools-panel-header { margin: 0 !important; padding: 10px 0 2px !important; min-height: 0 !important; }
+.cve-dark-native .components-tools-panel-header .components-dropdown-menu__toggle,
+.cve-dark-native .components-font-size-picker__header .components-button.has-icon { border: 0 !important; background: transparent !important; color: #a7a7ad !important; min-width: 28px !important; height: 28px !important; border-radius: 8px !important; box-shadow: none !important; }
+.cve-dark-native .components-tools-panel-header .components-dropdown-menu__toggle:hover,
+.cve-dark-native .components-font-size-picker__header .components-button.has-icon:hover { background: #2c2c31 !important; color: #fff !important; }
+
+/* Block card. */
+.cve-dark-native .block-editor-block-card { padding-top: 10px !important; padding-bottom: 10px !important; gap: 10px !important; }
+.cve-dark-native .block-editor-block-card__title { font-size: 15px !important; font-weight: 600 !important; color: #f5f5f7 !important; }
+.cve-dark-native .block-editor-block-card__description { font-size: 12px !important; color: #a7a7ad !important; }
+
+/* Labels: grey, sentence case, like "Symbol" / "Colour" in the popup. */
+.cve-dark-native :is(.components-base-control__label, .components-input-control__label, .components-font-size-picker__header__label, .components-toggle-group-control__label, legend, .components-form-token-field__label, .components-custom-select-control__label, .block-editor-block-inspector label.components-truncate) {
+	color: #a7a7ad !important; font-size: 12px !important; font-weight: 500 !important; text-transform: none !important; letter-spacing: normal !important; line-height: 1.4 !important;
+}
+.cve-dark-native .components-base-control__help, .cve-dark-native .components-form-token-field__help { color: #8e8e96 !important; font-size: 12px !important; font-style: normal !important; }
+
+/* Fields: one rounded dark surface, no hard border. */
+.cve-dark-native .components-input-control__container,
+.cve-dark-native .components-custom-select-control__button,
+.cve-dark-native .components-form-token-field__input-container,
+.cve-dark-native :is(.components-text-control__input, .components-textarea-control__input, .components-select-control__input),
+.cve-dark-native :is(input[type="text"], input[type="url"], input[type="email"], input[type="search"], input[type="number"], input[type="password"], textarea, select):not(.components-input-control__input) {
+	background-color: #2c2c31 !important; color: #f5f5f7 !important; border: 0 !important; border-radius: 9px !important; box-shadow: none !important;
+}
+.cve-dark-native .components-input-control__container { min-height: 40px; }
+.cve-dark-native .components-input-control__input { background: transparent !important; color: #f5f5f7 !important; font-size: 13px !important; min-height: 40px !important; padding-inline: 10px !important; }
+.cve-dark-native :is(.components-text-control__input, .components-textarea-control__input, textarea) { padding: 10px !important; font-size: 13px !important; min-height: 40px; }
+.cve-dark-native .components-input-control__backdrop { border-color: transparent !important; border-radius: 9px !important; box-shadow: none !important; }
+.cve-dark-native .components-input-control__container:focus-within .components-input-control__backdrop,
+.cve-dark-native :is(.components-text-control__input, .components-textarea-control__input, textarea, .components-form-token-field__input-container):focus-within { box-shadow: 0 0 0 1.5px #8bb8ff !important; border-color: transparent !important; }
+.cve-dark-native .components-input-control__suffix, .cve-dark-native .components-input-control__prefix,
+.cve-dark-native .components-unit-control__select, .cve-dark-native .components-input-control-suffix-wrapper { color: #a7a7ad !important; background: transparent !important; }
+.cve-dark-native .components-custom-select-control__button svg, .cve-dark-native .components-input-control__container svg { fill: #a7a7ad; }
+
+/* Buttons. */
+.cve-dark-native .components-button:is(.is-secondary, .is-tertiary, .is-next-40px-default-size, .is-compact):not(.is-primary):not(.is-link):not(.components-panel__body-toggle):not(.components-toggle-group-control-option-base):not([class*="circular-option-picker"]):not([class*="color-gradient"]):not(.block-editor-block-styles__item):not(.components-menu-item__button):not([role="tab"]):not(.components-dropdown-menu__toggle) {
+	border-radius: 8px !important; box-shadow: none !important; border: 1px solid #3a3a42 !important; background-color: #2c2c31 !important; color: #f5f5f7 !important; font-weight: 500;
+}
+.cve-dark-native .components-button:is(.is-secondary, .is-tertiary):hover:not(:disabled) { background-color: #393941 !important; color: #fff !important; }
+.cve-dark-native .components-button.is-primary { border-radius: 8px !important; background: #4263eb !important; color: #fff !important; box-shadow: none !important; }
+.cve-dark-native .components-button.is-primary:hover:not(:disabled) { background: #3651d4 !important; }
+.cve-dark-native .components-button.is-link { color: #9bbcff !important; }
+.cve-dark-native .components-button.is-destructive:not(.is-primary):not(.is-link) { color: #ff8a80 !important; border-color: #5a2626 !important; }
+
+/* Segmented controls (heading level, justification, text case…) = popup tabs. */
+.cve-dark-native .components-toggle-group-control { background: #2c2c31 !important; border: 0 !important; border-radius: 10px !important; padding: 3px !important; min-height: 40px; gap: 2px; box-shadow: none !important; }
+.cve-dark-native .components-toggle-group-control::before, .cve-dark-native .components-toggle-group-control > div:not([class*="option"]):empty { background: #45454f !important; border-radius: 8px !important; box-shadow: none !important; }
+.cve-dark-native .components-toggle-group-control-option-base { background: transparent !important; color: #b2b2bb !important; border: 0 !important; border-radius: 8px !important; box-shadow: none !important; min-height: 32px; }
+.cve-dark-native .components-toggle-group-control-option-base:hover { color: #fff !important; }
+.cve-dark-native .components-toggle-group-control-option-base[aria-checked="true"], .cve-dark-native .components-toggle-group-control-option-base[aria-pressed="true"], .cve-dark-native .components-toggle-group-control-option-base.is-pressed { background: #45454f !important; color: #fff !important; }
+.cve-dark-native .components-toggle-group-control-option-base svg { fill: currentColor !important; }
+.cve-dark-native .block-editor-block-variation-transforms .components-toggle-group-control { display: flex !important; flex-wrap: wrap; width: 100%; }
+.cve-dark-native .block-editor-block-variation-transforms .components-toggle-group-control > * { flex: 1 1 0; }
+
+/* Block style variations: rounded tiles, the selected one lit like a tab. */
+.cve-dark-native .block-editor-block-styles__variants { gap: 6px !important; }
+.cve-dark-native .block-editor-block-styles__variants .block-editor-block-styles__item { border-radius: 9px !important; background: #2c2c31 !important; border: 1px solid #3a3a42 !important; box-shadow: none !important; color: #d3d3da !important; min-height: 40px; width: calc(50% - 3px) !important; }
+.cve-dark-native .block-editor-block-styles__variants .block-editor-block-styles__item:hover { background: #393941 !important; color: #fff !important; }
+.cve-dark-native .block-editor-block-styles__variants .block-editor-block-styles__item.is-active,
+.cve-dark-native .block-editor-block-styles__variants .block-editor-block-styles__item.is-active:hover { background: #45454f !important; border-color: #55555f !important; color: #fff !important; }
+.cve-dark-native .block-editor-block-styles__variants .block-editor-block-styles__item .block-editor-block-styles__item-text { color: inherit !important; }
+
+/* Pressed icon/toolbar buttons. */
+.cve-dark-native .components-toolbar-group, .cve-dark-native .components-toolbar { border: 0 !important; background: transparent !important; display: flex; flex-wrap: wrap; gap: 6px; }
+.cve-dark-native :is(.components-toolbar-group, .components-toolbar) .components-button { border-radius: 8px !important; background: #2c2c31 !important; border: 1px solid #3a3a42 !important; color: #f5f5f7 !important; }
+.cve-dark-native .components-button.is-pressed:not(.is-primary) { background: #45454f !important; color: #fff !important; box-shadow: none !important; }
+.cve-dark-native .components-button.is-pressed:not(.is-primary)::before { display: none !important; }
+
+/* Colour and gradient rows ("Color", "Background"). */
+.cve-dark-native .block-editor-tools-panel-color-gradient-settings__item,
+.cve-dark-native .block-editor-panel-color-gradient-settings__item { border: 0 !important; background: #2c2c31 !important; border-radius: 9px !important; margin-top: 0 !important; margin-bottom: 6px !important; overflow: hidden; }
+.cve-dark-native :is(.block-editor-tools-panel-color-gradient-settings__dropdown, .block-editor-panel-color-gradient-settings__dropdown) .components-button { min-height: 40px !important; padding: 8px 10px !important; color: #f5f5f7 !important; background: transparent !important; border: 0 !important; border-radius: 9px !important; }
+.cve-dark-native :is(.block-editor-tools-panel-color-gradient-settings__dropdown, .block-editor-panel-color-gradient-settings__dropdown) .components-button:hover,
+.cve-dark-native :is(.block-editor-tools-panel-color-gradient-settings__dropdown, .block-editor-panel-color-gradient-settings__dropdown) .components-button.is-open { background: #393941 !important; }
+.cve-dark-native :is(.block-editor-tools-panel-color-gradient-settings__dropdown, .block-editor-panel-color-gradient-settings__dropdown) .components-button.is-open { color: #fff !important; }
+
+/* Toggles, checkboxes, ranges. */
+.cve-dark-native .components-form-toggle .components-form-toggle__track { background: #3a3a42 !important; border-color: #55555f !important; }
+.cve-dark-native .components-form-toggle.is-checked .components-form-toggle__track { background: #4263eb !important; border-color: #4263eb !important; }
+.cve-dark-native .components-form-toggle__thumb { background: #f5f5f7 !important; border-color: transparent !important; box-shadow: none !important; }
+.cve-dark-native .components-checkbox-control__input[type="checkbox"] { background: #2c2c31 !important; border: 1px solid #55555f !important; border-radius: 5px !important; }
+.cve-dark-native .components-checkbox-control__input[type="checkbox"]:checked { background: #4263eb !important; border-color: #4263eb !important; }
+.cve-dark-native .components-range-control__rail, .cve-dark-native [class*="range-control"] [class*="rail"] { background-color: #3a3a42 !important; }
+.cve-dark-native .components-range-control__track { background-color: #8bb8ff !important; }
+.cve-dark-native hr, .cve-dark-native .components-divider { border-color: #2f2f35 !important; }
+
+/* Tabs in native sidebars and the inspector = popup tabs. */
+.cve-dark-native [role="tablist"] { display: flex; gap: 2px; padding: 3px !important; margin: 8px 0 !important; border: 0 !important; border-radius: 10px; background: #2c2c31 !important; box-shadow: none !important; min-height: 0 !important; }
+.cve-dark-native [role="tablist"]::before, .cve-dark-native [role="tablist"]::after, .cve-dark-native [role="tab"]::before, .cve-dark-native [role="tab"]::after { display: none !important; }
+.cve-dark-native [role="tab"] { flex: 1 1 auto; justify-content: center; border: 0 !important; border-radius: 8px !important; background: transparent !important; color: #b2b2bb !important; font-size: 12px !important; font-weight: 500 !important; min-height: 32px !important; height: auto !important; padding: 6px 8px !important; box-shadow: none !important; }
+.cve-dark-native [role="tab"]:hover { color: #fff !important; }
+.cve-dark-native [role="tab"][aria-selected="true"] { background: #45454f !important; color: #fff !important; }
+.cve-dark-native .interface-interface-skeleton__sidebar [role="tablist"], .cve-dark-native.interface-interface-skeleton__sidebar [role="tablist"],
+.cve-dark-native.interface-interface-skeleton__secondary-sidebar [role="tablist"] { margin: 8px 12px !important; }
+.cve-dark-native .interface-complementary-area-header, .cve-dark-native .editor-sidebar__panel-tabs, .cve-dark-native .editor-inserter-sidebar__header, .cve-dark-native .editor-list-view-sidebar__header { background: #202024 !important; border-color: #2f2f35 !important; }
+
+/* Popovers and menus = the toolbar's dark menus. */
+.components-popover.cve-dark-native { background-color: transparent !important; }
+.components-popover.cve-dark-native .components-popover__content { background: #202024 !important; color: #f5f5f7; border: 1px solid #3a3a42 !important; border-radius: 12px !important; box-shadow: 0 18px 50px rgb(0 0 0 / 45%) !important; outline: 0 !important; }
+.cve-dark-native .components-menu-item__button, .cve-dark-native .components-dropdown-menu__menu-item { border-radius: 8px !important; color: #f5f5f7 !important; min-height: 36px; }
+.cve-dark-native .components-menu-item__button:hover:not(:disabled), .cve-dark-native .components-menu-item__button:focus:not(:disabled) { background: #2c2c31 !important; color: #fff !important; box-shadow: none !important; }
+.cve-dark-native .components-menu-item__button[aria-checked="true"] { background: #45454f !important; }
+.cve-dark-native .components-menu-group + .components-menu-group { border-top: 1px solid #3a3a42 !important; }
+.cve-dark-native .components-menu-group__label { color: #a7a7ad !important; font-size: 11px !important; font-weight: 600 !important; letter-spacing: .12em !important; text-transform: uppercase !important; }
+.cve-dark-native .components-custom-select-control__menu, .cve-dark-native [role="listbox"] { background: #202024 !important; border: 1px solid #3a3a42 !important; border-radius: 12px !important; }
+/* Colour and gradient swatches are options too, but paint their value through their own
+   colour (an inset box-shadow in currentColor) and background: leave them untouched. */
+.cve-dark-native [role="option"]:not([class*="circular-option-picker"]) { border-radius: 8px !important; color: #f5f5f7 !important; }
+.cve-dark-native [role="option"]:not([class*="circular-option-picker"]):is(:hover, [aria-selected="true"], [data-active-item]) { background: #2c2c31 !important; }
+
+/* Native dialogs. */
+.components-modal__frame.cve-dark-native { border-radius: 16px !important; border: 1px solid #3a3a42; box-shadow: 0 24px 60px rgb(0 0 0 / 45%) !important; }
+.cve-dark-native .components-modal__header { background: #202024 !important; border-bottom: 1px solid #2f2f35 !important; }
+.cve-dark-native .components-modal__header-heading { color: #f5f5f7 !important; font-size: 15px !important; font-weight: 600 !important; }
+
+/* Custom selects (font, font size, appearance) and other InputBase fields. */
+.cve-dark-native .components-input-base,
+.cve-dark-native .components-custom-select-control :is(button[role="combobox"], [aria-haspopup="listbox"]),
+.cve-dark-native .components-font-size-picker__select button,
+.cve-dark-native .block-editor-font-family-control button[aria-haspopup] { background-color: #2c2c31 !important; border-radius: 9px !important; border: 0 !important; box-shadow: none !important; color: #f5f5f7 !important; min-height: 40px; }
+.cve-dark-native .components-input-base .components-input-control__container,
+.cve-dark-native .components-custom-select-control .components-input-control__container { background-color: transparent !important; }
+.cve-dark-native .components-panel__body-toggle.components-button:focus:not(:focus-visible),
+.cve-dark-native .components-button:focus:not(:focus-visible) { box-shadow: none !important; outline: 0 !important; }
+/* Dialogs built from native controls (SEO & sharing): the popup's field rhythm. */
+.components-modal__frame.cve-dark-native .components-modal__content { padding-top: 8px; }
+.components-modal__frame.cve-dark-native .components-modal__content .components-base-control { margin-bottom: 14px !important; }
+.components-modal__frame.cve-dark-native .components-modal__content :is(.components-toggle-control, .components-checkbox-control) { margin: 12px 0 !important; }
+.components-modal__frame.cve-dark-native .components-modal__content .components-button { margin-top: 2px; }
+.cve-dark-native .components-toggle-control .components-base-control__field, .cve-dark-native .components-toggle-control label { color: #f5f5f7 !important; font-size: 13px !important; }
+/* Menu rows are plain rows, not boxed buttons. */
+.cve-dark-native :is([role="menu"], [role="menubar"], .components-menu-group, .components-dropdown-menu__menu) .components-button { border: 0 !important; background-color: transparent !important; box-shadow: none !important; border-radius: 8px !important; color: #f5f5f7 !important; }
+.cve-dark-native :is([role="menu"], .components-menu-group, .components-dropdown-menu__menu) .components-button:hover:not(:disabled) { background-color: #2c2c31 !important; }
+.cve-dark-native :is([role="menu"], .components-menu-group) .components-button:is([aria-checked="true"], .is-pressed) { background-color: #2c2c31 !important; }
+.cve-dark-native .components-menu-item__info, .cve-dark-native .components-menu-item__shortcut { color: #a7a7ad !important; }
+.cve-dark-native [role="tablist"] { box-sizing: border-box; max-width: 100%; }
+.cve-w-popup .cve-dark-native .block-editor-block-inspector__tabs [role="tablist"] { width: 100%; margin-left: 0 !important; margin-right: 0 !important; }
+
+/* Block inserter (All blocks, quick inserter): separate rounded tiles with a gap on the
+   panel's own background, and icons in the panel's text colour. WordPress paints block
+   icons #1e1e1e, which the adaptive pass only repaired for the icons it happened to
+   measure. Icons a block colours itself (inline style) keep their colour. */
+.cve-dark-native .block-editor-block-types-list.block-editor-block-types-list { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; padding: 0 !important; overflow: visible; }
+.cve-dark-native .block-editor-block-types-list > [role="presentation"] { display: flex; flex-wrap: nowrap; gap: 8px; margin: 0 0 8px; overflow: visible; }
+.cve-dark-native .block-editor-block-types-list__list-item.block-editor-block-types-list__list-item { width: calc((100% - 16px) / 3) !important; flex: 0 0 auto; margin: 0 !important; padding: 0 !important; }
+.cve-dark-native .block-editor-block-types-list__item.block-editor-block-types-list__item { width: 100%; height: 100%; margin: 0 !important; border: 1px solid #3a3a42 !important; border-radius: 12px !important; background: #2c2c31 !important; color: #f5f5f7 !important; }
+.cve-dark-native .block-editor-block-types-list__item.block-editor-block-types-list__item:is(:hover, :focus-visible, [data-active-item]) { background: #393941 !important; border-color: #4a4a54 !important; }
+.cve-dark-native .block-editor-block-types-list__item .block-editor-block-icon:not([style*="color"]),
+.cve-dark-native .block-editor-block-types-list__item .block-editor-block-icon:not([style*="color"]) svg { color: #f5f5f7 !important; fill: currentColor !important; }
+.cve-dark-native .block-editor-block-types-list__item .block-editor-block-icon:not([style*="color"]) svg :is(path, rect, circle, polygon, g):not([fill="none"]) { fill: currentColor !important; }
+
+/* Colour palettes in native popovers: room inside the bordered palette group, and a faint
+   light ring so dark theme colours stay visible against the dark panel. */
+.cve-dark-native .components-circular-option-picker > div:has(> .components-circular-option-picker__swatches) { padding: 12px !important; }
+.cve-dark-native .components-circular-option-picker__option::after { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22) !important; }

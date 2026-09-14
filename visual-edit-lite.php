@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Visual Edit Lite
  * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
- * Description: Point-and-click visual editing for raw-HTML theme pages — text, links, images, forms, menus, SEO and AI-readiness — keeping the page markup 1:1 with the original design. No builder re-structuring.
- * Version: 1.25.12
+ * Description: Visual editing for raw-HTML sites and complete native Gutenberg editing for block themes, with responsive controls, movement, forms, SEO and AI-readiness.
+ * Version: 1.27.0
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Filip Dvoran
@@ -57,7 +57,7 @@ if ( clara_ve_lite_pro_active() ) {
 	return;
 }
 
-define( 'CLARA_VE_VERSION', '1.25.12' );
+define( 'CLARA_VE_VERSION', '1.27.0' );
 // Signals schema-1 generated themes that this plugin delegates every public
 // rendering concern to them. Themes generated before that contract ignore the
 // signal and continue to receive the complete legacy runtime below.
@@ -258,6 +258,7 @@ require_once CLARA_VE_DIR . 'includes/class-block-supports.php';
 require_once CLARA_VE_DIR . 'includes/class-patterns.php';
 require_once CLARA_VE_DIR . 'includes/class-motion.php';
 require_once CLARA_VE_DIR . 'includes/class-responsive.php';
+require_once CLARA_VE_DIR . 'includes/class-block-extras.php';
 require_once CLARA_VE_DIR . 'includes/class-block-stamp.php';
 require_once CLARA_VE_DIR . 'includes/class-block-patch.php';
 require_once CLARA_VE_DIR . 'includes/class-source-store.php';
@@ -272,8 +273,11 @@ require_once CLARA_VE_DIR . 'includes/class-forms.php';
 require_once CLARA_VE_DIR . 'includes/class-lists.php';
 require_once CLARA_VE_DIR . 'includes/class-optin.php';
 require_once CLARA_VE_DIR . 'includes/class-tokens.php';
+require_once CLARA_VE_DIR . 'includes/class-form-blocks.php';
 require_once CLARA_VE_DIR . 'includes/class-fonts.php';
 require_once CLARA_VE_DIR . 'includes/class-editor-page.php';
+require_once CLARA_VE_DIR . 'includes/class-native-gutenberg.php';
+require_once CLARA_VE_DIR . 'includes/class-native-history.php';
 require_once CLARA_VE_DIR . 'includes/class-media.php';
 require_once CLARA_VE_DIR . 'includes/class-form-settings.php';
 require_once CLARA_VE_DIR . 'includes/class-mailer.php';
@@ -1662,9 +1666,8 @@ function clara_ve_contract_notice() {
 	}
 
 	// On a block theme this is not a misconfiguration, it is the correct
-	// state: menus there are core/navigation blocks, edited in the Site
-	// Editor, and this plugin deliberately does not touch them — navigation
-	// is one of the block types it refuses to address at all. Warning about a
+	// state: menus there are core/navigation blocks edited through Gutenberg,
+	// which the Visual Edit menu now opens. Warning about a
 	// filter such a theme has no reason to implement sends the owner to fix
 	// something that is not broken, and hides where menus actually live. So
 	// the block-theme message points at the Site Editor and does not shout.
@@ -1675,7 +1678,7 @@ function clara_ve_contract_notice() {
 		printf(
 			'<div class="notice notice-info"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
 			esc_html__( 'Menus are part of this theme.', 'visual-edit-lite' ),
-			esc_html__( 'This theme keeps its navigation in WordPress\'s own navigation blocks rather than in markup this editor owns, so menus are edited alongside the rest of the theme.', 'visual-edit-lite' ),
+			esc_html__( 'This theme keeps its navigation in WordPress\'s own navigation blocks, so Visual Edit opens it alongside the rest of the theme in Gutenberg.', 'visual-edit-lite' ),
 			esc_url( admin_url( 'site-editor.php' ) ),
 			esc_html__( 'Open the Site Editor', 'visual-edit-lite' )
 		);
@@ -1995,6 +1998,13 @@ function clara_ve_enqueue_bridge() {
 	show_admin_bar( false );
 
 	wp_enqueue_style( 'clara-ve-bridge', CLARA_VE_URL . 'assets/bridge.css', array(), clara_ve_asset_version( 'assets/bridge.css' ) );
+	// The word on every form's green label. Inline rather than in bridge.css
+	// because CSS `content` is a string literal and a literal cannot be
+	// translated; everything else about the label is in the stylesheet.
+	wp_add_inline_style(
+		'clara-ve-bridge',
+		'html[data-cve-edit-mode] form::before{content:' . wp_json_encode( __( 'Form', 'visual-edit-lite' ), JSON_UNESCAPED_UNICODE ) . '}'
+	);
 	wp_enqueue_script( 'clara-ve-bridge', CLARA_VE_URL . 'assets/bridge.js', array(), clara_ve_asset_version( 'assets/bridge.js' ), array( 'strategy' => 'defer', 'in_footer' => false ) );
 	// The declared zones travel to the bridge so it can mark menu-managed
 	// markup on ANY page and report WHICH zone (and so which location) a
@@ -2300,15 +2310,21 @@ add_filter( 'render_block_core/html', 'clara_ve_strip_specimen', 8, 2 );
  * and in wp-admin for users who can edit.
  */
 function clara_ve_admin_bar_link( $wp_admin_bar ) {
-	if ( ! clara_ve_user_can_edit() ) {
+	$native = class_exists( 'Clara_VE_Native_Gutenberg' ) && Clara_VE_Native_Gutenberg::is_native_mode();
+	if ( $native ? ! current_user_can( 'edit_theme_options' ) : ! clara_ve_user_can_edit() ) {
 		return;
 	}
+	$href = admin_url( 'admin.php?page=visual-edit' );
 	$wp_admin_bar->add_node(
 		array(
 			'id'    => 'clara-visual-edit',
 			'title' => '<span class="ab-icon dashicons dashicons-edit" style="top:2px"></span>' . esc_html__( 'Visual Edit Lite', 'visual-edit-lite' ),
-			'href'  => admin_url( 'admin.php?page=visual-edit' ),
-			'meta'  => array( 'title' => __( 'Open the front page in the visual editor', 'visual-edit-lite' ) ),
+			'href'  => $href,
+			'meta'  => array(
+				'title' => $native
+			? __( 'Edit the complete site with Visual Edit Lite', 'visual-edit-lite' )
+					: __( 'Open the front page in the visual editor', 'visual-edit-lite' ),
+			),
 		)
 	);
 }
@@ -2329,6 +2345,15 @@ function clara_ve_render_pages_column( $column, $post_id ) {
 	if ( 'clara_ve_key' !== $column ) {
 		return;
 	}
+	if ( class_exists( 'Clara_VE_Native_Gutenberg' ) && Clara_VE_Native_Gutenberg::is_native_mode() ) {
+		$url = get_edit_post_link( $post_id, 'raw' );
+		if ( $url && current_user_can( 'edit_post', $post_id ) ) {
+			echo '<a href="' . esc_url( Clara_VE_Native_Gutenberg::workspace_url( $post_id ) ) . '">' . esc_html__( 'Visual Edit Lite', 'visual-edit-lite' ) . '</a>';
+		} else {
+			echo '&#8212;';
+		}
+		return;
+	}
 	$key = get_post_meta( $post_id, CLARA_VE_PAGE_KEY_META, true );
 	if ( ! $key ) {
 		echo '&#8212;';
@@ -2345,6 +2370,13 @@ add_action( 'manage_pages_custom_column', 'clara_ve_render_pages_column', 10, 2 
  * so the block editor genuinely can open it), bypassing the takeover below.
  */
 function clara_ve_add_bypass_row_action( $actions, $post ) {
+	if ( class_exists( 'Clara_VE_Native_Gutenberg' ) && Clara_VE_Native_Gutenberg::is_native_mode() ) {
+		$url = get_edit_post_link( $post->ID, 'raw' );
+		if ( $url && current_user_can( 'edit_post', $post->ID ) ) {
+			$actions['clara_ve_native'] = '<a href="' . esc_url( Clara_VE_Native_Gutenberg::workspace_url( $post->ID ) ) . '">' . esc_html__( 'Visual Edit Lite', 'visual-edit-lite' ) . '</a>';
+		}
+		return $actions;
+	}
 	$key = get_post_meta( $post->ID, CLARA_VE_PAGE_KEY_META, true );
 	if ( ! $key ) {
 		return $actions;
@@ -2377,6 +2409,9 @@ add_filter( 'page_row_actions', 'clara_ve_add_bypass_row_action', 10, 2 );
  */
 function clara_ve_maybe_takeover_editor( $replace_editor, $post ) {
 	if ( $replace_editor || ! ( $post instanceof WP_Post ) || 'page' !== $post->post_type ) {
+		return $replace_editor;
+	}
+	if ( class_exists( 'Clara_VE_Native_Gutenberg' ) && Clara_VE_Native_Gutenberg::is_native_mode() ) {
 		return $replace_editor;
 	}
 	if ( ! clara_ve_user_can_edit() ) {
@@ -2574,6 +2609,11 @@ function clara_ve_enhance_theme_form( $handled, $context ) {
 	}
 	$request = new WP_REST_Request( 'POST', '/clara-ve/v1/submit' );
 	$request->set_body_params( (array) $context['params'] );
+	// What arrives here is the RAW request body the theme forwarded, so a
+	// recipient or list id in it is whatever the browser sent — indistinguishable
+	// from one a visitor retyped. handle_submit() therefore checks the delivery
+	// signature for this path exactly as it does for a form the plugin rendered:
+	// signed values are honoured, everything else falls back to Form Settings.
 	return Clara_VE_Forms::handle_submit( $request );
 }
 add_filter( 'html2wp_theme_form_handle', 'clara_ve_enhance_theme_form', 10, 2 );

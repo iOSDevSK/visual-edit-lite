@@ -1,0 +1,12 @@
+const { chromium } = require(process.env.NM + '/playwright');
+(async () => { const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' }); const p = await b.newPage({ viewport: { width: 1280, height: 900 } }); const out = {};
+  const logs = []; p.on('console', m => { if (m.type() === 'error') logs.push(m.text().slice(0, 200)); });
+  await p.goto('http://localhost:1111/ve-qa-block-form/'); await p.evaluate(() => document.querySelectorAll('.reveal').forEach(e => e.classList.add('in', 'is-visible')));
+  const html = await p.content();
+  out.checks = { connected: html.includes('/wp-json/clara-ve/v1/form-submit'), demo: /form[^>]*data-demo/.test(html), placeholder: html.includes('Your two names'), option: html.includes('A QA option'), button: html.includes('Send it now'), removed: !html.includes('Where in the world'), added: html.includes('Second email'), label: html.includes('Names of the couple'), styleCss: /cve-r-[a-f0-9]{16}[^{]*button\[type="submit"\][^{]*\{[^}]*#1d4ed8/.test(html), submitScript: html.includes('form-submit.js') };
+  const form = p.locator('.wp-block-clara-ve-form').first(); await form.scrollIntoViewIfNeeded();
+  await form.screenshot({ path: process.env.OUT + '/front-block-form.png' });
+  await p.fill('#c-name', 'QA Visitor'); await p.fill('#c-email', 'visitor@example.org'); await p.fill('#c-msg', 'Hello from the block form'); await p.fill('.wp-block-clara-ve-form input[name="email-2"]', 'second@example.org').catch(e => out.secondErr = e.message);
+  await p.waitForTimeout(4000);
+  await Promise.all([p.waitForURL(/form-submitted/, { timeout: 15000 }).catch(e => out.navErr = e.message), p.click('.wp-block-clara-ve-form button[type=submit]')]);
+  out.after = p.url(); out.logs = logs; console.log(JSON.stringify(out, null, 1)); await b.close(); })();

@@ -36,7 +36,21 @@ class Clara_VE_Patterns {
 		if ( ! class_exists( 'WP_Block_Patterns_Registry' ) ) {
 			return array();
 		}
+		// A theme's patterns are namespaced by whatever the theme chose, and
+		// that is very often NOT its folder name: a theme in
+		// `acme-photo-2.4.0/` routinely registers `acme-photo/hero`. Matching
+		// only on the folder found nothing on such a theme, and "Add section"
+		// came up empty with thirteen of the theme's own patterns registered.
+		// The text domain is the theme's own name for itself, so it is the
+		// prefix to match beside the two directory names.
 		$mine = array( get_stylesheet() . '/', get_template() . '/' );
+		foreach ( array( wp_get_theme(), wp_get_theme( get_template() ) ) as $theme ) {
+			$domain = $theme instanceof WP_Theme ? (string) $theme->get( 'TextDomain' ) : '';
+			if ( '' !== $domain ) {
+				$mine[] = $domain . '/';
+			}
+		}
+		$mine = array_unique( $mine );
 		$out  = array();
 
 		foreach ( WP_Block_Patterns_Registry::get_instance()->get_all_registered() as $pattern ) {

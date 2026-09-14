@@ -49,6 +49,22 @@ class Clara_VE_Motion {
 		if ( is_admin() ) {
 			return;
 		}
+		// A block theme can keep movement in a template, template part or
+		// synced pattern rather than in the queried post. Those entities are
+		// resolved while rendering and there is no single post_content string
+		// that can answer whether they use a VE class. The native editor offers
+		// movement on all of them, so keep the small runtime available there.
+		if ( class_exists( 'Clara_VE_Native_Gutenberg' ) && Clara_VE_Native_Gutenberg::is_native_mode() ) {
+			self::style();
+			wp_enqueue_script(
+				'clara-ve-motion',
+				CLARA_VE_URL . 'assets/motion.js',
+				array(),
+				clara_ve_asset_version( 'assets/motion.js' ),
+				array( 'strategy' => 'defer', 'in_footer' => true )
+			);
+			return;
+		}
 		$post = get_queried_object();
 		if ( ! ( $post instanceof WP_Post ) ) {
 			return;

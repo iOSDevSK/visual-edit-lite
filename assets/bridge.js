@@ -2537,6 +2537,8 @@
 			rememberOriginal( el );
 			rememberOriginalMedia( el );
 			var target = targetFrom( el );
+			// Where the click landed, so the host opens its popup beside it.
+			target.pointer = { x: ev.clientX, y: ev.clientY };
 			post( { type: 'select', target: target } );
 			// A form zone owns its SUBMISSION, not its wording. The labels,
 			// the button and the small print are the design's own words,

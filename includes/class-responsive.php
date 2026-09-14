@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
 
 class Clara_VE_Responsive {
 
-	/** Where the rules live. Not exposed to REST: this editor writes it. */
+	/** Where the rules live. Exposed to authenticated REST saves for Gutenberg. */
 	const META = '_clara_ve_responsive';
 
 	/** The class that ties a block to its rules. */
@@ -82,15 +82,27 @@ class Clara_VE_Responsive {
 				'type'         => 'string',
 				'single'       => true,
 				'default'      => '',
-				// Written by this editor's own route, which checks the page is
-				// one the block driver owns. Nothing about it belongs in the
-				// public REST surface.
-				'show_in_rest' => false,
-				'auth_callback' => static function () {
-					return current_user_can( 'edit_posts' );
+				// Native Gutenberg edits this value together with post_content,
+				// giving the responsive controls the editor's normal dirty state,
+				// save button and undo/redo stack.
+				'show_in_rest'      => true,
+				'revisions_enabled' => true,
+				'sanitize_callback' => array( __CLASS__, 'sanitize_meta' ),
+				'auth_callback' => static function ( $allowed, $meta_key, $post_id ) {
+					return current_user_can( 'edit_post', (int) $post_id );
 				},
 			)
 		);
+	}
+
+	/** Sanitise the JSON representation accepted by the core REST controller. */
+	public static function sanitize_meta( $value ) {
+		// update_metadata() has already unslashed the value before it invokes a
+		// registered meta sanitizer. Unslashing again would corrupt a legitimate
+		// escaped character before JSON decoding.
+		$decoded = is_string( $value ) ? json_decode( $value, true ) : $value;
+		$clean   = self::clean( is_array( $decoded ) ? $decoded : array() );
+		return $clean ? wp_json_encode( $clean ) : '';
 	}
 
 	/**

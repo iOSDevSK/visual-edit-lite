@@ -1502,3 +1502,9 @@ which is usually more than what
 	text-transform: uppercase;
 	color: #8b8b93;
 }
+
+/* Content / Style / Section tabs — the same three the block-theme popup uses. */
+.cve-panel .cve-tabs { display: flex; gap: 2px; padding: 3px; margin: 0 0 8px; border-radius: 10px; background: #2c2c31; }
+.cve-panel .cve-tab { flex: 1; border: 0; background: transparent; color: #b2b2bb; padding: 6px 4px; border-radius: 8px; font: inherit; font-size: 12px; cursor: pointer; }
+.cve-panel .cve-tab[aria-selected="true"] { background: #45454f; color: #fff; }
+.cve-panel .cve-tab-hidden { display: none !important; }

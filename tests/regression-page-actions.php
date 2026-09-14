@@ -146,11 +146,15 @@ $check( 'and its description', is_array( $now ) && $was['description'] === $now[
 // canonical copied verbatim tells search engines to ignore the copy entirely.
 $check( 'but the canonical was NOT copied', is_array( $now ) && '' === $now['canonical'] );
 
-$rules = get_post_meta( $out['id'], Clara_VE_Responsive::META, true );
-$check( 'the small-screen rules are an array too', is_array( $rules ) );
+// Read through the accessor, not the meta row: since the responsive record
+// became something Gutenberg edits over REST it is stored as a JSON string,
+// and asserting on the raw row asserted on a storage detail rather than on
+// the thing that matters — that the copy has the same small-screen rules.
+$rules = Clara_VE_Responsive::rules( $out['id'] );
+$check( 'the small-screen rules came across', is_array( $rules ) && $rules );
 $check(
 	'with their values intact',
-	is_array( $rules ) && isset( $rules['cve-r-abc12345']['mobile']['spacing.padding.top'] )
+	isset( $rules['cve-r-abc12345']['mobile']['spacing.padding.top'] )
 		&& '8px' === $rules['cve-r-abc12345']['mobile']['spacing.padding.top']
 );
 

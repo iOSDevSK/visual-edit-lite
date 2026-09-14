@@ -270,7 +270,11 @@ class Clara_VE_History {
 		if ( '' === trim( (string) $current ) ) {
 			return; // nothing to seed yet (e.g. the pattern isn't registered)
 		}
-		self::record( Clara_VE_Source_Store::tokenize( $current ), Clara_VE_Pseudo_Store::get( $raw ), 'save', 'Original', null, $raw );
+		$block_post = Clara_VE_Source_Store::block_key_post_id( $raw );
+		$responsive = $block_post && class_exists( 'Clara_VE_Responsive' )
+			? Clara_VE_Responsive::rules( $block_post )
+			: null;
+		self::record( Clara_VE_Source_Store::tokenize( $current ), Clara_VE_Pseudo_Store::get( $raw ), 'save', 'Original', null, $raw, $responsive );
 	}
 
 	/**
@@ -324,14 +328,14 @@ class Clara_VE_History {
 	 * @param string $page_key
 	 * @return array<int,array{id:int,hash:string,message:string,kind:string,isHead:bool,createdAt:string}>
 	 */
-	public static function list_entries( $limit = 100, $page_key = CLARA_VE_DEFAULT_KEY ) {
+	public static function list_entries( $limit = 100, $page_key = CLARA_VE_DEFAULT_KEY, $live = null ) {
 		global $wpdb;
 		self::maybe_install();
 		$page_key = self::scoped_key( $page_key );
 		$table    = self::table();
 		$rows     = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, content_hash, message, kind, restored_from_id, created_at FROM {$table} WHERE page_key = %s ORDER BY id DESC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT id, content_hash, responsive, message, kind, restored_from_id, created_at FROM {$table} WHERE page_key = %s ORDER BY id DESC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$page_key,
 				$limit
 			)
@@ -347,9 +351,13 @@ class Clara_VE_History {
 		// HEAD correctly snaps back to that older row instead of staying
 		// "stuck" on the newest one.
 		$current_hash  = null;
-		$live_resolved = Clara_VE_Source_Store::get_resolved_source( $page_key );
-		if ( is_string( $live_resolved ) && '' !== $live_resolved ) {
-			$current_hash = hash( 'sha256', Clara_VE_Source_Store::tokenize( $live_resolved ) );
+		if ( is_array( $live ) ) {
+			$current_hash = hash( 'sha256', $live['source'] );
+		} else {
+			$live_resolved = Clara_VE_Source_Store::get_resolved_source( $page_key );
+			if ( is_string( $live_resolved ) && '' !== $live_resolved ) {
+				$current_hash = hash( 'sha256', Clara_VE_Source_Store::tokenize( $live_resolved ) );
+			}
 		}
 
 		// Resolve the short hash of each restore's source entry for the
@@ -367,6 +375,7 @@ class Clara_VE_History {
 		}
 
 		$out = array();
+		$matched_live = false;
 		foreach ( $rows as $row ) {
 			$label = $row->message;
 			if ( ! $label ) {
@@ -376,12 +385,17 @@ class Clara_VE_History {
 					$label = ( CLARA_VE_DEFAULT_KEY === $page_key ) ? 'Save index.html' : ( 'Save ' . $page_key );
 				}
 			}
+			$is_head = null !== $current_hash && $row->content_hash === $current_hash;
+			if ( is_array( $live ) ) {
+				$is_head = $is_head && ! $matched_live && ( $row->responsive ? json_decode( $row->responsive, true ) : array() ) == ( $live['responsive'] ?? array() );
+				$matched_live = $matched_live || $is_head;
+			}
 			$out[] = array(
 				'id'        => (int) $row->id,
 				'hash'      => substr( $row->content_hash, 0, 7 ),
 				'message'   => $label,
 				'kind'      => $row->kind,
-				'isHead'    => ( null !== $current_hash && $row->content_hash === $current_hash ),
+				'isHead'    => $is_head,
 				'createdAt' => $row->created_at,
 			);
 		}
@@ -404,8 +418,8 @@ class Clara_VE_History {
 	 * @param string $page_key
 	 * @return array Same shape as list_entries().
 	 */
-	public static function visible_entries( $page_key = CLARA_VE_DEFAULT_KEY ) {
-		$all = self::list_entries( self::MAX_ENTRIES, $page_key );
+	public static function visible_entries( $page_key = CLARA_VE_DEFAULT_KEY, $live = null ) {
+		$all = self::list_entries( self::MAX_ENTRIES, $page_key, $live );
 
 		if ( count( $all ) <= self::VISIBLE_ENTRIES ) {
 			return $all;
@@ -428,8 +442,8 @@ class Clara_VE_History {
 	 * @param string $page_key
 	 * @return bool
 	 */
-	public static function may_restore( $id, $page_key = CLARA_VE_DEFAULT_KEY ) {
-		foreach ( self::visible_entries( $page_key ) as $entry ) {
+	public static function may_restore( $id, $page_key = CLARA_VE_DEFAULT_KEY, $live = null ) {
+		foreach ( self::visible_entries( $page_key, $live ) as $entry ) {
 			if ( (int) $entry['id'] === (int) $id ) {
 				return true;
 			}

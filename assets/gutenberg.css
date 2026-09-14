@@ -1,0 +1,32 @@
+.cve-gutenberg-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.cve-gutenberg-note {
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.cve-gutenberg-media {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: -8px 0 16px;
+}
+
+.cve-gutenberg-media img {
+	border: 1px solid #dcdcde;
+	border-radius: 2px;
+	display: block;
+	height: 72px;
+	object-fit: cover;
+	width: 100%;
+}
+
+.interface-interface-skeleton__sidebar .cve-gutenberg-actions .components-button {
+	justify-content: center;
+}

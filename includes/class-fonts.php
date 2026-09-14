@@ -190,6 +190,11 @@ class Clara_VE_Fonts {
 			WP_Theme_JSON_Resolver::clean_cached_data();
 		}
 
+		$font_families = function_exists( 'wp_get_global_settings' ) ? wp_get_global_settings( array( 'typography', 'fontFamilies' ) ) : array();
+		$font_families = is_array( $font_families ) ? $font_families : array();
+		// An empty theme layer is meaningful: remove the last selected family
+		// from an already-open native picker as well.
+		$font_families['theme'] = $font_families['theme'] ?? array();
 		return rest_ensure_response(
 			array(
 				'selected' => $clean,
@@ -198,6 +203,9 @@ class Clara_VE_Fonts {
 				// refresh its dropdown from the answer instead of guessing at
 				// what the slug will turn out to be.
 				'presets'  => self::family_presets(),
+				// Preserve native fontFace metadata and preset origins when the
+				// Gutenberg picker refreshes without reloading unsaved documents.
+				'fontFamilies' => $font_families,
 			)
 		);
 	}

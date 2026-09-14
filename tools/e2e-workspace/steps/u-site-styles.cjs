@@ -1,0 +1,13 @@
+module.exports = async ctx => { const { page, frame, wait } = ctx; const out = {}; const path = require('path');
+  await frame.locator('.cve-w-hint button', { hasText: 'Got it' }).click().catch(() => {});
+  await frame.locator('.cve-w-toolbar button[aria-label="More"], .cve-w-toolbar button[title="More"]').first().click(); await wait(400);
+  await frame.locator('.cve-w-menu [role=menuitem]', { hasText: 'Site styles' }).click(); await wait(2500);
+  const state = () => frame.evaluate(() => { const sb = document.querySelector('.interface-interface-skeleton__sidebar'); return { mode: wp.data.select('core/editor').getRenderingMode(), panelWidth: sb && Math.round(sb.getBoundingClientRect().width), area: wp.data.select('core/interface').getActiveComplementaryArea('core') }; });
+  out.open = await state();
+  await frame.locator('.interface-interface-skeleton__sidebar button', { hasText: 'Colors' }).first().click().catch(e => out.colorsErr = e.message); await wait(1200);
+  out.colorsItems = await frame.evaluate(() => [...document.querySelectorAll('.interface-interface-skeleton__sidebar button, .interface-interface-skeleton__sidebar h2')].map(b => b.textContent.trim()).filter(Boolean).slice(0, 14));
+  await page.screenshot({ path: path.join(process.env.OUT, 'site-styles-colors.png') });
+  await frame.locator('.interface-interface-skeleton__sidebar button[aria-label="Close Styles"], .interface-interface-skeleton__sidebar button[aria-label^="Close"]').first().click().catch(e => out.closeErr = e.message); await wait(1200);
+  out.closed = await state();
+  out.dirty = await frame.evaluate(() => wp.data.select('core').__experimentalGetDirtyEntityRecords().length);
+  return out; };

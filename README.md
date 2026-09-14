@@ -1,17 +1,23 @@
 # Visual Edit Lite
 
-Point-and-click editing for WordPress sites converted from hand-written or
-AI-generated HTML. Click any text, image, link or card on the real page and
-change it — the page's markup stays byte-for-byte identical to the design it
-came from, because nothing is ever re-structured into blocks or widgets.
+Visual editing for native Gutenberg block themes and WordPress sites converted
+from hand-written or AI-generated HTML. Block themes keep the complete Site
+Editor; converted themes keep their byte-identical markup and gain direct
+click-to-edit controls on the real page.
+
+On a block theme the VE workspace shows the page, one toolbar and one dark
+popup, with WordPress's editor working underneath. Both editors share the
+[`window.ClaraVE` editor API](docs/developer/editor-api.md); the
+[acceptance matrix](docs/developer/workspace-parity.md) records what is
+verified.
 
 ---
 
 ## What it needs from a theme
 
-Visual Edit Lite edits raw HTML in place, so it needs a theme that *has* raw
-HTML: one whose pages are markup rather than blocks, and which declares what
-that markup means through the `clara_ve_theme_contract` filter.
+Native block themes work through Gutenberg without a VE contract. Raw-HTML
+editing needs a converted theme that declares what its markup means through
+the `clara_ve_theme_contract` filter.
 
 **That contract is open and documented.** Everything a theme must provide is
 written down in [`docs/developer/theme-requirements.md`](docs/developer/theme-requirements.md)
@@ -24,22 +30,22 @@ HTML site — one built in **Lovable, Bolt, aidesigner.ai, v0.dev, Claude
 design**, or written by hand — into a WordPress theme with the original markup
 intact. That converter is a separate project; this repository is the editor.
 
-Install the plugin on a theme that declares the contract and everything below
-works. Install it on one that does not and the editing screens still load, but
-the canvas has nothing it recognises to edit.
+Install the plugin on a converted theme that declares the contract and the
+raw-HTML editor opens. Install it on a native block theme and Visual Edit Lite
+opens a VE workspace hosting WordPress's editor, with a floating inspector.
 
 **It is not a page builder and does not work with one.** Elementor, Divi and
 Beaver Builder store your page as their own data structure and render markup
 from it; this plugin does the opposite, editing the markup the theme already
 carries, in place. A page built by one of those gives it nothing to work on.
 
-**Gutenberg block themes are supported**, through a second editing mode. On a
-block theme the editor works on core block markup rather than raw HTML: whole
-sections can be added, copied, moved and removed, the block supports panel is
-available, and every write passes a validation gate — because block markup
-fails silently at parse time in ways HTML does not, and only after WordPress
-has already stored it. The raw-HTML mode is for themes that declare the
-contract; the block mode needs no contract at all.
+**Gutenberg block themes use Gutenberg itself.** The VE workspace hosts the
+native Site Editor, so registered blocks, nested blocks,
+Query Loops, navigation, patterns, templates, template parts and Global Styles
+keep their complete WordPress controls and save through core's entity store.
+Visual Edit Lite adds its popup, typography, Google Fonts, search appearance,
+movement and responsive controls. The separate raw-HTML mode remains for themes that declare the
+converter contract.
 
 Parts of the plugin that do **not** depend on the theme — forms, email
 delivery, mailing lists, the SEO record and emitter, redirects, structured
@@ -51,8 +57,8 @@ that needs the converted theme.
 ## What it does
 
 **Editing**
-- Click-to-edit text, headings, links, images and video, directly on the live
-  page, at desktop / tablet / mobile widths
+- Native Gutenberg Site and Post Editors on block themes; click-to-edit on the
+  live page for converted raw-HTML themes
 - Typography, colour, spacing and layout controls per element, without
   touching the markup
 - Edit CSS `::before` / `::after` ornaments, or promote one into real editable
@@ -123,13 +129,12 @@ same time: with Pro active, Lite switches itself off and says so.
 |---|---|
 | WordPress | 6.6 or newer |
 | PHP | 7.4 or newer |
-| Capabilities | `edit_theme_options` **and** `unfiltered_html` |
-| Theme | any theme declaring `clara_ve_theme_contract` (see [theme requirements](docs/developer/theme-requirements.md)) |
+| Capabilities | Gutenberg's normal entity capabilities; raw-HTML mode also needs `unfiltered_html` |
+| Theme | native Gutenberg block theme, or a converted theme declaring `clara_ve_theme_contract` |
 
-Editing round-trips raw HTML, so it requires `unfiltered_html` — the
-capability WordPress uses to mean "this person is trusted with markup". **On
-multisite that capability belongs to Super Admins only by default**, so
-ordinary site administrators will not see the editor.
+Raw-HTML editing requires `unfiltered_html`, the capability WordPress uses to
+mean "this person is trusted with markup". Native block-theme editing uses
+Gutenberg's normal per-page and site-editing permissions.
 
 No build step, no Composer, no npm. The plugin has no dependencies.
 

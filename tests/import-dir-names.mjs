@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path';
  * first written for. So new media goes to `ve-import/`.
  *
  * The old name cannot simply be dropped: every site already running has years
- * of media under it, and `visual-edit.php` decides what is a plugin attachment
+ * of media under it, and `visual-edit-lite.php` decides what is a plugin attachment
  * by that prefix. Reads accept both, writes take the constant — this test is
  * what stops a later cleanup from turning that into a one-way rename and
  * quietly orphaning those libraries.
@@ -23,7 +23,7 @@ import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(join(root, p), 'utf8');
-const main = read('visual-edit.php');
+const main = read('visual-edit-lite.php');
 
 assert.match(main, /define\(\s*'CLARA_VE_IMPORT_DIR',\s*'ve-import'\s*\)/,
   'new media must be written under ve-import');
@@ -43,7 +43,7 @@ assert.ok(main.includes('clara_ve_is_import_path( $relative )'),
   'the attachment scan must accept either folder name');
 
 const files = [
-  'visual-edit.php',
+  'visual-edit-lite.php',
   'includes/class-import-plan.php',
   'includes/class-import-legacy.php',
   'includes/class-theme-purge.php',
