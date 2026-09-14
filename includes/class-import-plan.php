@@ -659,6 +659,18 @@ class Clara_VE_Import_Plan {
 				if ( ! file_exists( $from ) ) {
 					continue;
 				}
+				// The name comes from the bundle, and the destination is the
+				// uploads directory — a web-servable path on most hosts. A
+				// media bundle has no business carrying anything WordPress
+				// would not let you upload by hand, so the destination's
+				// extension has to be one this site allows. Without it a
+				// crafted bundle writes .php next to the images, and an
+				// unreachable admin screen is the only thing between that and
+				// execution.
+				$kind = wp_check_filetype( basename( $to ), null );
+				if ( empty( $kind['ext'] ) || empty( $kind['type'] ) ) {
+					continue;
+				}
 				// Never write over a file that is already there and different —
 				// that is someone else's, whoever they are.
 				if ( file_exists( $to ) && sha1_file( $to ) !== sha1_file( $from ) && $safe !== $original ) {
