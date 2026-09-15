@@ -242,5 +242,5 @@ see plugin-driven ones. Use `clara_ve_source_saved` instead.
 
 `clara_ve_workspace_config` (filter), `clara_ve_workspace_enqueue` (action)
 and `clara_ve_native_entity_saved` (action), plus the JavaScript filters
-`clara_ve.popup.groups`, `clara_ve.popup.footer`, `clara_ve.toolbar.more` and `clara_ve.form.blocks`,
+`clara_ve.popup.groups`, `clara_ve.popup.top`, `clara_ve.popup.footer`, `clara_ve.toolbar.extras`, `clara_ve.toolbar.more` and `clara_ve.form.blocks`,
 are documented with `window.ClaraVE` in the [editor API](editor-api.md).

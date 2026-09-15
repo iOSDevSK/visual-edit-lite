@@ -43,6 +43,7 @@ assert.match(phpOut[3], /:focus\{border-color:#8a6f5a !important;\}/);
 assert.ok(phpOut[4].includes('border-width:0 !important;') && ! phpOut[4].includes('#000'), 'no border drops colour and width');
 assert.ok(phpOut[5].includes('{border-width:1px !important;}'), 'a width alone keeps the theme border style');
 assert.ok(phpOut[6].includes(':hover{color:currentColor !important;background-color:#3f3a37 !important;}'));
+assert.ok(phpOut[6].includes('.kb-forms-submit)'), 'the button rule reaches Kadence\'s editor button, a <div class="kb-forms-submit">');
 assert.equal(phpOut[7], '', 'injection and unknown targets/properties are refused');
 assert.equal(phpOut[8], '', 'malformed values are refused');
 phpOut.join('').split('}').filter(Boolean).forEach(rule => {

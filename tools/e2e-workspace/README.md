@@ -44,3 +44,23 @@ All four use the `/ve-qa-block-form/` page (ID 460 at the time) — adjust befor
 `w-convert-page.cjs` converts every shortcode form on `POST` into form blocks through the
 popup and prints the resulting tree; with `SAVE=1` it also saves, reloads and reports invalid
 blocks. It changes real content when saving — run it on a copy first.
+
+## Sections, forms from other plugins, the popup pin
+
+`mu-qa-patterns.php` (a throwaway site's mu-plugins only) registers, under the
+active theme's name, an FAQ section held in one Custom HTML block — the shape
+some themes ship. `steps/f-section-html.cjs` adds it with ＋ Section and proves
+it lands as valid native blocks (a Details block per question, no Custom HTML)
+that one Undo removes.
+
+```
+BASE=http://localhost:8898 WP_PASS=admin POST=<any page> node qa.cjs steps/f-section-html.cjs
+BASE=… STATE=<qa-state file> node qa-html-pin.cjs   # the HTML editor popup's pin: pinned, dragged, unpinned
+```
+
+`steps/x-form-connect.cjs` checks another plugin's form block (Kadence): green,
+and sent by Visual Edit when connected. `steps/x-form-kadence-style.cjs` sets
+Form button styles on a Kadence form through the popup and reads the button in
+the canvas; it cancels, so it is safe on a real site. `ASSETS=<plugin checkout>`
+makes `qa.cjs` serve that checkout's `assets/` to the browser instead of the
+installed copy, to try a change without writing to the site.

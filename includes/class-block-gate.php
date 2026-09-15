@@ -347,6 +347,9 @@ class Clara_VE_Block_Gate {
 				if ( 'core/image' === $name ) {
 					$found = array_merge( $found, self::image_violations( $block ) );
 				}
+				if ( self::is_void_static( $block ) ) {
+					$found[] = $name . ' is written as a self-closing comment, but it is a static block: its HTML belongs between an opening and a closing comment, or the editor flags it invalid and the site shows nothing';
+				}
 				/**
 				 * Saved-HTML problems for one block, so a site or an add-on
 				 * can teach the gate about block types this plugin does not
@@ -395,6 +398,28 @@ class Clara_VE_Block_Gate {
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * A core block that saves HTML, written with none: <!-- wp:separator /-->.
+	 * Only dynamic blocks are rendered from their attributes alone; a static
+	 * one parsed this way has nothing to show and fails the editor's check.
+	 * Limited to core blocks, whose save() output is known to be non-empty —
+	 * a plugin's block may save nothing and render on the server by filter.
+	 *
+	 * @param array $block
+	 * @return bool
+	 */
+	private static function is_void_static( $block ) {
+		$name = (string) $block['blockName'];
+		if ( 0 !== strpos( $name, 'core/' ) || in_array( $name, array( 'core/freeform', 'core/missing', 'core/html' ), true ) ) {
+			return false;
+		}
+		if ( ! empty( $block['innerContent'] ) || '' !== (string) $block['innerHTML'] ) {
+			return false;
+		}
+		$type = WP_Block_Type_Registry::get_instance()->get_registered( $name );
+		return $type && ! $type->is_dynamic();
 	}
 
 	/**

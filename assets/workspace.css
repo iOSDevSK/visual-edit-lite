@@ -146,6 +146,8 @@ html.wp-toolbar:has(> body.cve-workspace-runtime), html.wp-toolbar:has(> body.cv
 .cve-w-grid .cve-w-field { margin: 3px 0; }
 .cve-w-richtext { padding: 10px; border-radius: 9px; background: #2c2c31; min-height: 36px; }
 .cve-w-wide { width: 100%; margin: 6px 0; }
+.cve-w-top-actions { margin: 0 0 6px; }
+.cve-w-top-action { font-weight: 600; }
 .cve-w-gradient { height: 40px; border: 1px solid #3a3a42; border-radius: 8px; margin: 8px 0; overflow: hidden; background: conic-gradient(#303036 25%, #252529 0 50%, #303036 0 75%, #252529 0) 0 0 / 12px 12px; }
 .cve-w-gradient > div { width: 100%; height: 100%; }
 .cve-w-swatches { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
@@ -214,6 +216,9 @@ html.wp-toolbar:has(> body.cve-workspace-runtime), html.wp-toolbar:has(> body.cv
 	.cve-w-toolbar .cve-w-more { margin-left: auto; }
 	.cve-w-doc > button { max-width: 130px; }
 	.cve-w-toolbar button { padding: 7px 9px; }
+	/* Preview keeps its eye and drops its word, or Save is pushed off a phone's toolbar. */
+	.cve-w-toolbar .components-button.cve-w-preview { font-size: 0 !important; gap: 0 !important; padding: 7px 9px !important; }
+	.cve-w-toolbar .components-button.cve-w-preview .dashicons { font-size: 16px; }
 	.cve-w-menu { max-width: calc(100vw - 16px); }
 	.cve-w-doc .cve-w-menu { width: calc(100vw - 16px); }
 	/* A bottom sheet on phones: full width, never covering the toolbar. */

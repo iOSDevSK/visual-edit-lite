@@ -94,11 +94,35 @@
 	function insertPattern( registry, pattern, target, blocks ) {
 		var list = ( blocks || pattern.blocks || [] ).map( function ( item ) { return wp.blocks.cloneBlock( item ); } );
 		if ( ! list.length ) { return false; }
-		if ( list.length === 1 ) {
-			list[0] = wp.blocks.cloneBlock( list[0], { metadata: Object.assign( {}, list[0].attributes.metadata, { name: pattern.title, patternName: pattern.name } ) } );
+		function place( items ) {
+			if ( items.length === 1 ) {
+				items[0] = wp.blocks.cloneBlock( items[0], { metadata: Object.assign( {}, items[0].attributes.metadata, { name: pattern.title, patternName: pattern.name } ) } );
+			}
+			registry.dispatch( 'core/block-editor' ).insertBlocks( items, target.index, target.rootClientId || undefined, true );
 		}
-		registry.dispatch( 'core/block-editor' ).insertBlocks( list, target.index, target.rootClientId || undefined, true );
+		if ( ! holdsCustomHtml( list ) || ! wp.apiFetch ) {
+			place( list );
+			return true;
+		}
+		// A theme section shipped as Custom HTML (an FAQ of <details>, a list,
+		// a row of buttons) goes in as the native blocks it stands for. It is
+		// converted BEFORE it is inserted: once in, a pattern is content-only
+		// and WordPress refuses to swap its blocks. Anything with no native
+		// block stays as it was; if the conversion fails the section goes in
+		// unchanged.
+		var post = 0;
+		try { post = registry.select( 'core/editor' ).getCurrentPostId(); post = typeof post === 'number' ? post : 0; } catch ( error ) {}
+		wp.apiFetch( { path: '/clara-ve/v1/native/convert-blocks', method: 'POST', data: { markup: wp.blocks.serialize( list ), post: post } } ).then( function ( response ) {
+			var converted = response && response.changed ? wp.blocks.parse( String( response.markup || '' ) ).filter( function ( item ) { return item.name; } ) : [];
+			var valid = converted.length && ! converted.some( function invalid( item ) { return item.isValid === false || ( item.innerBlocks || [] ).some( invalid ); } );
+			place( valid ? converted : list );
+		} ).catch( function () { place( list ); } );
 		return true;
+	}
+	function holdsCustomHtml( blocks ) {
+		return blocks.some( function ( block ) {
+			return ( block.name === 'core/html' && String( block.attributes.content || '' ).trim() ) || holdsCustomHtml( block.innerBlocks || [] );
+		} );
 	}
 	wp.hooks.addFilter( 'blocks.registerBlockType', 'clara-ve/extras-schema', function ( settings ) {
 		return Object.assign( {}, settings, { attributes: Object.assign( {}, settings.attributes, { claraVe: { type: 'object' } } ) } );
@@ -509,8 +533,9 @@
 			pinned[1]( !! next );
 		}
 		var type = wp.blocks.getBlockType( block.name );
-		var textKey = block.name === 'core/button' ? 'text' : 'content';
-		var canText = [ 'core/paragraph', 'core/heading', 'core/list-item', 'core/button' ].indexOf( block.name ) >= 0 && canWrite( textKey );
+		// A Details block's words are its summary — the question; the answer is its own blocks.
+		var textKey = block.name === 'core/button' ? 'text' : ( block.name === 'core/details' ? 'summary' : 'content' );
+		var canText = [ 'core/paragraph', 'core/heading', 'core/list-item', 'core/button', 'core/details' ].indexOf( block.name ) >= 0 && canWrite( textKey );
 		var linkTargetKey = block.name === 'core/navigation-link' ? 'opensInNewTab' : 'linkTarget';
 		var mediaKey = block.name === 'core/video' || block.name === 'core/audio' ? 'src' : 'url';
 		function canReplaceMedia() {
@@ -681,6 +706,44 @@
 					: __( 'Submissions are stored under Form Submissions and emailed to you. The sender gets a confirmation.', 'visual-edit-lite' ),
 				' ', h( 'a', { href: config.formSettingsUrl, target: '_blank', rel: 'noopener' }, __( 'Form Settings', 'visual-edit-lite' ) ) )
 		], true );
+		// Another plugin's form, delivered by Visual Edit. The plugin keeps
+		// drawing the form and running its own spam checks; switching delivery
+		// on turns its own sending off (remembered, and put back on the way
+		// out) so the owner gets one email per enquiry, not two.
+		var delivery = at( attributes, 'claraVe.delivery' ) || {};
+		var connectable = CONNECTABLE_FORM_TYPES.indexOf( block.name ) >= 0;
+		var SENDING_ACTIONS = [ 'email', 'mailerlite', 'fluentcrm' ];
+		function setConnected( on ) {
+			var values = {};
+			if ( on ) {
+				var previous = Array.isArray( attributes.actions ) ? attributes.actions : [ 'email' ];
+				values[ 'claraVe.delivery.connect' ] = true;
+				values[ 'claraVe.delivery.kadenceActions' ] = previous;
+				values[ 'claraVe.delivery.type' ] = delivery.type === 'list' ? 'list' : 'contact';
+				values.actions = previous.filter( function ( action ) { return SENDING_ACTIONS.indexOf( action ) < 0; } );
+			} else {
+				values[ 'claraVe.delivery.connect' ] = false;
+				values.actions = Array.isArray( delivery.kadenceActions ) ? delivery.kadenceActions : [ 'email' ];
+			}
+			writeMany( values );
+		}
+		group( 'form-connect', 'content', __( 'Form', 'visual-edit-lite' ), FORM_BLOCK_TYPES.indexOf( block.name ) >= 0 && ( connectable ? [
+			sub( __( 'Where it goes', 'visual-edit-lite' ), 'connect-where' ),
+			h( Field, { key: 'connect', label: __( 'Sent by', 'visual-edit-lite' ), value: delivery.connect ? 've' : 'own', options: [ { label: __( 'Visual Edit Form Settings', 'visual-edit-lite' ), value: 've' }, { label: __( 'This block\'s own settings', 'visual-edit-lite' ), value: 'own' } ], onChange: function ( value ) { setConnected( value === 've' ); } } ),
+			delivery.connect && h( Field, { key: 'type', label: __( 'Does', 'visual-edit-lite' ), value: 'list' === delivery.type ? 'list' : 'contact', options: [ { label: __( 'Contact form', 'visual-edit-lite' ), value: 'contact' }, { label: __( 'Mailing list', 'visual-edit-lite' ), value: 'list' } ], onChange: function ( value ) { write( 'claraVe.delivery.type', value ); } } ),
+			delivery.connect && ( 'list' === delivery.type
+				? h( ListField, { key: 'list', value: delivery.listId, onChange: function ( value ) { write( 'claraVe.delivery.listId', value ); } } )
+				: h( Field, { key: 'to', label: __( 'Send to', 'visual-edit-lite' ), value: delivery.recipient, type: 'email', placeholder: config.formRecipient || '', onChange: function ( value ) { write( 'claraVe.delivery.recipient', value.trim() ); } } ) ),
+			h( 'p', { key: 'connect-note', className: 'cve-w-note' },
+				! delivery.connect
+					? __( 'This form sends with its own plugin settings. Choose Visual Edit to store its answers under Form Submissions and send them like every other form on the site.', 'visual-edit-lite' )
+					: 'list' === delivery.type
+						? __( 'The address is added to a mailing list at your provider. The form keeps its look and its own thank-you message.', 'visual-edit-lite' )
+						: __( 'Submissions are stored under Form Submissions and emailed to you. The form keeps its look and its own thank-you message.', 'visual-edit-lite' ),
+				config.formSettingsUrl && ' ', config.formSettingsUrl && h( 'a', { href: config.formSettingsUrl, target: '_blank', rel: 'noopener' }, __( 'Form Settings', 'visual-edit-lite' ) ) )
+		] : [
+			h( 'p', { key: 'own-note', className: 'cve-w-note' }, __( 'This form is sent by the plugin that made it; its delivery is set in that plugin.', 'visual-edit-lite' ) )
+		] ), true );
 		group( 'text', 'content', __( 'Text', 'visual-edit-lite' ), canText && [
 			h( FormatRow, { key: 'format', registry: registry, clientId: block.clientId, textKey: textKey, current: current, write: write } ),
 			h( be.RichText, { key: 'text', tagName: 'div', className: 'cve-w-richtext', value: attributes[ textKey ] || '', onChange: function ( value ) { write( textKey, value ); }, 'aria-label': __( 'Text', 'visual-edit-lite' ) } )
@@ -811,6 +874,8 @@
 		var active = tabState[0] === 'advanced' && hasAdvanced ? 'advanced' : ( tabs.some( function ( item ) { return item[0] === tabState[0]; } ) ? tabState[0] : ( tabs[0] ? tabs[0][0] : ( hasAdvanced ? '' : '' ) ) );
 		function chooseTab( name ) { lastTab = name; tabState[1]( name ); }
 		var footerExtras = applyHooks( 'clara_ve.popup.footer', [], { block: block, attributes: attributes, mode: mode, registry: registry } );
+		// Actions about the whole block (Pro's Send to chat) sit above the first tab's groups, as in the HTML editor.
+		var topExtras = applyHooks( 'clara_ve.popup.top', [], { block: block, attributes: attributes, mode: mode, registry: registry } );
 		var shown = groups.filter( function ( entry ) { return entry.tab === active; } );
 		var title = at( attributes, 'metadata.name' ) || ( canText && wp.htmlEntities ? wp.htmlEntities.decodeEntities( String( attributes[textKey] || '' ).replace( /<[^>]*>/g, '' ) ).slice( 0, 80 ) : '' ) || ( type ? type.title : block.name );
 		// The nearest named section is always reachable in one click, then the direct parent.
@@ -850,6 +915,7 @@
 					active === 'style' && h( 'div', { className: 'cve-w-screens', role: 'group', 'aria-label': __( 'Screen size', 'visual-edit-lite' ) }, [ [ 'desktop', __( 'Desktop', 'visual-edit-lite' ) ], [ 'tablet', __( 'Tablet', 'visual-edit-lite' ) ], [ 'mobile', __( 'Mobile', 'visual-edit-lite' ) ] ].map( function ( item ) { return button( item[1], function () { setScreen( item[0] ); }, { key: item[0], 'aria-pressed': screen === item[0], className: 'cve-w-screen' } ); } ) ),
 					active === 'style' && screen !== 'desktop' && h( 'p', { className: 'cve-w-note' }, screen === 'mobile' ? __( 'These values apply to phones (600px and narrower). Empty fields keep the larger screen’s value.', 'visual-edit-lite' ) : __( 'These values apply to tablets and phones (781px and narrower). Empty fields keep the desktop value.', 'visual-edit-lite' ) ),
 					active === 'style' && screen !== 'desktop' && ! shown.length && h( 'p', { className: 'cve-w-note' }, __( 'Nothing on this block can differ per screen size.', 'visual-edit-lite' ) ),
+					( ! tabs.length || active === tabs[0][0] ) && topExtras.length > 0 && h( 'div', { className: 'cve-w-top-actions' }, topExtras.map( function ( item ) { return button( item.label, item.onClick, { key: item.key, title: item.title, className: 'cve-w-wide cve-w-top-action' } ); } ) ),
 					! tabs.length && mode !== 'default' && ! canUnlock && h( 'p', { className: 'cve-w-note' }, __( 'Nothing here can be changed from Visual Edit.', 'visual-edit-lite' ) ),
 					shown.map( function ( entry, index ) { return h( Section, { key: entry.key, title: entry.title, open: index === 0 || entry.open }, h.apply( null, [ Fragment, null ].concat( entry.render() ) ) ); } ) ),
 				h( 'footer', { className: 'cve-w-foot' },
@@ -1070,6 +1136,13 @@
 			button( props.label, function () { open[1]( ! open[0] ); }, { 'aria-expanded': open[0], 'aria-haspopup': 'true', 'aria-label': props.ariaLabel, title: props.title } ),
 			open[0] && h( 'div', { className: 'cve-w-menu' + ( props.align === 'right' ? ' is-right' : '' ), role: 'menu' }, props.children( close ) ) );
 	}
+	// Form blocks from other plugins. Their editor markup is usually not a real
+	// <form> (Kadence draws divs), so the `form` rule below never finds them and
+	// a form on a block theme went unmarked. CONNECTABLE ones can also be
+	// delivered by Visual Edit (includes/class-form-connect.php).
+	var FORM_BLOCK_TYPES = [ 'kadence/form', 'kadence/advanced-form', 'contact-form-7/contact-form-selector', 'wpforms/form-selector', 'gravityforms/form', 'jetpack/contact-form', 'fluentfom/guten-block', 'ninja-forms/form', 'forminator/forms' ];
+	var CONNECTABLE_FORM_TYPES = [ 'kadence/form' ];
+	var FOREIGN_FORM_SELECTOR = FORM_BLOCK_TYPES.map( function ( name ) { return 'html.cve-canvas .block-editor-block-list__block[data-type="' + name + '"]'; } ).join( ',' );
 	var CANVAS_CSS = [
 		'html.cve-canvas .block-editor-block-list__block::after{box-shadow:none!important;outline:none!important}',
 		'html.cve-canvas .block-editor-block-list__block:is([data-type="core/paragraph"],[data-type="core/heading"],[data-type="core/list-item"],[data-type="core/button"],[data-type="core/image"],[data-type="core/site-title"],[data-type="core/navigation-link"]):not(.is-selected):not([data-cve-hover]){outline:1px dashed rgba(37,99,235,.3);outline-offset:3px}',
@@ -1099,6 +1172,14 @@
 		// The form block's own editor markup contains a real <form>, so both
 		// rules above match it and the box would be drawn — and labelled —
 		// twice on the same corner. The block wrapper is the one that gets it.
+		// The same green box and label for another plugin's form block. Its own
+		// inner <form>, when it has one, is covered by the outer box.
+		FOREIGN_FORM_SELECTOR.split( ',' ).map( function ( sel ) { return sel + ':not(.is-selected):not([data-cve-hover])'; } ).join( ',' ) + '{position:relative;outline:2px dashed rgba(22,163,74,.55)!important;outline-offset:4px!important}',
+		FOREIGN_FORM_SELECTOR.split( ',' ).map( function ( sel ) { return sel + '::before'; } ).join( ',' ) + '{content:' + JSON.stringify( __( 'Form', 'visual-edit-lite' ) ) + ';position:absolute;top:0;left:0;z-index:99960;transform:translateY(-100%);padding:3px 8px;border-radius:6px 6px 6px 0;background:#16a34a;color:#fff;font:600 11px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;pointer-events:none;white-space:nowrap}',
+		FOREIGN_FORM_SELECTOR.split( ',' ).map( function ( sel ) { return sel + '[data-cve-hover]:not(.is-selected)'; } ).join( ',' ) + '{outline:2px solid rgba(22,163,74,.85)!important;outline-offset:4px!important}',
+		FOREIGN_FORM_SELECTOR.split( ',' ).map( function ( sel ) { return sel + '.is-selected'; } ).join( ',' ) + '{outline:2px solid #16a34a!important;outline-offset:4px!important;box-shadow:0 0 0 4px rgba(22,163,74,.16)!important}',
+		FOREIGN_FORM_SELECTOR.split( ',' ).map( function ( sel ) { return sel + ' form'; } ).join( ',' ) + '{outline:none!important}',
+		FOREIGN_FORM_SELECTOR.split( ',' ).map( function ( sel ) { return sel + ' form::before'; } ).join( ',' ) + '{content:none!important}',
 		'html.cve-canvas .block-editor-block-list__block[data-type="clara-ve/form"] form{outline:none!important}',
 		'html.cve-canvas .block-editor-block-list__block[data-type="clara-ve/form"] form::before{content:none!important}',
 		'html.cve-canvas .block-editor-block-list__block[data-type^="clara-ve/"]:not([data-type="clara-ve/form"]):not(.is-selected):not([data-cve-hover]){outline:1px dashed rgba(22,163,74,.35);outline-offset:3px}',
@@ -1341,7 +1422,7 @@
 		if ( ! selected || ! place[0] || ! label ) { return null; }
 		// A form block's badge is green like its outline, so the selected thing
 		// and the thing marked on the page are visibly the same thing.
-		var className = 'cve-w-badge' + ( 0 === blockName.indexOf( 'clara-ve/' ) ? ' cve-w-badge-form' : '' );
+		var className = 'cve-w-badge' + ( 0 === blockName.indexOf( 'clara-ve/' ) || FORM_BLOCK_TYPES.indexOf( blockName ) >= 0 ? ' cve-w-badge-form' : '' );
 		return portal( button( label, function () { window.dispatchEvent( new CustomEvent( 'clara-ve-open-popup' ) ); }, { className: className, style: place[0], title: __( 'Open Visual Edit settings', 'visual-edit-lite' ) } ) );
 	}
 	/** The theme's own sections. Inserted blocks are an ordinary, undoable edit. */
@@ -1412,7 +1493,17 @@
 			window.addEventListener( 'clara-ve-open-patterns', openPatterns ); window.addEventListener( 'clara-ve:restore', wasRestored );
 			return function () { observer.disconnect(); window.removeEventListener( 'clara-ve-open-patterns', openPatterns ); window.removeEventListener( 'clara-ve:restore', wasRestored ); document.body.classList.remove( 'cve-workspace-runtime', 'cve-native-collapsed', 'cve-history-open' ); };
 		}, [] );
-		useEffect( function () { document.body.classList.toggle( 'cve-history-open', historyOpen[0] ); }, [ historyOpen[0] ] );
+		useEffect( function () {
+			document.body.classList.toggle( 'cve-history-open', historyOpen[0] );
+			// Docks share the right edge. Say when History opens so another dock
+			// (an extension's) can step aside, and close History when asked.
+			if ( historyOpen[0] ) { window.dispatchEvent( new CustomEvent( 'clara-ve-dock-opened', { detail: { dock: 'history' } } ) ); }
+		}, [ historyOpen[0] ] );
+		useEffect( function () {
+			function onDock( event ) { if ( ! event.detail || event.detail.dock !== 'history' ) { historyOpen[1]( false ); } }
+			window.addEventListener( 'clara-ve-dock-opened', onDock );
+			return function () { window.removeEventListener( 'clara-ve-dock-opened', onDock ); };
+		}, [] );
 		function dismissHint() { hint[1]( false ); try { window.localStorage.setItem( 'clara-ve-workspace-hint', '1' ); } catch ( error ) {} }
 		function save() {
 			// Use the existing button so multi-entity review, publish checks,
@@ -1473,6 +1564,10 @@
 			button( h( Fragment, null, '＋ ', h( 'span', { className: 'cve-w-label' }, __( 'Section', 'visual-edit-lite' ) ) ), function () { patterns[1]( {} ); }, { 'aria-label': __( 'Add a section', 'visual-edit-lite' ), title: __( 'Add a section from your theme', 'visual-edit-lite' ) } ),
 			status.unlocked && button( h( Fragment, null, h( 'span', { className: 'dashicons dashicons-unlock', 'aria-hidden': 'true' } ), ' ' + __( 'Design unlocked', 'visual-edit-lite' ) ), function () { setDesignLock( registry, false ); }, { className: 'cve-w-chip', title: __( 'Lock pattern design again', 'visual-edit-lite' ) } ),
 			restored[0] && status.dirty > 0 && h( 'span', { className: 'cve-w-chip is-restored', role: 'status' }, __( 'Version restored — Save to keep it', 'visual-edit-lite' ), button( __( 'Undo', 'visual-edit-lite' ), function () { nativeAction( 'undo', undefined, registry ); } ) ),
+			// Extensions add toolbar controls here, beside the status (Visual Edit
+			// Pro puts its AI assistant button and credit balance in this slot).
+			// Each entry is an element; give it a key.
+			applyHooks( 'clara_ve.toolbar.extras', [], { registry: registry, status: status, element: wp.element } ),
 			h( 'span', { className: 'cve-w-status', 'aria-live': 'polite', title: status.error || undefined }, status.saving ? __( 'Saving…', 'visual-edit-lite' ) : status.error ? __( 'Save failed — changes kept', 'visual-edit-lite' ) : status.dirty ? status.dirty + ' ' + __( 'unsaved', 'visual-edit-lite' ) : '● ' + __( 'Saved', 'visual-edit-lite' ) ),
 			status.viewable && wp.editor && wp.editor.PostPreviewButton ? h( wp.editor.PostPreviewButton, { className: 'cve-w-preview', textContent: h( Fragment, null, h( 'span', { className: 'dashicons dashicons-visibility', 'aria-hidden': 'true' } ), ' ' + __( 'Preview', 'visual-edit-lite' ) ) } ) : h( 'a', { href: status.link || config.homeUrl, target: '_blank', rel: 'noopener' }, __( 'View site', 'visual-edit-lite' ) ),
 			h( Menu, { className: 'cve-w-more', label: '⋯', ariaLabel: __( 'More', 'visual-edit-lite' ), title: __( 'More', 'visual-edit-lite' ), align: 'right' }, function ( close ) { return moreItems().map( function ( item ) { return menuItem( item, close ); } ); } ),
@@ -1575,11 +1670,11 @@
 					if ( op.target !== undefined ) { paths[ live.name === 'core/navigation-link' ? 'opensInNewTab' : 'linkTarget' ] = live.name === 'core/navigation-link' ? op.target === '_blank' : op.target; }
 					return update( id, paths );
 				case 'set-image':
-					if ( [ 'core/image', 'core/cover', 'core/video', 'core/audio' ].indexOf( live.name ) < 0 ) { return 'This block has no media.'; }
+					if ( [ 'core/image', 'core/cover', 'core/video', 'core/audio', 'kadence/image' ].indexOf( live.name ) < 0 ) { return 'This block has no media.'; }
 					if ( typeof op.url !== 'string' || ! op.url ) { return 'url is required.'; }
 					paths[ live.name === 'core/video' || live.name === 'core/audio' ? 'src' : 'url' ] = op.url;
 					paths.id = op.attachmentId;
-					if ( op.alt !== undefined && ( live.name === 'core/image' || live.name === 'core/cover' ) ) { paths.alt = op.alt; }
+					if ( op.alt !== undefined && ( live.name === 'core/image' || live.name === 'core/cover' || live.name === 'kadence/image' ) ) { paths.alt = op.alt; }
 					if ( live.name === 'core/cover' ) { paths.backgroundType = op.mediaType === 'video' ? 'video' : 'image'; }
 					return update( id, paths, 'media' );
 				case 'set-responsive':
@@ -1604,6 +1699,17 @@
 						if ( op[ item[0] ] ) { tokens.push( item[1] + op[ item[0] ] ); }
 					} );
 					return update( id, { className: tokens.join( ' ' ) || undefined } );
+				case 'convert-to-video':
+					// An image becomes a looping, muted background-style video in the
+					// same place; a cover switches its background. One undo step.
+					if ( typeof op.url !== 'string' || ! op.url ) { return 'url is required.'; }
+					if ( live.name === 'core/cover' ) { return update( id, { url: op.url, id: op.attachmentId, backgroundType: 'video' }, 'media' ); }
+					if ( [ 'core/image', 'kadence/image' ].indexOf( live.name ) < 0 ) { return 'Only an image or a cover can become a video.'; }
+					if ( ! editor().canRemoveBlock( id ) || ! editor().canInsertBlockType( 'core/video', root ) ) { return 'This image cannot be replaced here.'; }
+					var videoAttributes = { src: op.url, id: op.attachmentId, poster: op.poster || live.attributes.url || undefined, autoplay: true, loop: true, muted: true, playsInline: true, controls: false };
+					if ( live.attributes.className ) { videoAttributes.className = live.attributes.className; }
+					if ( live.attributes.align ) { videoAttributes.align = live.attributes.align; }
+					actions().replaceBlocks( id, wp.blocks.createBlock( 'core/video', videoAttributes ) ); return '';
 				case 'remove':
 					if ( ! editor().canRemoveBlock( id ) ) { return 'This block cannot be removed.'; }
 					actions().removeBlocks( [ id ], false ); return '';

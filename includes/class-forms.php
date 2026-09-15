@@ -233,6 +233,29 @@ class Clara_VE_Forms {
 			}
 		}
 
+		self::deliver( $form_id, $fields, $params, $ip );
+
+		return self::respond( $redirect );
+	}
+
+	/**
+	 * What happens to a submission once it has passed the checks of whichever
+	 * front door it came through: stored under Form Submissions, checked by
+	 * Akismet, then emailed to the owner or handed to the mailing list.
+	 *
+	 * handle_submit() is one front door. Clara_VE_Form_Connect is the other: a
+	 * form block from another plugin (Kadence) whose own handler has already
+	 * run its honeypot and captcha, and whose delivery the owner chose in
+	 * Visual Edit. Both end here, so a form connected either way lands in the
+	 * same list, the same email and the same subscribers.
+	 *
+	 * @param string $form_id  Form name, used in the stored title and the email subject.
+	 * @param array  $fields   Sanitized field name => string value.
+	 * @param array  $params   'to', 'form_type' and 'list_id' — already verified by the caller.
+	 * @param string $ip       The visitor's address, or ''.
+	 * @return void
+	 */
+	public static function deliver( $form_id, $fields, $params, $ip ) {
 		// 5. Akismet — spam is still STORED (flagged) but not emailed, and the
 		// caller still sees success so a bot learns nothing.
 		$is_spam = self::is_spam_akismet( $fields, $ip );
@@ -254,7 +277,7 @@ class Clara_VE_Forms {
 		);
 
 		if ( $is_spam ) {
-			return self::respond( $redirect );
+			return;
 		}
 
 		// A mailing-list form hands the address to the provider instead of
@@ -275,7 +298,7 @@ class Clara_VE_Forms {
 				if ( is_wp_error( $started ) && ! is_wp_error( $post_id ) ) {
 					update_post_meta( $post_id, '_clara_ve_list_error', $started->get_error_message() );
 				}
-				return self::respond( $redirect );
+				return;
 			}
 
 			$subscribed = Clara_VE_Lists::subscribe( $list_id, $email, $fields );
@@ -284,12 +307,10 @@ class Clara_VE_Forms {
 				// provider outage is the owner's problem to see, not theirs.
 				update_post_meta( $post_id, '_clara_ve_list_error', $subscribed->get_error_message() );
 			}
-			return self::respond( $redirect );
+			return;
 		}
 
 		self::send_notification( $form_id, $fields, $params, $post_id );
-
-		return self::respond( $redirect );
 	}
 
 	/**
@@ -655,7 +676,7 @@ class Clara_VE_Forms {
 	 *
 	 * @return string
 	 */
-	private static function client_ip() {
+	public static function client_ip() {
 		$remote = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 
 		// CF-Connecting-IP is only meaningful if Cloudflare set it. Any client

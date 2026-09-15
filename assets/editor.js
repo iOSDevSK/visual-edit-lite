@@ -3985,8 +3985,8 @@
 	function makeDraggable( node, handle ) {
 		var startX, startY, startLeft, startTop;
 		handle.addEventListener( 'mousedown', function ( ev ) {
-			if ( ev.target.closest && ev.target.closest( '.cve-close' ) ) {
-				return; // the ✕ inside the header is a click, not a drag start.
+			if ( ev.target.closest && ev.target.closest( '.cve-close, .cve-pin' ) ) {
+				return; // the ✕ and the pin inside the header are clicks, not a drag start.
 			}
 			ev.preventDefault();
 			startX = ev.clientX;
@@ -4025,15 +4025,42 @@
 				}
 				document.removeEventListener( 'mousemove', move );
 				document.removeEventListener( 'mouseup', up );
+				// A pinned panel moved by hand is pinned at its new place.
+				if ( pinnedPanel && node === panel ) {
+					setPanelPin( { left: node.offsetLeft, top: node.offsetTop } );
+				}
 			}
 			document.addEventListener( 'mousemove', move );
 			document.addEventListener( 'mouseup', up );
 		} );
 	}
 
+	// Pin: the panel keeps the place it was pinned at for every element opened
+	// afterwards, as the block-theme popup does. Panel-container coordinates,
+	// kept for the browser session.
+	var pinnedPanel = ( function () {
+		try {
+			return JSON.parse( window.sessionStorage.getItem( 'clara-ve-panel-pin' ) || 'null' );
+		} catch ( error ) {
+			return null;
+		}
+	}() );
+	function setPanelPin( spot ) {
+		pinnedPanel = spot ? { left: Math.round( spot.left ), top: Math.round( spot.top ) } : null;
+		try {
+			window.sessionStorage.setItem( 'clara-ve-panel-pin', JSON.stringify( pinnedPanel ) );
+		} catch ( error ) {}
+	}
+
 	function positionPanel( node, rect, pointer ) {
 		var frameBox = frame.getBoundingClientRect();
 		var bodyBox = body.getBoundingClientRect();
+		if ( pinnedPanel ) {
+			var width = node.offsetWidth || 340;
+			node.style.left = Math.max( 10, Math.min( pinnedPanel.left, bodyBox.width - width - 10 ) ) + 'px';
+			node.style.top = Math.max( 10, Math.min( pinnedPanel.top, bodyBox.height - 100 ) ) + 'px';
+			return;
+		}
 		var offsetX = frameBox.left - bodyBox.left, offsetY = frameBox.top - bodyBox.top;
 		var place = window.ClaraVEValues && window.ClaraVEValues.placePopup;
 		if ( place ) {
@@ -4073,6 +4100,18 @@
 		var grip = el( 'span', 'cve-grip', '⠿' );
 		head.appendChild( grip );
 		head.appendChild( el( 'strong', 'cve-title', target.label || target.tagName ) );
+		var pinButton = el( 'button', 'cve-pin' + ( pinnedPanel ? ' is-on' : '' ) );
+		pinButton.type = 'button';
+		pinButton.innerHTML = '<span class="dashicons dashicons-admin-post" aria-hidden="true"></span>';
+		pinButton.setAttribute( 'aria-pressed', pinnedPanel ? 'true' : 'false' );
+		pinButton.setAttribute( 'aria-label', 'Keep the popup in this place' );
+		pinButton.title = 'Keep the popup in this place';
+		pinButton.addEventListener( 'click', function () {
+			setPanelPin( pinnedPanel ? null : { left: panel.offsetLeft, top: panel.offsetTop } );
+			pinButton.classList.toggle( 'is-on', !! pinnedPanel );
+			pinButton.setAttribute( 'aria-pressed', pinnedPanel ? 'true' : 'false' );
+		} );
+		head.appendChild( pinButton );
 		var close = el( 'button', 'cve-close', '✕' );
 		close.addEventListener( 'click', function () {
 			closePanel( true );

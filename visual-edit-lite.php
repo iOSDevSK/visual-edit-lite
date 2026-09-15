@@ -3,7 +3,7 @@
  * Plugin Name: Visual Edit Lite
  * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
  * Description: Visual editing for raw-HTML sites and complete native Gutenberg editing for block themes, with responsive controls, movement, forms, SEO and AI-readiness.
- * Version: 1.27.0
+ * Version: 1.28.0
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Filip Dvoran
@@ -57,7 +57,7 @@ if ( clara_ve_lite_pro_active() ) {
 	return;
 }
 
-define( 'CLARA_VE_VERSION', '1.27.0' );
+define( 'CLARA_VE_VERSION', '1.28.0' );
 // Signals schema-1 generated themes that this plugin delegates every public
 // rendering concern to them. Themes generated before that contract ignore the
 // signal and continue to receive the complete legacy runtime below.
@@ -254,6 +254,7 @@ define( 'CLARA_VE_SPECIMEN_START', '<!-- cve-specimen-start -->' );
 define( 'CLARA_VE_SPECIMEN_END', '<!-- cve-specimen-end -->' );
 
 require_once CLARA_VE_DIR . 'includes/class-block-gate.php';
+require_once CLARA_VE_DIR . 'includes/class-block-convert.php';
 require_once CLARA_VE_DIR . 'includes/class-block-supports.php';
 require_once CLARA_VE_DIR . 'includes/class-patterns.php';
 require_once CLARA_VE_DIR . 'includes/class-motion.php';
@@ -274,6 +275,7 @@ require_once CLARA_VE_DIR . 'includes/class-lists.php';
 require_once CLARA_VE_DIR . 'includes/class-optin.php';
 require_once CLARA_VE_DIR . 'includes/class-tokens.php';
 require_once CLARA_VE_DIR . 'includes/class-form-blocks.php';
+require_once CLARA_VE_DIR . 'includes/class-form-connect.php';
 require_once CLARA_VE_DIR . 'includes/class-fonts.php';
 require_once CLARA_VE_DIR . 'includes/class-editor-page.php';
 require_once CLARA_VE_DIR . 'includes/class-native-gutenberg.php';

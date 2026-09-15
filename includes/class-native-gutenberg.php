@@ -234,6 +234,19 @@ class Clara_VE_Native_Gutenberg {
 		);
 		register_rest_route(
 			'clara-ve/v1',
+			'/native/convert-blocks',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'convert_blocks' ),
+				'permission_callback' => array( __CLASS__, 'can_preview_shortcode' ),
+				'args'                => array(
+					'markup' => array( 'type' => 'string', 'required' => true, 'maxLength' => 200000 ),
+					'post'   => array( 'type' => 'integer', 'default' => 0 ),
+				),
+			)
+		);
+		register_rest_route(
+			'clara-ve/v1',
 			'/native/render-shortcode',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -290,6 +303,23 @@ class Clara_VE_Native_Gutenberg {
 			$allowed[ $tag ] = array_merge( isset( $allowed[ $tag ] ) ? $allowed[ $tag ] : array(), $common, $attributes );
 		}
 		return $allowed;
+	}
+
+	/**
+	 * Custom HTML in markup the editor is about to insert — a theme section
+	 * shipped as one Custom HTML block — as native blocks. Nothing is stored:
+	 * the editor inserts the answer as an ordinary, undoable change.
+	 */
+	public static function convert_blocks( WP_REST_Request $request ) {
+		$result = Clara_VE_Block_Convert::convert_document( (string) $request->get_param( 'markup' ) );
+		return rest_ensure_response(
+			array(
+				'markup'    => $result['markup'],
+				'changed'   => $result['changed'],
+				'converted' => $result['converted'],
+				'keptHtml'  => $result['kept_html'],
+			)
+		);
 	}
 
 	public static function can_preview_shortcode( WP_REST_Request $request ) {

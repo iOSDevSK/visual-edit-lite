@@ -64,7 +64,10 @@ class Clara_VE_Block_Extras {
 	 * tests/form-css-congruence.mjs keeps the two in step.
 	 */
 	const FORM_FIELD  = 'input:not([type="submit"],[type="button"],[type="reset"],[type="checkbox"],[type="radio"],[type="file"],[type="hidden"],[type="range"],[type="image"],[type="color"])';
-	const FORM_BUTTON = 'button[type="submit"], button:not([type]), input[type="submit"]';
+	// .kb-forms-submit: Kadence's form draws its button as an editable <div> inside the
+	// editor, so the element selectors alone never reach it there. On the site it is a
+	// <button> and matches either way.
+	const FORM_BUTTON = 'button[type="submit"], button:not([type]), input[type="submit"], .kb-forms-submit';
 
 	/** @return array<string, array{0: string, 1: string[]}> target => [ selector, properties ] */
 	public static function form_targets() {

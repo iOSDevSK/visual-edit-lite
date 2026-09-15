@@ -80,6 +80,33 @@ lost. With it, every checked value is captured and stored together.
 checked nothing will have no entry for that field. That is standard browser
 behaviour, not something the plugin decides.
 
+## Forms from other plugins (block themes)
+
+On a block theme a form is often another plugin's block — Kadence's Form
+block, Contact Form 7, WPForms, Gravity Forms and the like. In the Visual Edit
+workspace every one of them is marked green and labelled **Form**, the same
+as a form in the HTML editor, so it is clear at a glance which part of a page
+collects answers.
+
+A **Kadence Form** block can also be sent by Visual Edit. Click it and, under
+**Content › Form › Where it goes**, set **Sent by** to **Visual Edit Form
+Settings**, then choose what it does:
+
+- **Contact form** — answers are stored under Form Submissions and emailed to
+  the Form Settings address, or to the address in **Send to**.
+- **Mailing list** — the address is added to the list you pick, exactly as for
+  a Visual Edit signup form.
+
+The form keeps its look, its fields and its own thank-you message, and
+Kadence still runs its honeypot and reCAPTCHA. Kadence's own sending (its
+email, MailerLite and FluentCRM actions) is switched off while the form is
+connected, so you get one email per enquiry, not two; switching **Sent by**
+back to the block's own settings puts them back.
+
+As for Visual Edit's own form block, **Send to** and a list are honoured only
+on a page whose author administers the site. Forms from the other plugins are
+marked but keep the delivery set in their own plugin.
+
 ## What happens to a submission
 
 In this order:

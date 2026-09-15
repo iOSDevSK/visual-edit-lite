@@ -311,6 +311,21 @@ docker cp "$SRC/tests/form-blocks-wp.php" "$WP:/tmp/form-blocks-wp.php" >/dev/nu
 if docker exec "$WP" php /tmp/form-blocks-wp.php /var/www/html; then pass "form blocks render, submit safely and survive the plugin going away"
 else bad "form blocks regression"; fi
 
+# ------------------------------------------------ 5b2. other plugins' forms ---
+step "Other plugins' forms"
+docker cp "$SRC/tests/form-connect-wp.php" "$WP:/tmp/form-connect-wp.php" >/dev/null
+if docker exec -e AJAX_URL=http://localhost/wp-admin/admin-ajax.php "$WP" php /tmp/form-connect-wp.php /var/www/html; then pass "a connected Kadence form is stored, emailed to the chosen address and author-gated"
+else bad "form connect regression"; fi
+
+# ------------------------------------------ 5b3. Custom HTML to native blocks ---
+# What a theme ships as one Custom HTML block becomes the blocks it stands for,
+# written as each block's save() writes them; what has no block stays byte for byte.
+step "Custom HTML to native blocks"
+CONVERT_OUT=$(mktemp)
+docker cp "$SRC/tests/regression-block-convert.php" "$WP:/tmp/regression-block-convert.php" >/dev/null
+if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVER["HTTP_HOST"] = "localhost"; require "/var/www/html/wp-load.php"; wp_set_current_user( 1 ); require "/tmp/regression-block-convert.php";' > "$CONVERT_OUT" 2>&1; then pass "sections convert to valid native blocks, embeds stay, sections added on the server convert"
+else sed -n '/FAIL/p' "$CONVERT_OUT" | head -5; bad "Custom HTML conversion regression"; fi
+
 # --------------------------------------------------- 5c. the theme contract ---
 # A converted theme's own runtime delegates to this plugin whenever the class
 # is loaded. A method it calls and this edition lacks is a fatal on the PUBLIC

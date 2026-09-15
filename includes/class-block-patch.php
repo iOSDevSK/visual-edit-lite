@@ -215,8 +215,14 @@ class Clara_VE_Block_Patch {
 						array( 'status' => 400 )
 					);
 				}
+				// A section the theme ships as Custom HTML lands as the native
+				// blocks it stands for, so its parts can be edited one by one.
+				$content = (string) $pattern['content'];
+				if ( class_exists( 'Clara_VE_Block_Convert' ) ) {
+					$content = Clara_VE_Block_Convert::convert_document( $content )['markup'];
+				}
 				$added = array_values( array_filter(
-					parse_blocks( (string) $pattern['content'] ),
+					parse_blocks( $content ),
 					static function ( $block ) {
 						// A pattern file's own leading and trailing newlines
 						// arrive as freeform entries; the separators between

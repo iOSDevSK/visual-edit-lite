@@ -93,7 +93,8 @@
 	 * tests/form-css-congruence.mjs.
 	 */
 	var FORM_FIELD = 'input:not([type="submit"],[type="button"],[type="reset"],[type="checkbox"],[type="radio"],[type="file"],[type="hidden"],[type="range"],[type="image"],[type="color"])';
-	var FORM_BUTTON = 'button[type="submit"], button:not([type]), input[type="submit"]';
+	// .kb-forms-submit: Kadence's form draws its button as an editable <div> in the editor.
+	var FORM_BUTTON = 'button[type="submit"], button:not([type]), input[type="submit"], .kb-forms-submit';
 	var formTargets = [
 		[ 'label', ':is(label, legend)', [ 'color', 'font-family', 'font-size', 'font-weight', 'letter-spacing', 'text-transform' ] ],
 		[ 'field', ':is(' + FORM_FIELD + ', textarea, select)', [ 'color', 'background-color', 'font-family', 'font-size', 'border', 'border-color', 'border-width', 'border-radius' ] ],

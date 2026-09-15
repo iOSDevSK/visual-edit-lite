@@ -58,7 +58,8 @@ Events: `ready`, `select`, `apply`, `save`, `restore`, `unlock`.
 | `set-attrs` | `{ id, attrs }` | Top-level attributes; `metadata` and `lock` are refused | — |
 | `set-style` | `{ id, style: { 'typography.fontSize': '32px' } }` | Paths under the block's `style` | Block paths are translated to CSS; CSS property names also work |
 | `set-link` | `{ id, href, target }` | button, navigation link | any link |
-| `set-image` | `{ id, url, attachmentId, alt, mediaType }` | image, cover, video, audio | image |
+| `set-image` | `{ id, url, attachmentId, alt, mediaType }` | image, cover, video, audio, Kadence image | image |
+| `convert-to-video` | `{ id, url, attachmentId, poster }` | An image (core or Kadence) becomes a muted, looping `core/video`; a cover switches its background to the video | image → video |
 | `set-responsive` | `{ id, breakpoint: 'tablet' \| 'mobile', path, value }` | `claraVe.responsive` | — |
 | `set-ornament` | `{ id, pseudo: 'before' \| 'after', props }` | `claraVe.ornaments` | — |
 | `set-motion` | `{ id, entrance, hover }` | `cve-anim-*` / `cve-hover-*` classes | — |
@@ -83,7 +84,9 @@ These `wp.hooks` filters run in the workspace:
 | Filter | Value | Context |
 |---|---|---|
 | `clara_ve.popup.groups` | Array of `{ key, tab: 'content' \| 'style' \| 'section', title, open, render }`; `render()` returns React elements | `{ block, attributes, mode, screen, registry, write, writeMany, canWrite, element, fields }` |
+| `clara_ve.popup.top` | Array of `{ key, label, title, onClick }` shown as full-width buttons at the top of the popup's first tab | `{ block, attributes, mode, registry }` |
 | `clara_ve.popup.footer` | Array of `{ key, label, title, onClick }` | `{ block, attributes, mode, registry }` |
+| `clara_ve.toolbar.extras` | Array of elements (each with a `key`) placed in the toolbar just before the save status | `{ registry, status, element }` |
 | `clara_ve.toolbar.more` | Array of `{ key, label, onClick }` or `{ key, label, href, top }` for the **More** menu | `{ registry, status }` |
 | `clara_ve.form.blocks` | Block names that always get the **Form labels / fields / button** style groups. Default `[ 'core/shortcode', 'core/html', 'clara-ve/form' ]`; blocks whose name contains `form`, and blocks showing form controls on the canvas, get them regardless | `block` |
 
@@ -93,6 +96,19 @@ wp.hooks.addFilter( 'clara_ve.popup.groups', 'my-extension/ask', function ( grou
 		key: 'ask', tab: 'content', title: 'Ask',
 		render: function () { return [ context.element.createElement( 'p', { key: 'p' }, 'Selected: ' + context.block.name ) ]; }
 	} ] );
+} );
+```
+
+**Docks on the right edge.** History and any extension's side panel share the
+right edge of the workspace. Whoever opens a dock dispatches
+`clara-ve-dock-opened` on `window` with `detail.dock` naming it; every other
+dock closes when it hears an event that is not its own. History uses
+`dock: 'history'`.
+
+```js
+window.dispatchEvent( new CustomEvent( 'clara-ve-dock-opened', { detail: { dock: 'my-panel' } } ) );
+window.addEventListener( 'clara-ve-dock-opened', function ( event ) {
+	if ( event.detail.dock !== 'my-panel' ) { closeMyPanel(); }
 } );
 ```
 

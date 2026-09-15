@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.27.0
+Stable tag: 1.28.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -202,6 +202,31 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.28.0 =
+* A theme section shipped as one Custom HTML block — an FAQ of details, a
+  list, a row of buttons — goes onto the page as native blocks when it is added
+  with ＋ Section: a Details block per question, headings, lists and buttons,
+  each editable in the popup, in one undo step. Markup with no native block (an
+  embed, an icon drawn in SVG, inline styles) stays Custom HTML exactly as it
+  was. A Details block's popup edits its question.
+* Forms from other plugins — Kadence Form, Contact Form 7, WPForms, Gravity
+  Forms and others — are marked green in the block workspace like Visual Edit's
+  own, and a Kadence Form can be sent by Visual Edit: choose Form Settings and a
+  contact address or a mailing list in its popup. Kadence's own sending is
+  switched off while connected, so nothing arrives twice.
+* Form button styles reach a Kadence form in the editor, where Kadence draws
+  the button as an editable box rather than a button.
+* The HTML editor's popup has a pin: pinned, every element opens it in the same
+  place, and dragging it moves the pin.
+* History and other side panels no longer open over each other.
+* On a phone the workspace toolbar keeps Save on screen.
+* The block gate refuses a static core block written as a self-closing comment
+  (<!-- wp:separator /-->), which the editor flags as invalid and the site shows
+  as nothing.
+* For developers: the `clara_ve.toolbar.extras` and `clara_ve.popup.top`
+  filters, the `clara-ve-dock-opened` event, the `convert-to-video` operation,
+  Kadence images in `set-image`, and `POST /native/convert-blocks`.
 
 = 1.27.0 =
 * Icons from a theme's or a plugin's own controls are no longer invisible in

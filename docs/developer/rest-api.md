@@ -38,6 +38,15 @@ to** on such a theme falls back to Form Settings.
 Registered on every theme, including themes that take over the public runtime
 (those stand down only the theme's own form delivery).
 
+### `POST /native/convert-blocks`
+
+Custom HTML in block markup as native blocks, for the workspace when it adds a
+theme section. `markup` (**required**, ≤ 200000 chars), `post` (optional). Same
+permission as `render-shortcode`. Returns `{ markup, changed, converted,
+keptHtml }` from `Clara_VE_Block_Convert::convert_document()`; nothing is
+stored. Headings, paragraphs, lists, details, images, buttons, separators,
+quotes and plain wrappers convert; anything else stays Custom HTML byte for byte.
+
 ### `POST /native/render-shortcode`
 
 What a shortcode puts on the page, for the workspace canvas (WordPress's

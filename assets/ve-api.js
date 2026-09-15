@@ -39,7 +39,7 @@
 		/**
 		 * Apply operations. Resolves { applied: [ index ], refused: [ { index, op, reason } ] }.
 		 * Operations: set-text, set-attrs, set-style, set-link, set-image, set-responsive,
-		 * set-ornament, set-motion, remove, duplicate, move, insert-pattern.
+		 * set-ornament, set-motion, convert-to-video, remove, duplicate, move, insert-pattern.
 		 * See docs/developer/editor-api.md for payloads.
 		 */
 		apply: function ( ops ) {
