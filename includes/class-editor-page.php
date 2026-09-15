@@ -354,7 +354,7 @@ class Clara_VE_Editor_Page {
 			<div class="clara-ve-toolbar">
 				<strong><?php esc_html_e( 'Visual Edit Lite — Front Page', 'visual-edit-lite' ); ?></strong>
 				<select id="clara-ve-page-picker" class="clara-ve-page-picker" title="<?php esc_attr_e( 'Switch page', 'visual-edit-lite' ); ?>"></select>
-				<button type="button" id="clara-ve-preview" class="clara-ve-preview-btn" title="<?php esc_attr_e( 'Preview live page in a new tab', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-external"></span></button>
+				<button type="button" id="clara-ve-preview" class="clara-ve-preview-btn" title="<?php esc_attr_e( 'Preview live page in a new tab', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-visibility"></span></button>
 				<button type="button" id="clara-ve-toggle" class="clara-ve-toggle is-off" aria-pressed="false" title="<?php esc_attr_e( 'Toggle edit mode', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-edit"></span></button>
 				<div class="clara-ve-devices" role="group" aria-label="<?php esc_attr_e( 'Preview device', 'visual-edit-lite' ); ?>">
 					<button type="button" class="clara-ve-device is-active" data-device="desktop" aria-pressed="true" title="<?php esc_attr_e( 'Desktop — full width', 'visual-edit-lite' ); ?>"><span class="dashicons dashicons-desktop"></span></button>

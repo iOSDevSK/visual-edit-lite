@@ -72,6 +72,17 @@
 			return entity ? { dirty: core.hasEditsForEntityRecord.apply( core, target ), saving: core.isSavingEntityRecord.apply( core, target ), record: core.getEditedEntityRecord.apply( core, target ) } : {};
 		}, [ entityKey ] );
 		var stillLoaded = loaded[0] && native.record && sameContent( loaded[0].record, native.record ) ? loaded[0].id : null;
+		// The confirm box renders above the list, so pressing Restore on an entry
+		// far down the panel leaves the button to press above the fold — the panel
+		// scrolls on its own, so the page never moves and nothing appears to happen.
+		// Bring it into view and put focus on it, for the pointer and the keyboard.
+		var confirmRef = useRef( null );
+		useEffect( function () {
+			if ( ! confirm[0] || ! confirmRef.current ) { return; }
+			if ( confirmRef.current.scrollIntoView ) { confirmRef.current.scrollIntoView( { block: 'start', behavior: 'smooth' } ); }
+			var first = confirmRef.current.querySelector( 'button' );
+			if ( first ) { first.focus( { preventScroll: true } ); }
+		}, [ confirm[0] && confirm[0].id ] );
 		useEffect( function () {
 			var run = ++generation.current; result[1]( null ); error[1]( '' ); confirm[1]( null ); rename[1]( null ); loaded[1]( null );
 			if ( ! entity ) { return; }
@@ -114,7 +125,7 @@
 			entity && ! result[0] && ! error[0] && h( c.Spinner ),
 			native.dirty && ! stillLoaded && h( c.Notice, { status: 'warning', isDismissible: false }, __( 'This document has unsaved changes. Restoring will replace its content in the editor.', 'visual-edit-lite' ) ),
 			stillLoaded && h( c.Notice, { status: 'success', isDismissible: false }, __( 'Version loaded. Use Save to apply it, or Undo to return to your previous work.', 'visual-edit-lite' ) ),
-			confirm[0] && h( 'div', { className: 'cve-w-history-confirm', role: 'group', 'aria-label': __( 'Confirm restore', 'visual-edit-lite' ) }, h( 'p', null, __( 'Load this version into the editor?', 'visual-edit-lite' ) + ' #' + confirm[0].id ), button( __( 'Restore version', 'visual-edit-lite' ), function () { restore( confirm[0] ); }, { disabled: busy[0] || native.saving || props.saving } ), button( __( 'Cancel', 'visual-edit-lite' ), function () { confirm[1]( null ); }, { disabled: busy[0] } ) ),
+			confirm[0] && h( 'div', { ref: confirmRef, className: 'cve-w-history-confirm', role: 'group', 'aria-label': __( 'Confirm restore', 'visual-edit-lite' ) }, h( 'p', null, __( 'Load this version into the editor?', 'visual-edit-lite' ) + ' #' + confirm[0].id ), button( __( 'Restore version', 'visual-edit-lite' ), function () { restore( confirm[0] ); }, { disabled: busy[0] || native.saving || props.saving } ), button( __( 'Cancel', 'visual-edit-lite' ), function () { confirm[1]( null ); }, { disabled: busy[0] } ) ),
 			h( 'ol', { className: 'cve-w-history-list' }, ( result[0] ? result[0].entries : [] ).map( function ( entry ) {
 				var isOriginal = entry.message === 'Original';
 				return h( 'li', { key: entry.id, className: 'cve-w-history-entry' + ( entry.isHead ? ' is-current' : '' ) },

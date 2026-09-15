@@ -522,3 +522,11 @@ html.wp-toolbar:has(> body.cve-workspace-runtime), html.wp-toolbar:has(> body.cv
    light ring so dark theme colours stay visible against the dark panel. */
 .cve-dark-native .components-circular-option-picker > div:has(> .components-circular-option-picker__swatches) { padding: 12px !important; }
 .cve-dark-native .components-circular-option-picker__option::after { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22) !important; }
+
+/* PostPreviewButton renders as a tertiary components-button: blue text, which
+   reads as a link next to the real buttons on this bar. Same shape as the rest,
+   and specific enough to beat WP's own admin styles. */
+.cve-w-toolbar .components-button.cve-w-preview { display: inline-flex; align-items: center; gap: 4px;
+	border: 1px solid #3a3a42; border-radius: 8px; background: #2c2c31; color: #f5f5f7;
+	padding: 7px 10px; height: auto; font: inherit; text-decoration: none; }
+.cve-w-toolbar .components-button.cve-w-preview:hover:not(:disabled) { background: #393941; color: #fff; }
