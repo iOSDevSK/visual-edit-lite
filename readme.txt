@@ -204,6 +204,12 @@ the plugin is deleted.
 == Changelog ==
 
 = 1.27.0 =
+* Icons from a theme's or a plugin's own controls are no longer invisible in
+  the dark editing popup. A whole family of icon sets is drawn with strokes
+  rather than fills, and the contrast repair only ever looked at fills — so an
+  icon picker full of line icons kept its author's dark grey on a ground the
+  editor had just painted dark. They are repaired on the property they are
+  actually drawn with, and never by filling them in.
 * A form whose fields cover it completely — a one-row signup is an input and a
   button, edge to edge — could not be connected at all: there was no pixel of
   the form left to click, and what a form does when someone submits it is only

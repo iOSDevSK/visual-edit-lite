@@ -68,6 +68,13 @@ if command -v node >/dev/null; then
   node "$SRC/tests/collection-editor.mjs" || die "collection editor regression"
   node "$SRC/tests/import-dir-names.mjs" || die "import folder naming regression"
   node "$SRC/tests/parked-heal.mjs" || die "parked-set derivation regression"
+  # The dark sweep needs a real renderer, so it runs only when a node_modules
+  # with playwright is pointed at (NM=…). Skipped rather than silently passed.
+  if [ -n "${NM:-}" ] && [ -d "$NM/playwright" ]; then
+    node "$SRC/tests/workspace-dark-sweep.cjs" "$NM" || die "dark sweep regression — a control in the popup is unreadable"
+  else
+    echo "  (skipped: dark sweep needs NM=/path/to/node_modules with playwright)"
+  fi
   # form-convert.cjs, workspace-popup.cjs, ve-api.cjs and workspace-history.cjs
   # need jsdom: run them by hand with a node_modules path.
 fi

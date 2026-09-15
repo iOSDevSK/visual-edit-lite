@@ -1139,10 +1139,13 @@
 		'body.cve-native-collapsed .components-popover:not(.block-editor-block-popover):not(.block-editor-block-list__block-popover):not(.block-editor-block-list__insertion-point-popover)',
 		'body.cve-native-collapsed .components-modal__frame'
 	].join( ',' );
+	/* cve:dark-sweep:start — tests/workspace-dark-sweep.cjs slices from here to
+	   the matching end marker and runs this code against a real DOM. Keep the
+	   block self-contained: no reference to anything defined outside it. */
 	var DARK_KEEP = 'img, video, iframe, canvas, [style*="background:"], [style*="background-color"], [style*="background-image"], .component-color-indicator, [class*="color-indicator"], [class*="circular-option-picker__option"], .block-editor-block-preview__container, .block-editor-block-preview__content, .react-colorful, .components-color-picker, [class*="gradient-picker"], [class*="duotone"], [class*="global-styles-ui-preview"], [class*="global-styles-preview"], [class*="variations_item-preview"], .block-editor-inserter__preview-container, .editor-post-featured-image__preview, .components-range-control__track, .components-range-control__thumb-wrapper, .components-form-toggle__track, .components-form-toggle__thumb, .components-checkbox-control__input, .components-radio-control__input';
 	// Rendered page previews keep their own colours, text included.
 	var DARK_PREVIEWS = '.block-editor-block-preview__container, [class*="global-styles-ui-preview"], [class*="global-styles-preview"], [class*="variations_item-preview"], .block-editor-inserter__preview-container, .edit-site-style-book__iframe';
-	var DARK_CLASSES = [ 'cve-dk-surface', 'cve-dk-border', 'cve-dk-text', 'cve-dk-muted', 'cve-dk-accent', 'cve-dk-danger', 'cve-dk-ink', 'cve-dk-icon', 'cve-dk-icon-ink' ];
+	var DARK_CLASSES = [ 'cve-dk-surface', 'cve-dk-border', 'cve-dk-text', 'cve-dk-muted', 'cve-dk-accent', 'cve-dk-danger', 'cve-dk-ink', 'cve-dk-icon', 'cve-dk-icon-ink', 'cve-dk-stroke', 'cve-dk-stroke-ink' ];
 	function rgba( value ) { var m = String( value || '' ).match( /[\d.]+/g ); return m && m.length >= 3 ? { r: +m[0], g: +m[1], b: +m[2], a: m.length > 3 ? +m[3] : 1 } : null; }
 	function luminance( c ) { function ch( v ) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow( ( v + 0.055 ) / 1.055, 2.4 ); } return 0.2126 * ch( c.r ) + 0.7152 * ch( c.g ) + 0.0722 * ch( c.b ); }
 	function contrast( a, b ) { var x = luminance( a ), y = luminance( b ); return ( Math.max( x, y ) + 0.05 ) / ( Math.min( x, y ) + 0.05 ); }
@@ -1180,8 +1183,22 @@
 			if ( ! isIcon && ! hasText ) { return; }
 			var style = cs( el ); var bg = ground( el );
 			if ( isIcon ) {
-				var swatch = el.closest( '[style*="background:"], [style*="background-color"], .component-color-indicator' ); if ( style.fill === 'none' || swatch && root.contains( swatch ) ) { return; }
-				var fill = rgba( style.fill ); if ( fill && contrast( fill, bg ) < 3 ) { marks.push( [ el, luminance( bg ) > 0.4 ? 'cve-dk-icon-ink' : 'cve-dk-icon' ] ); }
+				var swatch = el.closest( '[style*="background:"], [style*="background-color"], .component-color-indicator' );
+				if ( swatch && root.contains( swatch ) ) { return; }
+				var dark = luminance( bg ) <= 0.4;
+				// A LINE icon is drawn with stroke and fill:none — a whole
+				// family of third-party icon sets is nothing but these. Reading
+				// only `fill` declared them untouchable and left them their
+				// author's dark grey on a ground this sweep had just painted
+				// dark: a picker full of invisible icons. They are repaired on
+				// the property they are actually drawn with, and never by
+				// filling them, which would turn an outline into a blob.
+				var stroke = rgba( style.stroke );
+				if ( stroke && style.stroke !== 'none' && parseFloat( style.strokeWidth ) > 0 && contrast( stroke, bg ) < 3 ) {
+					marks.push( [ el, dark ? 'cve-dk-stroke' : 'cve-dk-stroke-ink' ] );
+				}
+				if ( style.fill === 'none' ) { return; }
+				var fill = rgba( style.fill ); if ( fill && contrast( fill, bg ) < 3 ) { marks.push( [ el, dark ? 'cve-dk-icon' : 'cve-dk-icon-ink' ] ); }
 				return;
 			}
 			var fg = rgba( style.color ); if ( ! fg || contrast( fg, bg ) >= 4.5 ) { return; }
@@ -1192,6 +1209,7 @@
 		} );
 		marks.forEach( function ( m ) { m[0].classList.add( m[1] ); } );
 	}
+	/* cve:dark-sweep:end */
 	function NativeDark() {
 		useEffect( function () {
 			var pending = 0;
