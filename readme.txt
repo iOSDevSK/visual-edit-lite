@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.30.2
+Stable tag: 1.30.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,8 +77,8 @@ run next.
 
 A native Gutenberg block theme, or a theme whose pages are raw HTML and which
 declares its contract through the `clara_ve_theme_contract` filter. The
-contract for converted themes is fully documented in
-`docs/developer/theme-requirements.md`.
+contract for converted themes is fully documented on GitHub:
+https://github.com/iOSDevSK/visual-edit-lite/blob/main/docs/developer/theme-requirements.md
 
 Forms, email delivery, mailing lists, SEO, redirects and llms.txt do not
 depend on the theme at all and work anywhere.
@@ -131,8 +131,8 @@ migrate.
 = Can I use it on a theme I built myself? =
 
 Yes, if the theme's pages are raw HTML and it declares the
-`clara_ve_theme_contract` filter. See the plugin's `docs/` directory for the
-theme requirements.
+`clara_ve_theme_contract` filter. The theme requirements are documented on
+GitHub: https://github.com/iOSDevSK/visual-edit-lite/tree/main/docs
 
 = Does it work without JavaScript on the front end? =
 
@@ -202,6 +202,11 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.30.3 =
+
+* Changed: The package ships the plugin only — the developer documentation
+  lives on GitHub and is linked from this readme.
 
 = 1.30.2 =
 

@@ -175,7 +175,8 @@ rsync -a \
   --exclude 'tools/' \
   --exclude 'assets-source/' \
   --exclude '*.zip' \
-  --exclude 'PLAN-*.md' \
+  --exclude 'docs/' \
+  --exclude '*.md' \
   "$SRC/" "$STAGE/$SLUG/"
 
 # Plugin Check's file_type rule forbids archives inside a plugin, and the
@@ -184,6 +185,12 @@ rsync -a \
 # above is the fix; this is the proof it worked.
 if find "$STAGE/$SLUG" \( -name '*.zip' -o -name '*.gz' -o -name '*.rar' -o -name '*.phar' -o -name '*.exe' \) -print -quit | grep -q .; then
   fail "an archive or binary ended up inside the package"
+fi
+# The package is the plugin, not the repository: readme.txt is the only prose
+# that ships. The developer docs, README.md and any planning notes stay on
+# GitHub, so a directory reviewer never has to read past what WordPress shows.
+if find "$STAGE/$SLUG" -name '*.md' -print -quit | grep -q .; then
+  fail "a Markdown file ended up inside the package — only readme.txt ships"
 fi
 
 mkdir -p "$(dirname "$OUT")"
