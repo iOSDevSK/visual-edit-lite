@@ -1,0 +1,48 @@
+name: Build
+
+# Every push and pull request: the PHP parses at the oldest and the newest
+# supported PHP, and tools/build-plugin.sh still produces a clean package —
+# the same gates a release runs, minus the Docker-based Plugin Check.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["7.4", "8.4"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: php -l
+        run: |
+          find . -name '*.php' -not -path './tests/*' -not -path './tools/*' -not -path './.git/*' -print0 \
+            | xargs -0 -n1 -P4 php -l > /dev/null
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+      - name: Build the ZIP through every purity gate
+        run: bash tools/build-plugin.sh "$RUNNER_TEMP/visual-edit-lite.zip"
+      - name: Nothing but the plugin inside
+        run: |
+          unzip -l "$RUNNER_TEMP/visual-edit-lite.zip" | awk 'NR>3{print $4}' > /tmp/list
+          ! grep -E '\.md$|/\.|(^|/)(tests|tools|docs)/' /tmp/list
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visual-edit-lite
+          path: ${{ runner.temp }}/visual-edit-lite.zip

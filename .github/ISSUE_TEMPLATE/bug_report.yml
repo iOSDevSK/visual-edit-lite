@@ -1,0 +1,46 @@
+name: Bug report
+description: Something does not work the way the docs say.
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      placeholder: "1.30.3"
+    validations:
+      required: true
+  - type: input
+    id: wp
+    attributes:
+      label: WordPress and PHP versions
+      placeholder: "WordPress 7.1, PHP 8.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme kind
+      options:
+        - Native block theme (Gutenberg)
+        - Converted raw-HTML theme (declares clara_ve_theme_contract)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Open … 2. Click … 3. …"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Console errors, a screenshot, other active plugins.

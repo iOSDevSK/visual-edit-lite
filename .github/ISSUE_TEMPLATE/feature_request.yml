@@ -1,0 +1,23 @@
+name: Feature request
+description: Something the editor should do and does not yet.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The task, not the button — what you want to end up with on the page.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you do it today?
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme kind
+      options:
+        - Native block theme (Gutenberg)
+        - Converted raw-HTML theme
+        - Both

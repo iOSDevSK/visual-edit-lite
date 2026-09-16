@@ -1,4 +1,63 @@
-# Visual Edit Lite
+<p align="center">
+  <img src=".github/media/editor.png" alt="Visual Edit Lite: a heading selected on the live page, its panel open beside it" width="880">
+</p>
+
+# Visual Edit Lite – Visual Editor for Block Themes
+
+[![Latest release](https://img.shields.io/github/v/release/iOSDevSK/visual-edit-lite?label=release&color=00a32a)](https://github.com/iOSDevSK/visual-edit-lite/releases/latest)
+[![Build](https://github.com/iOSDevSK/visual-edit-lite/actions/workflows/build.yml/badge.svg)](https://github.com/iOSDevSK/visual-edit-lite/actions/workflows/build.yml)
+![WordPress 6.6 – 7.1](https://img.shields.io/badge/WordPress-6.6%20%E2%80%93%207.1-21759b)
+![PHP 7.4+](https://img.shields.io/badge/PHP-7.4%2B-777bb4)
+[![License GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
+<!-- Once the directory listing is live, add: -->
+<!-- [![WordPress.org](https://img.shields.io/wordpress/plugin/v/visual-edit-lite)](https://wordpress.org/plugins/visual-edit-lite/) -->
+<!-- ![Active installs](https://img.shields.io/wordpress/plugin/installs/visual-edit-lite) -->
+
+Click any text, image or section on the live page and change it right there —
+the design stays as it was built. For native Gutenberg block themes, and for
+WordPress sites converted from hand-written or AI-generated HTML. This is the
+free edition of [Visual Edit Pro](https://html2wp.dev/visualedit/).
+
+- **Point-and-click editing** on the real page: typography, colour, spacing,
+  layout and responsive controls per element, without touching the markup
+- **Sections** from your theme and the ones you save, so new content matches
+  the design
+- **Save history** per page: every save is a restore point, and the Original
+  can always be restored
+- **Forms** that keep their designed markup — signed delivery, layered
+  anti-spam, real email providers, no separate SMTP plugin
+- **SEO & AI readiness**: titles, descriptions, Open Graph, structured data,
+  `llms.txt`, and a read-only report that names what needs attention
+- **Import** a content bundle or a full theme ZIP without overwriting what you
+  already changed
+
+<p align="center">
+  <img src=".github/media/sections.png" alt="Add a section: the theme's own sections and the ones saved on this site" width="880">
+</p>
+
+## Install
+
+- **From WordPress.org** — Plugins → Add New → search for "Visual Edit Lite"
+  → Install Now → Activate. *(Submitted to the directory; the listing is
+  pending review.)*
+- **From a release** — download `visual-edit-lite-X.Y.Z.zip` from
+  [Releases](https://github.com/iOSDevSK/visual-edit-lite/releases/latest),
+  then Plugins → Add New → Upload Plugin.
+
+WordPress 6.6 or newer, PHP 7.4 or newer. No build step, no dependencies. The
+theme and the plugin are two separate files: a theme ZIP never contains the
+plugin.
+
+## Support
+
+- Bugs and feature requests: [GitHub Issues](https://github.com/iOSDevSK/visual-edit-lite/issues)
+- Questions: the [WordPress.org support forum](https://wordpress.org/support/plugin/visual-edit-lite/),
+  once the plugin is listed
+- Security problems: [SECURITY.md](.github/SECURITY.md) — please not a public issue
+
+---
+
+## How it works
 
 Visual editing for native Gutenberg block themes and WordPress sites converted
 from hand-written or AI-generated HTML. Block themes keep the complete Site
@@ -96,23 +155,13 @@ that needs the converted theme.
 
 ---
 
-## Installation
-
-1. Install and activate your converted theme.
-2. In WordPress: **Plugins → Add New**, search for "Visual Edit Lite",
-   **Install Now**, **Activate**.
-3. Follow the theme's setup screen to import the site's content.
-
-The theme and the plugin are two separate files. A theme ZIP never contains
-the plugin.
-
 ## Lite and Pro
 
 This is the free edition, distributed through the WordPress.org plugin
 directory. It has no licence key, no trial and no locked buttons: what it does
 not have, it does not contain.
 
-Visual Edit **Pro** adds an AI assistant that edits pages conversationally, AI
+[Visual Edit **Pro**](https://html2wp.dev/visualedit/) adds an AI assistant that edits pages conversationally, AI
 image editing and video generation, Cloudflare Turnstile, one-click theme
 export, and a save history that lists all 300 recorded entries rather
 than the ten most recent plus the Original. Both editions RECORD the same

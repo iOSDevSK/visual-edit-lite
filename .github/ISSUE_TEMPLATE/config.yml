@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support forum on WordPress.org
+    url: https://wordpress.org/support/plugin/visual-edit-lite/
+    about: Questions about using the plugin, once it is listed in the directory.
+  - name: Visual Edit Pro
+    url: https://html2wp.dev/visualedit/
+    about: The paid edition — AI assistant, theme export, Cloudflare Turnstile, full save history.
+  - name: Security report
+    url: https://github.com/iOSDevSK/visual-edit-lite/blob/main/.github/SECURITY.md
+    about: Please do not report security problems in a public issue.
