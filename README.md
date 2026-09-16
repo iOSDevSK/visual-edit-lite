@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/media/editor.png" alt="Visual Edit Lite: a heading selected on the live page, its panel open beside it" width="880">
+  <img src=".github/media/logo.png" alt="Visual Edit" width="128" height="128">
 </p>
 
 # Visual Edit Lite – Visual Editor for Block Themes
@@ -17,6 +17,10 @@ Click any text, image or section on the live page and change it right there —
 the design stays as it was built. For native Gutenberg block themes, and for
 WordPress sites converted from hand-written or AI-generated HTML. This is the
 free edition of [Visual Edit Pro](https://html2wp.dev/visualedit/).
+
+<p align="center">
+  <img src=".github/media/editor.png" alt="Visual Edit Lite: a heading selected on the live page, its panel open beside it" width="880">
+</p>
 
 - **Point-and-click editing** on the real page: typography, colour, spacing,
   layout and responsive controls per element, without touching the markup
