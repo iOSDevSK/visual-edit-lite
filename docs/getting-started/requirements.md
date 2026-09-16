@@ -39,6 +39,7 @@ credentials or personal data:
 | Import Content | `edit_theme_options` + `unfiltered_html` |
 | SEO & AI Readiness | `edit_theme_options` |
 | Form Settings, SEO & Sharing, Subscribers | `manage_options` |
+| Get Pro (and the two Pro-badged items, AI Settings and Export Theme) | `edit_theme_options` |
 
 ### On multisite, this matters
 
