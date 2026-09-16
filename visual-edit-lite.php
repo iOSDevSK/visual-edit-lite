@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Visual Edit Lite
+ * Plugin Name: Visual Edit Lite – Visual Editor for Block Themes
  * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
  * Description: Visual editing for raw-HTML sites and complete native Gutenberg editing for block themes, with responsive controls, movement, forms, SEO and AI-readiness.
  * Version: 1.29.1
@@ -299,6 +299,11 @@ require_once CLARA_VE_DIR . 'includes/class-import-plan.php';
 require_once CLARA_VE_DIR . 'includes/class-import-page.php';
 require_once CLARA_VE_DIR . 'includes/class-parked-page.php';
 require_once CLARA_VE_DIR . 'includes/class-page-actions.php';
+// Last of the admin screens on purpose: it reads the Visual Edit menu as the
+// files above have already built it. Required here, below the stand-down at
+// the top of this file, so an install running Visual Edit Pro never registers
+// an upsell item beside the real screen.
+require_once CLARA_VE_DIR . 'includes/class-get-pro.php';
 
 // Create the history table on the site's first request after install/update —
 // dbDelta is idempotent, so this is a cheap no-op once the schema is current.

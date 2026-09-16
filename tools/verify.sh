@@ -206,9 +206,14 @@ wp_set_current_user( 1 );
 require_once ABSPATH . "wp-admin/includes/plugin.php";
 do_action( "admin_menu" );
 global $submenu;
-$items = implode( "|", wp_list_pluck( (array) ( isset( $submenu["visual-edit"] ) ? $submenu["visual-edit"] : array() ), 0 ) );
-$out[] = array( "no AI Settings menu", false === stripos( $items, "AI Settings" ) );
-$out[] = array( "no Export Theme menu", false === stripos( $items, "Export Theme" ) );
+$slugs = wp_list_pluck( (array) ( isset( $submenu["visual-edit"] ) ? $submenu["visual-edit"] : array() ), 2 );
+// Checked by SLUG, not by label. Lite now offers two upsell items that WEAR
+// the names of the paid screens, so a label check here would pass on the
+// upsell and prove nothing. What must be absent is the real screen, and a
+// screen is its slug.
+$out[] = array( "no real AI Settings screen", ! in_array( "visual-edit-ai", $slugs, true ) );
+$out[] = array( "no real Export Theme screen", ! in_array( "visual-edit-export", $slugs, true ) );
+$out[] = array( "the upsell registers its three items", in_array( "visual-edit-lite-pro-ai", $slugs, true ) && in_array( "visual-edit-lite-pro-export", $slugs, true ) && in_array( "visual-edit-lite-get-pro", $slugs, true ) );
 
 ob_start(); Clara_VE_Editor_Page::render(); $html = ob_get_clean();
 $out[] = array( "editor renders", 500 < strlen( $html ) );
@@ -336,6 +341,17 @@ PATTERNS_OUT=$(mktemp)
 docker cp "$SRC/tests/regression-patterns.php" "$WP:/tmp/regression-patterns.php" >/dev/null
 if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVER["HTTP_HOST"] = "localhost"; require "/var/www/html/wp-load.php"; wp_set_current_user( 1 ); require "/tmp/regression-patterns.php";' > "$PATTERNS_OUT" 2>&1; then pass "$(tail -1 "$PATTERNS_OUT")"
 else sed -n '/FAIL/p' "$PATTERNS_OUT" | head -5; bad "saved sections regression"; fi
+
+# ---------------------------------------------------------------- 5b5. Get Pro ---
+# The upsell: three items in the places the paid edition keeps the real
+# screens, one page behind them, and none of it on a site that already has Pro.
+# The last part boots a second WordPress from inside the test, because the
+# stand-down is a file-scope return that an already-booted process is past.
+step "Get Pro"
+GETPRO_OUT=$(mktemp)
+docker cp "$SRC/tests/regression-get-pro.php" "$WP:/tmp/regression-get-pro.php" >/dev/null
+if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVER["HTTP_HOST"] = "localhost"; require "/var/www/html/wp-load.php"; wp_set_current_user( 1 ); require "/tmp/regression-get-pro.php";' > "$GETPRO_OUT" 2>&1; then pass "$(tail -1 "$GETPRO_OUT")"
+else sed -n '/FAIL/p' "$GETPRO_OUT" | head -8; bad "Get Pro regression"; fi
 
 # --------------------------------------------------- 5c. the theme contract ---
 # A converted theme's own runtime delegates to this plugin whenever the class

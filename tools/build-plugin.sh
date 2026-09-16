@@ -86,7 +86,14 @@ purity "AI code survived"           'Clara_VE_AI_|clara-ve-ai|clara_ve_ai_|ai-ch
 # in 1.27.0 the missing method was a fatal on every public page holding a form.
 # So the two stand-down methods in class-form-settings.php are allowed by name,
 # and an implementation is refused wherever it appears.
-purity "Turnstile survived"         'turnstile' 'includes/class-form-settings\.php:'
+#
+# The Get Pro screen is the second allowed file, for the same reason in a
+# different shape: it SELLS what Lite does not have, and a feature list that
+# will not say the name of the feature is no use to the person reading it. Only
+# the naming gate makes the exception — the implementation gate right below it
+# covers this file like every other, so a secret, a verifier or a widget landing
+# here still refuses the build.
+purity "Turnstile survived"         'turnstile' 'includes/class-form-settings\.php:|includes/class-get-pro\.php:'
 purity "Turnstile implementation survived" \
   'turnstile_secret|turnstile_ok|cf-turnstile-response|challenges\.cloudflare\.com|OPT_TURNSTILE'
 purity "theme export survived"      'Clara_VE_Export_Page|clara_ve_export_theme'
@@ -122,6 +129,14 @@ done
 NAMEHITS="$(grep -rn "['\"]Visual Edit Pro['\"]" "$SRC" \
   --include='*.php' --include='*.js' --include='*.css' \
   --exclude-dir=.git --exclude-dir=tools || true)"
+# A named, deliberate exception, in the shape of the Turnstile stand-down
+# above: the ONE place Lite names Pro on purpose is the screen that sells it,
+# plus the test that holds that screen to its word. Filtered by PATH after the
+# fact, never by weakening the pattern — the string stays written out in full
+# in the source so this grep can still see it, and any other file that starts
+# saying "Visual Edit Pro" to a user still fails the build.
+NAMEHITS="$(printf '%s\n' "$NAMEHITS" \
+  | grep -vE 'includes/class-get-pro\.php:|tests/regression-get-pro\.php:' || true)"
 [ -z "$NAMEHITS" ] || { echo "$NAMEHITS" >&2; fail "the Pro product name is still in a user-visible string"; }
 grep -rn "Require License\|Update URI" "$MAIN" >/dev/null 2>&1 && fail "forbidden plugin header present"
 

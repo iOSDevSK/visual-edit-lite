@@ -1,4 +1,4 @@
-=== Visual Edit Lite ===
+=== Visual Edit Lite – Visual Editor for Block Themes ===
 Contributors: filipdvoran
 Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
@@ -202,6 +202,15 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= Unreleased =
+
+* New: A **Get Pro** screen in the Visual Edit Lite menu. It lists what the
+  paid edition adds, and the two screens it brings — AI Settings and Export
+  Theme — are shown in the menu, marked Pro, opening the same explanation.
+  Nothing is loaded from outside the site and nothing is sent anywhere.
+* Changed: The plugin is listed as "Visual Edit Lite – Visual Editor for
+  Block Themes". The menu, the admin bar and every screen are unchanged.
 
 = 1.29.1 =
 
