@@ -73,11 +73,12 @@ $check( 'the Visual Edit menu has rows at all', count( $rows ) > 3 );
 
 $assistant = $position( Clara_VE_Get_Pro::PAGE_ASSISTANT );
 $export    = $position( Clara_VE_Get_Pro::PAGE_EXPORT );
-$buy       = $position( Clara_VE_Get_Pro::PAGE_BUY );
+$buy       = $position( Clara_VE_Get_Pro::BUY_URL );
 
 $check( 'the AI Settings item is registered', $assistant >= 0 );
 $check( 'the Export Theme item is registered', $export >= 0 );
 $check( 'the Get Pro item is registered', $buy >= 0 );
+$check( 'Get Pro is a plain link to the pricing page, not a screen', $buy >= 0 && Clara_VE_Get_Pro::BUY_URL === $slugs[ $buy ] );
 
 $check(
 	'all three ask for the capability the parent menu asks for',
@@ -118,10 +119,6 @@ $check( 'Get Pro carries the prominent label', $buy >= 0 && false !== strpos( $l
 // ------------------------------------------------------------ 3. the screen
 
 ob_start();
-Clara_VE_Get_Pro::render_upsell();
-$plain = ob_get_clean();
-
-ob_start();
 Clara_VE_Get_Pro::render_assistant();
 $with_assistant = ob_get_clean();
 
@@ -129,21 +126,29 @@ ob_start();
 Clara_VE_Get_Pro::render_export();
 $with_export = ob_get_clean();
 
-$check( 'the screen names the paid edition', false !== strpos( $plain, 'Visual Edit Pro' ) );
-$check( 'the screen links to the pricing page', false !== strpos( $plain, Clara_VE_Get_Pro::BUY_URL ) );
-$check( 'the link opens safely', false !== strpos( $plain, 'rel="noopener noreferrer"' ) );
-$check( 'the button says what it does', false !== strpos( $plain, 'Buy Visual Edit Pro' ) );
+$check( 'the screen names the paid edition', false !== strpos( $with_assistant, 'Visual Edit Pro' ) );
+$check( 'the screen links to the pricing page', false !== strpos( $with_assistant, Clara_VE_Get_Pro::BUY_URL ) );
+$check( 'the link opens safely', false !== strpos( $with_assistant, 'rel="noopener noreferrer"' ) );
+$check( 'the button says what it does', false !== strpos( $with_assistant, 'Buy Visual Edit Pro' ) );
 $check( 'the AI Settings item answers that feature first', false !== strpos( $with_assistant, 'cve-pro-card' ) && false !== strpos( $with_assistant, 'AI Settings' ) );
 $check( 'the Export Theme item answers that feature first', false !== strpos( $with_export, 'cve-pro-card' ) && false !== strpos( $with_export, 'Export Theme' ) );
-$check( 'the plain Get Pro screen singles out no feature', false === strpos( $plain, 'cve-pro-card' ) );
+// The menu link itself opens in a new tab: a menu entry cannot carry a
+// target, so assets() adds one to that single anchor from an inline script.
+if ( ! wp_script_is( 'common', 'registered' ) ) {
+	wp_register_script( 'common', admin_url( 'js/common.js' ), array(), false, true );
+}
+Clara_VE_Get_Pro::assets();
+$after = wp_scripts()->get_data( 'common', 'after' );
+$js    = is_array( $after ) ? implode( "\n", $after ) : (string) $after;
+$check( 'the Get Pro link opens in a new tab', false !== strpos( $js, '_blank' ) && false !== strpos( $js, 'noopener noreferrer' ) && false !== strpos( $js, 'html2wp.dev' ) );
 
 // Nothing is fetched from anywhere, and nothing is reported anywhere. A src or
 // href pointing off-site other than the one button would be both.
 $check(
 	'the screen loads nothing from outside',
-	false === stripos( $plain, '<script' ) && false === stripos( $plain, '<img' ) && false === stripos( $plain, '<link' )
+	false === stripos( $with_assistant, '<script' ) && false === stripos( $with_assistant, '<img' ) && false === stripos( $with_assistant, '<link' )
 );
-$check( 'the link carries no campaign parameters', false === strpos( $plain, 'utm_' ) );
+$check( 'the link carries no campaign parameters', false === strpos( $with_assistant, 'utm_' ) && false === strpos( Clara_VE_Get_Pro::BUY_URL, 'utm_' ) );
 
 // ---------------------------------------------------------- 4. the stand-down
 

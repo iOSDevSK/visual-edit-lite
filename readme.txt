@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.30.0
+Stable tag: 1.30.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -202,6 +202,12 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.30.1 =
+
+* Changed: **Get Pro** in the Visual Edit Lite menu now opens the pricing
+  page directly, in a new browser tab. AI Settings and Export Theme, marked
+  Pro, still open the screen that explains what the paid edition adds.
 
 = 1.30.0 =
 

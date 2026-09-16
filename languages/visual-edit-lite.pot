@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Visual Edit Lite 1.30.0\n"
+"Project-Id-Version: Visual Edit Lite 1.30.1\n"
 "Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -986,80 +986,80 @@ msgstr ""
 msgid "What this site already does"
 msgstr ""
 
-#: includes/class-get-pro.php:77
-#: includes/class-get-pro.php:88
-#: includes/class-get-pro.php:99
-#: includes/class-get-pro.php:218
+#: includes/class-get-pro.php:79
+#: includes/class-get-pro.php:90
+#: includes/class-get-pro.php:103
+#: includes/class-get-pro.php:227
 msgid "Visual Edit Pro"
 msgstr ""
 
-#: includes/class-get-pro.php:78
-#: includes/class-get-pro.php:224
+#: includes/class-get-pro.php:80
+#: includes/class-get-pro.php:233
 msgid "AI Settings"
 msgstr ""
 
-#: includes/class-get-pro.php:89
-#: includes/class-get-pro.php:229
+#: includes/class-get-pro.php:91
+#: includes/class-get-pro.php:238
 msgid "Export Theme"
 msgstr ""
 
-#: includes/class-get-pro.php:100
+#: includes/class-get-pro.php:104
 msgid "Get Pro"
 msgstr ""
 
-#: includes/class-get-pro.php:144
+#: includes/class-get-pro.php:147
 msgid "Pro"
 msgstr ""
 
-#: includes/class-get-pro.php:214
+#: includes/class-get-pro.php:223
 msgid "You do not have permission to view this screen."
 msgstr ""
 
-#: includes/class-get-pro.php:220
+#: includes/class-get-pro.php:229
 msgid "Visual Edit Pro is the paid edition of this plugin. Everything you already use stays exactly as it is; Pro adds the screens below."
 msgstr ""
 
-#: includes/class-get-pro.php:225
+#: includes/class-get-pro.php:234
 msgid "The screen where you enter your own provider key, so the assistant can edit pages, sections, the header and footer, menus and site styles for you from a chat. It is part of Visual Edit Pro."
 msgstr ""
 
-#: includes/class-get-pro.php:230
+#: includes/class-get-pro.php:239
 msgid "Download the whole site as an installable WordPress theme package, in one click, ready to hand over or move to another host. It is part of Visual Edit Pro."
 msgstr ""
 
-#: includes/class-get-pro.php:234
+#: includes/class-get-pro.php:243
 msgid "What Pro adds"
 msgstr ""
 
-#: includes/class-get-pro.php:236
+#: includes/class-get-pro.php:245
 msgid "An assistant that edits pages, sections, the header and footer, menus and site styles from a chat, using your own API key."
 msgstr ""
 
-#: includes/class-get-pro.php:237
+#: includes/class-get-pro.php:246
 msgid "AI image editing and AI video generation, with the same key."
 msgstr ""
 
-#: includes/class-get-pro.php:238
+#: includes/class-get-pro.php:247
 msgid "Cloudflare Turnstile for your forms, as an extra anti-spam layer."
 msgstr ""
 
-#: includes/class-get-pro.php:239
+#: includes/class-get-pro.php:248
 msgid "One-click theme export: the whole site as an installable package."
 msgstr ""
 
-#: includes/class-get-pro.php:240
+#: includes/class-get-pro.php:249
 msgid "A history panel with 300 restore points per page instead of ten."
 msgstr ""
 
-#: includes/class-get-pro.php:241
+#: includes/class-get-pro.php:250
 msgid "One-click updates, straight from the Plugins screen."
 msgstr ""
 
-#: includes/class-get-pro.php:244
+#: includes/class-get-pro.php:253
 msgid "Pro and Lite store content, history and settings under the same names: install Pro over Lite and nothing is lost."
 msgstr ""
 
-#: includes/class-get-pro.php:250
+#: includes/class-get-pro.php:259
 msgid "Buy Visual Edit Pro"
 msgstr ""
 

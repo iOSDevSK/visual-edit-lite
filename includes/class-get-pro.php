@@ -1,7 +1,7 @@
 <?php
 /**
- * The one place Lite names the paid edition: three menu items and the single
- * screen behind them.
+ * The one place Lite names the paid edition: two grey menu items with one
+ * screen behind them, and a Get Pro link straight to the pricing page.
  *
  * Why this is allowed in the WordPress.org directory, since the whole file is
  * an upgrade prompt and a reviewer will ask:
@@ -9,6 +9,8 @@
  * - Guideline 11 (hijacking the admin): the prompt lives inside this plugin's
  *   OWN menu and on its own screen. It adds no dashboard widget, no banner on
  *   anybody else's page, no notice, no nag and no dismiss-state to remember.
+ *   Get Pro is a plain link in that same menu, opening the pricing page in a
+ *   new tab — no redirect, no interstitial, nothing in between.
  * - Guideline 8 (no executable code from outside): nothing here loads from a
  *   remote host. No image, no font, no stylesheet, no script. The only outside
  *   reference is a plain link a person chooses to click.
@@ -32,8 +34,9 @@ defined( 'ABSPATH' ) || exit;
 class Clara_VE_Get_Pro {
 
 	/**
-	 * The three menu slugs. All three render the same screen; they differ so
-	 * that the item a person clicked can be answered first.
+	 * The two screen slugs. Both render the same screen; they differ so that
+	 * the item a person clicked can be answered first. Get Pro has no slug of
+	 * its own: its menu entry IS the pricing URL.
 	 *
 	 * Deliberately distinct from the paid edition's own slugs
 	 * (`visual-edit-ai`, `visual-edit-export`): if both plugins were ever
@@ -43,9 +46,8 @@ class Clara_VE_Get_Pro {
 	 */
 	const PAGE_ASSISTANT = 'visual-edit-lite-pro-ai';
 	const PAGE_EXPORT    = 'visual-edit-lite-pro-export';
-	const PAGE_BUY       = 'visual-edit-lite-get-pro';
 
-	/** Where the button goes. No campaign parameters — see guideline 7 above. */
+	/** Where the button and the Get Pro item go. No campaign parameters — see guideline 7 above. */
 	const BUY_URL = 'https://html2wp.dev/pricing/#visualedit';
 
 	public static function init() {
@@ -56,7 +58,7 @@ class Clara_VE_Get_Pro {
 		// menu as it already stands, so this has to run after every sibling
 		// has put itself there.
 		add_action( 'admin_menu', array( __CLASS__, 'register_pages' ), 30 );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'styles' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
 	// ------------------------------------------------------------- the menu
@@ -94,13 +96,14 @@ class Clara_VE_Get_Pro {
 		);
 
 		// Last, with no position of its own: the one item meant to be found.
+		// Its slug IS the pricing URL, so WordPress renders a plain link and no
+		// screen sits behind it; assets() makes that link open in a new tab.
 		add_submenu_page(
 			'visual-edit',
 			__( 'Visual Edit Pro', 'visual-edit-lite' ),
 			'<span class="cve-get-pro">' . esc_html__( 'Get Pro', 'visual-edit-lite' ) . '</span>',
 			'edit_theme_options',
-			self::PAGE_BUY,
-			array( __CLASS__, 'render_upsell' )
+			self::BUY_URL
 		);
 	}
 
@@ -151,7 +154,7 @@ class Clara_VE_Get_Pro {
 	 * do not deserve a file, and a plugin in the directory may not fetch a
 	 * stylesheet from anywhere else.
 	 */
-	public static function styles() {
+	public static function assets() {
 		if ( ! current_user_can( 'edit_theme_options' ) ) {
 			return;
 		}
@@ -183,6 +186,17 @@ class Clara_VE_Get_Pro {
 .cve-pro-page .cve-pro-buy { margin: 28px 0 8px; }
 ';
 		wp_add_inline_style( 'common', $css );
+
+		// A menu entry cannot carry a target, and the pricing page is not this
+		// site: open it in a new tab so the admin stays where it was.
+		$selector = '#adminmenu a[href="' . self::BUY_URL . '"]';
+		wp_add_inline_script(
+			'common',
+			sprintf(
+				'document.addEventListener("DOMContentLoaded",function(){var a=document.querySelector(%s);if(a){a.target="_blank";a.rel="noopener noreferrer";}});',
+				wp_json_encode( $selector )
+			)
+		);
 	}
 
 	// ----------------------------------------------------------- the screen
@@ -197,17 +211,12 @@ class Clara_VE_Get_Pro {
 		self::render( 'export' );
 	}
 
-	/** Get Pro opens the same screen with no feature singled out. */
-	public static function render_upsell() {
-		self::render( '' );
-	}
-
 	/**
 	 * What the paid edition adds, and one button.
 	 *
 	 * Nothing is fetched, stored or reported here. The screen is text.
 	 *
-	 * @param string $feature 'assistant', 'export', or '' for the plain page.
+	 * @param string $feature 'assistant' or 'export'.
 	 */
 	private static function render( $feature ) {
 		if ( ! current_user_can( 'edit_theme_options' ) ) {

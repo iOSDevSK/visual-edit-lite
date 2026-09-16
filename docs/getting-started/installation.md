@@ -66,7 +66,7 @@ Lite**, with:
 | Import Content | bring content in from a ZIP |
 | AI Settings *(Pro)* | opens the Get Pro screen — the assistant is part of the paid edition |
 | Export Theme *(Pro)* | opens the Get Pro screen — theme export is part of the paid edition |
-| Get Pro | what the paid edition adds, and where to buy it |
+| Get Pro | opens the pricing page (html2wp.dev) in a new tab |
 
 There is also a **Visual Edit Lite** link in the admin bar on the front end,
 and a **Visual Edit Lite** column on the Pages list showing which pages are

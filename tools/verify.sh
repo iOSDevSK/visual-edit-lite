@@ -213,7 +213,7 @@ $slugs = wp_list_pluck( (array) ( isset( $submenu["visual-edit"] ) ? $submenu["v
 // screen is its slug.
 $out[] = array( "no real AI Settings screen", ! in_array( "visual-edit-ai", $slugs, true ) );
 $out[] = array( "no real Export Theme screen", ! in_array( "visual-edit-export", $slugs, true ) );
-$out[] = array( "the upsell registers its three items", in_array( "visual-edit-lite-pro-ai", $slugs, true ) && in_array( "visual-edit-lite-pro-export", $slugs, true ) && in_array( "visual-edit-lite-get-pro", $slugs, true ) );
+$out[] = array( "the upsell registers its three items", in_array( "visual-edit-lite-pro-ai", $slugs, true ) && in_array( "visual-edit-lite-pro-export", $slugs, true ) && in_array( "https://html2wp.dev/pricing/#visualedit", $slugs, true ) );
 
 ob_start(); Clara_VE_Editor_Page::render(); $html = ob_get_clean();
 $out[] = array( "editor renders", 500 < strlen( $html ) );
