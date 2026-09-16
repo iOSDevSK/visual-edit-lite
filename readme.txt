@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.29.0
+Stable tag: 1.29.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -202,6 +202,10 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.29.1 =
+
+* Fixed: The ＋ Section browser labels its two groups — Theme sections and Your sections.
 
 = 1.29.0 =
 * Save a section and use it on any other page. **Save as a section…** on the

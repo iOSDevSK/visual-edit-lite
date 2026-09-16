@@ -1572,9 +1572,13 @@
 		// site's own words. One undifferentiated grid makes them look alike.
 		var themeRows = visible.filter( function ( pattern ) { return ! isSavedSection( pattern ); } );
 		var savedRows = visible.filter( isSavedSection );
+		// The heading is drawn here rather than left to the List, which takes
+		// `label` as an aria-label and nothing else: a sighted owner saw two
+		// unlabelled grids running into each other and no way to tell the
+		// theme's demo sections from the ones they had saved themselves.
 		function list( rows, label ) {
 			if ( ! rows.length ) { return null; }
-			return List ? h( 'div', { key: label, className: 'cve-w-pattern-grid' }, h( List, { blockPatterns: rows, shownPatterns: rows, onClickPattern: choose, label: label, isDraggable: false } ) ) :
+			return List ? h( 'div', { key: label, className: 'cve-w-pattern-grid' }, h( 'p', { className: 'cve-w-sub' }, label ), h( List, { blockPatterns: rows, shownPatterns: rows, onClickPattern: choose, label: label, isDraggable: false } ) ) :
 				h( 'div', { key: label, className: 'cve-w-site-list' }, h( 'p', { className: 'cve-w-sub' }, label ),
 					rows.map( function ( pattern ) { return button( pattern.title, function () { choose( pattern ); }, { key: pattern.name, title: pattern.description } ); } ) );
 		}

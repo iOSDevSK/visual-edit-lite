@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Visual Edit Lite 1.29.0\n"
+"Project-Id-Version: Visual Edit Lite 1.29.1\n"
 "Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -290,8 +290,8 @@ msgstr ""
 #: includes/class-editor-page.php:366
 #: includes/class-editor-page.php:400
 #: assets/gutenberg.js:70
-#: assets/workspace.js:1685
-#: assets/workspace.js:1718
+#: assets/workspace.js:1689
+#: assets/workspace.js:1722
 msgid "Search appearance"
 msgstr ""
 
@@ -300,8 +300,8 @@ msgstr ""
 #: assets/workspace-history.js:142
 #: assets/workspace-history.js:143
 #: assets/workspace-history.js:146
-#: assets/workspace.js:1704
-#: assets/workspace.js:1704
+#: assets/workspace.js:1708
+#: assets/workspace.js:1708
 msgid "History"
 msgstr ""
 
@@ -319,7 +319,7 @@ msgstr ""
 
 #: includes/class-editor-page.php:371
 #: assets/workspace-history.js:132
-#: assets/workspace.js:1715
+#: assets/workspace.js:1719
 msgid "Save"
 msgstr ""
 
@@ -1060,7 +1060,7 @@ msgstr ""
 #: includes/class-parked-page.php:156
 #: includes/class-parked-page.php:404
 #: assets/gutenberg.js:66
-#: assets/workspace.js:1735
+#: assets/workspace.js:1739
 msgid "Pages"
 msgstr ""
 
@@ -1092,7 +1092,7 @@ msgstr ""
 #: includes/class-import-page.php:172
 #: includes/class-parked-page.php:409
 #: assets/gutenberg.js:74
-#: assets/workspace.js:1689
+#: assets/workspace.js:1693
 msgid "Form submissions"
 msgstr ""
 
@@ -2187,7 +2187,7 @@ msgid "Edit the complete site"
 msgstr ""
 
 #: assets/gutenberg.js:67
-#: assets/workspace.js:1735
+#: assets/workspace.js:1739
 msgid "Posts"
 msgstr ""
 
@@ -2196,8 +2196,8 @@ msgid "More Visual Edit tools"
 msgstr ""
 
 #: assets/gutenberg.js:73
-#: assets/workspace.js:1688
-#: assets/workspace.js:1720
+#: assets/workspace.js:1692
+#: assets/workspace.js:1724
 msgid "SEO & sharing settings"
 msgstr ""
 
@@ -2416,7 +2416,7 @@ msgid "Synced pattern"
 msgstr ""
 
 #: assets/workspace-history.js:57
-#: assets/workspace.js:1735
+#: assets/workspace.js:1739
 msgid "Navigation"
 msgstr ""
 
@@ -2439,7 +2439,7 @@ msgstr ""
 
 #: assets/workspace-history.js:124
 #: assets/workspace.js:351
-#: assets/workspace.js:1746
+#: assets/workspace.js:1750
 msgid "Retry"
 msgstr ""
 
@@ -2600,7 +2600,7 @@ msgid "Edit gradient stops"
 msgstr ""
 
 #: assets/workspace.js:348
-#: assets/workspace.js:1684
+#: assets/workspace.js:1688
 msgid "Google Fonts"
 msgstr ""
 
@@ -2609,8 +2609,8 @@ msgid "Save fonts updates the font library for the whole site."
 msgstr ""
 
 #: assets/workspace.js:353
-#: assets/workspace.js:1583
-#: assets/workspace.js:1744
+#: assets/workspace.js:1587
+#: assets/workspace.js:1748
 msgid "Search"
 msgstr ""
 
@@ -3072,7 +3072,7 @@ msgstr ""
 
 #: assets/workspace.js:985
 #: assets/workspace.js:1000
-#: assets/workspace.js:1705
+#: assets/workspace.js:1709
 msgid "Section"
 msgstr ""
 
@@ -3188,17 +3188,17 @@ msgid "Screen size"
 msgstr ""
 
 #: assets/workspace.js:1044
-#: assets/workspace.js:1701
+#: assets/workspace.js:1705
 msgid "Desktop"
 msgstr ""
 
 #: assets/workspace.js:1044
-#: assets/workspace.js:1701
+#: assets/workspace.js:1705
 msgid "Tablet"
 msgstr ""
 
 #: assets/workspace.js:1044
-#: assets/workspace.js:1701
+#: assets/workspace.js:1705
 msgid "Mobile"
 msgstr ""
 
@@ -3304,204 +3304,204 @@ msgstr ""
 msgid "Open Visual Edit settings"
 msgstr ""
 
-#: assets/workspace.js:1581
-#: assets/workspace.js:1705
+#: assets/workspace.js:1585
+#: assets/workspace.js:1709
 msgid "Add a section"
 msgstr ""
 
-#: assets/workspace.js:1582
+#: assets/workspace.js:1586
 msgid "Sections come from your theme and from sections you saved, so they already match the design. The new section is added after the selected one."
 msgstr ""
 
-#: assets/workspace.js:1583
+#: assets/workspace.js:1587
 msgid "Search sections…"
 msgstr ""
 
-#: assets/workspace.js:1584
+#: assets/workspace.js:1588
 msgid "This theme offers no sections that can be added here."
 msgstr ""
 
-#: assets/workspace.js:1585
+#: assets/workspace.js:1589
 msgid "No sections match that search."
 msgstr ""
 
-#: assets/workspace.js:1586
+#: assets/workspace.js:1590
 msgid "Theme sections"
 msgstr ""
 
-#: assets/workspace.js:1587
+#: assets/workspace.js:1591
 msgid "Your sections"
 msgstr ""
 
-#: assets/workspace.js:1680
+#: assets/workspace.js:1684
 msgid "Page settings"
 msgstr ""
 
-#: assets/workspace.js:1681
+#: assets/workspace.js:1685
 msgid "Site styles"
 msgstr ""
 
-#: assets/workspace.js:1682
+#: assets/workspace.js:1686
 msgid "Page structure (list view)"
 msgstr ""
 
-#: assets/workspace.js:1683
+#: assets/workspace.js:1687
 msgid "All blocks"
 msgstr ""
 
-#: assets/workspace.js:1686
+#: assets/workspace.js:1690
 msgid "Lock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1686
+#: assets/workspace.js:1690
 msgid "Unlock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1687
+#: assets/workspace.js:1691
 msgid "Hide WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1687
+#: assets/workspace.js:1691
 msgid "Show WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1690
+#: assets/workspace.js:1694
 msgid "Open in the WordPress editor"
 msgstr ""
 
-#: assets/workspace.js:1691
-#: assets/workspace.js:1761
+#: assets/workspace.js:1695
+#: assets/workspace.js:1765
 msgid "Back to the dashboard"
 msgstr ""
 
-#: assets/workspace.js:1699
+#: assets/workspace.js:1703
 msgid "Visual Edit"
 msgstr ""
 
-#: assets/workspace.js:1700
+#: assets/workspace.js:1704
 msgid "Your website"
 msgstr ""
 
-#: assets/workspace.js:1700
+#: assets/workspace.js:1704
 msgid "Switch page, template or part"
 msgstr ""
 
-#: assets/workspace.js:1701
+#: assets/workspace.js:1705
 msgid "Device"
 msgstr ""
 
-#: assets/workspace.js:1702
-#: assets/workspace.js:1702
-#: assets/workspace.js:1707
+#: assets/workspace.js:1706
+#: assets/workspace.js:1706
+#: assets/workspace.js:1711
 msgid "Undo"
 msgstr ""
 
-#: assets/workspace.js:1703
-#: assets/workspace.js:1703
+#: assets/workspace.js:1707
+#: assets/workspace.js:1707
 msgid "Redo"
 msgstr ""
 
-#: assets/workspace.js:1704
+#: assets/workspace.js:1708
 msgid "Saved versions and restore"
 msgstr ""
 
-#: assets/workspace.js:1705
+#: assets/workspace.js:1709
 msgid "Add a section from your theme"
 msgstr ""
 
-#: assets/workspace.js:1706
+#: assets/workspace.js:1710
 msgid "Design unlocked"
 msgstr ""
 
-#: assets/workspace.js:1706
+#: assets/workspace.js:1710
 msgid "Lock pattern design again"
 msgstr ""
 
-#: assets/workspace.js:1707
+#: assets/workspace.js:1711
 msgid "Version restored — Save to keep it"
 msgstr ""
 
-#: assets/workspace.js:1712
+#: assets/workspace.js:1716
 msgid "Saving…"
 msgstr ""
 
-#: assets/workspace.js:1712
+#: assets/workspace.js:1716
 msgid "Save failed — changes kept"
 msgstr ""
 
-#: assets/workspace.js:1712
+#: assets/workspace.js:1716
 msgid "unsaved"
 msgstr ""
 
-#: assets/workspace.js:1712
+#: assets/workspace.js:1716
 msgid "Saved"
 msgstr ""
 
-#: assets/workspace.js:1713
+#: assets/workspace.js:1717
 msgid "Preview"
 msgstr ""
 
-#: assets/workspace.js:1713
+#: assets/workspace.js:1717
 msgid "View site"
 msgstr ""
 
-#: assets/workspace.js:1714
-#: assets/workspace.js:1714
+#: assets/workspace.js:1718
+#: assets/workspace.js:1718
 msgid "More"
 msgstr ""
 
-#: assets/workspace.js:1720
+#: assets/workspace.js:1724
 msgid "This site does not print search titles and descriptions from Visual Edit: the theme provides its own, or the site-wide SEO & sharing settings are not enabled yet. Values saved here are kept."
 msgstr ""
 
-#: assets/workspace.js:1722
+#: assets/workspace.js:1726
 msgid "Click anything on the page to change it."
 msgstr ""
 
-#: assets/workspace.js:1722
+#: assets/workspace.js:1726
 msgid "Got it"
 msgstr ""
 
-#: assets/workspace.js:1735
+#: assets/workspace.js:1739
 msgid "Templates"
 msgstr ""
 
-#: assets/workspace.js:1735
+#: assets/workspace.js:1739
 msgid "Template parts"
 msgstr ""
 
-#: assets/workspace.js:1735
+#: assets/workspace.js:1739
 msgid "Synced patterns"
 msgstr ""
 
-#: assets/workspace.js:1737
+#: assets/workspace.js:1741
 msgid "There are unsaved changes. Leave this document?"
 msgstr ""
 
-#: assets/workspace.js:1743
+#: assets/workspace.js:1747
 msgid "Show"
 msgstr ""
 
-#: assets/workspace.js:1744
+#: assets/workspace.js:1748
 msgid "Search…"
 msgstr ""
 
-#: assets/workspace.js:1746
+#: assets/workspace.js:1750
 msgid "Could not load this content."
 msgstr ""
 
-#: assets/workspace.js:1747
+#: assets/workspace.js:1751
 msgid "No results."
 msgstr ""
 
-#: assets/workspace.js:1755
+#: assets/workspace.js:1759
 msgid "Previous"
 msgstr ""
 
-#: assets/workspace.js:1756
+#: assets/workspace.js:1760
 msgid "Next"
 msgstr ""
 
-#: assets/workspace.js:1760
+#: assets/workspace.js:1764
 msgid "Open the WordPress Site Editor"
 msgstr ""
