@@ -210,6 +210,10 @@ active on an isolated block-theme site before deployment.
 
 ## Remaining parity work
 
+- The section browser now lists the sections saved on this site beside the
+  theme's own. Synced patterns stay Site Editor territory: they render through
+  their original and arrive locked to content-only editing, so they are neither
+  offered nor saveable here.
 - Share the popup components with the legacy HTML renderer after visual parity
   is established; currently the legacy implementation is deliberately intact.
 - HTML-specific collection editing and connecting an arbitrary form need

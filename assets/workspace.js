@@ -80,12 +80,29 @@
 		var main = ( editor.getClientIdsWithDescendants ? editor.getClientIdsWithDescendants() : [] ).find( function ( id ) { return isSectionRoot( editor, id, postType ); } ) || '';
 		return { rootClientId: main, index: editor.getBlockOrder( main ).length };
 	}
-	/** The active theme's own sections, allowed at this insertion point. */
+	/** The whole section a block belongs to: the ancestor sitting at depth 0. */
+	function sectionOf( editor, clientId, postType ) {
+		var chain = editor.getBlockParents( clientId ).concat( [ clientId ] );
+		for ( var i = chain.length - 1; i >= 0; i-- ) {
+			if ( isSectionRoot( editor, editor.getBlockRootClientId( chain[ i ] ) || '', postType ) ) { return chain[ i ]; }
+		}
+		return '';
+	}
+	/** A section saved on this site, which WordPress names core/block/<post id>. */
+	function isSavedSection( pattern ) { return String( pattern.name ).indexOf( 'core/block/' ) === 0; }
+	/** The theme's own sections and the ones saved here, allowed at this insertion point. */
 	function themePatterns( editor, rootClientId ) {
 		var all = editor.__experimentalGetAllowedPatterns ? editor.__experimentalGetAllowedPatterns( rootClientId || undefined ) || [] : [];
 		var prefixes = [ config.stylesheet, config.template ].filter( Boolean ).map( function ( slug ) { return slug + '/'; } );
 		return all.filter( function ( pattern ) {
-			var mine = pattern.source === 'theme' || prefixes.some( function ( prefix ) { return String( pattern.name ).indexOf( prefix ) === 0; } );
+			// A saved section carries no `source` at all — WordPress builds
+			// its row out of the wp_block post — so it is recognised by its
+			// name, and taken only when unsynced. A synced one renders through
+			// its original and lands locked to content-only editing, which is
+			// not a section anybody can then edit.
+			var mine = isSavedSection( pattern )
+				? pattern.syncStatus === 'unsynced'
+				: ( pattern.source === 'theme' || prefixes.some( function ( prefix ) { return String( pattern.name ).indexOf( prefix ) === 0; } ) );
 			// Headers and footers belong to template parts, not between sections.
 			var part = ( pattern.blockTypes || [] ).some( function ( name ) { return String( name ).indexOf( 'core/template-part/' ) === 0; } ) || ( pattern.categories || [] ).some( function ( name ) { return name === 'header' || name === 'footer'; } );
 			return mine && ! part;
@@ -123,6 +140,90 @@
 		return blocks.some( function ( block ) {
 			return ( block.name === 'core/html' && String( block.attributes.content || '' ).trim() ) || holdsCustomHtml( block.innerBlocks || [] );
 		} );
+	}
+	/**
+	 * Why this section cannot be saved as a reusable one, or '' when it can.
+	 *
+	 * All three refusals are about what the copy would MEAN somewhere else: a
+	 * reference renders through its original, a template part is not a page's
+	 * section at all, and a bound attribute reads from whichever page it ends
+	 * up on. A section saved from here has to be a self-contained copy or it
+	 * is a trap on the next page.
+	 */
+	function unsaveable( block ) {
+		if ( block.name === 'core/block' ) { return __( 'This section holds a synced pattern, which cannot be saved into a section.', 'visual-edit-lite' ); }
+		if ( block.name === 'core/template-part' ) { return __( 'A template part cannot be saved as a section.', 'visual-edit-lite' ); }
+		if ( block.attributes && block.attributes.metadata && block.attributes.metadata.bindings ) {
+			return __( 'This section holds content bound to this page (block bindings); a saved copy would bind to whatever page it lands on.', 'visual-edit-lite' );
+		}
+		var reason = '';
+		( block.innerBlocks || [] ).some( function ( child ) { reason = unsaveable( child ); return !! reason; } );
+		return reason;
+	}
+	/**
+	 * Save one section of the open document as a reusable section of this site.
+	 *
+	 * Not an editor change: this writes a published wp_block post over the
+	 * network, so Undo does not take it back and the open document is left
+	 * exactly as it was. Unsynced, so what lands on the next page is a plain
+	 * copy of core blocks that outlives this plugin; the person removes it
+	 * again under Patterns in the WordPress admin.
+	 *
+	 * Resolves { id, name, title, ignoredCategories } or { error }.
+	 */
+	function saveSection( registry, args ) {
+		var select = registry.select( 'core/block-editor' );
+		var postType = currentPostType( registry.select );
+		var id = args.id || ( select.getSelectedBlockClientId ? select.getSelectedBlockClientId() : '' );
+		if ( ! id ) { return Promise.resolve( { error: __( 'Unknown block id.', 'visual-edit-lite' ) } ); }
+		id = sectionOf( select, id, postType );
+		if ( ! id ) { return Promise.resolve( { error: __( 'Only a whole section of a page can be saved — select the section, not a template or a block outside the page content.', 'visual-edit-lite' ) } ); }
+		var title = String( args.title || '' ).trim();
+		if ( ! title ) { return Promise.resolve( { error: __( 'A saved section needs a name.', 'visual-edit-lite' ) } ); }
+		var live = select.getBlock( id );
+		if ( ! live ) { return Promise.resolve( { error: __( 'Unknown block id.', 'visual-edit-lite' ) } ); }
+		var refusal = unsaveable( live );
+		if ( refusal ) { return Promise.resolve( { error: refusal } ); }
+
+		// metadata.patternName marks a block as an instance of a pattern, and
+		// WordPress locks such a block to content-only editing. The copy is a
+		// section in its own right now, so the mark goes; metadata.name is the
+		// person's own label for it and stays.
+		var metadata = live.attributes && live.attributes.metadata ? Object.assign( {}, live.attributes.metadata ) : null;
+		if ( metadata ) { delete metadata.patternName; }
+		var copy = wp.blocks.cloneBlock( live, metadata ? { metadata: metadata } : {} );
+
+		var slugs = ( args.categories || [] ).map( String ).filter( Boolean );
+		var terms = slugs.length
+			? registry.resolveSelect( 'core' ).getEntityRecords( 'taxonomy', 'wp_pattern_category', { per_page: -1, slug: slugs } )
+			: Promise.resolve( [] );
+		return Promise.resolve( terms ).then( function ( found ) {
+			// Never created here: a category the site has not got is a name
+			// somebody typed, and inventing a taxonomy term out of a typo is
+			// how a Patterns screen fills with near-duplicates.
+			var known = ( found || [] ).map( function ( term ) { return term.slug; } );
+			return registry.dispatch( 'core' ).saveEntityRecord( 'postType', 'wp_block', {
+				title: title,
+				content: wp.blocks.serialize( [ copy ] ),
+				status: 'publish',
+				meta: { wp_pattern_sync_status: 'unsynced' },
+				wp_pattern_category: ( found || [] ).map( function ( term ) { return term.id; } )
+			}, { throwOnError: true } ).then( function ( record ) {
+				// Saving does not refresh the inserter's list of wp_block
+				// posts on its own — checked on the running editor: the new
+				// section was missing from __experimentalGetAllowedPatterns
+				// until this invalidation, and there the moment after.
+				registry.dispatch( 'core' ).invalidateResolution( 'getEntityRecords', [ 'postType', 'wp_block', { per_page: -1 } ] );
+				var saved = {
+					id: record.id,
+					name: 'core/block/' + record.id,
+					title: title,
+					ignoredCategories: slugs.filter( function ( slug ) { return known.indexOf( slug ) < 0; } )
+				};
+				emit( 'save-section', saved );
+				return saved;
+			} );
+		} ).catch( function ( error ) { return { error: ( error && error.message ) || String( error ) }; } );
 	}
 	wp.hooks.addFilter( 'blocks.registerBlockType', 'clara-ve/extras-schema', function ( settings ) {
 		return Object.assign( {}, settings, { attributes: Object.assign( {}, settings.attributes, { claraVe: { type: 'object' } } ) } );
@@ -361,6 +462,8 @@
 		var changes = useRef( {} );
 		var fontOpen = useState( false ); var fontVersion = useState( 0 );
 		var tabState = useState( lastTab ); var customRows = useState( {} ); var pinned = useState( !! pinnedPosition );
+		// null while the "Save as a section" form is closed; { value, busy, error, saved } while it is open.
+		var saveState = useState( null );
 		var position = useState( null ); var panelRef = useRef( null ); var dragged = useRef( false );
 		var breakpoint = useState( 'desktop' );
 		var legacyRules = wp.data.useSelect( function ( select ) {
@@ -865,7 +968,33 @@
 			supports( 'spacing.blockGap' ) && field( __( 'Gap', 'visual-edit-lite' ), 'spacing.blockGap' )
 		], true );
 		group( 'items', 'section', __( 'Items', 'visual-edit-lite' ), structure.children > 0 && h( ItemsList, { key: 'items', clientId: block.clientId } ), true );
-		group( 'section', 'section', __( 'Section', 'visual-edit-lite' ), structure.isSection && mode === 'default' && button( '＋ ' + __( 'Add a section after this one', 'visual-edit-lite' ), function () { window.dispatchEvent( new CustomEvent( 'clara-ve-open-patterns', { detail: { rootClientId: structure.root, index: structure.index + 1 } } ) ); }, { key: 'add-section', className: 'cve-w-wide' } ), true );
+		// Saving a section is the one control in this popup that is NOT an
+		// unsaved editor change, so it asks for the name in place — the same
+		// inline confirm the History panel uses — rather than acting on a
+		// click, and says plainly that it happens at once.
+		function submitSave() {
+			var state = saveState[0];
+			if ( ! state || state.busy || ! String( state.value ).trim() ) { return; }
+			saveState[1]( { value: state.value, busy: true, error: '', saved: '' } );
+			saveSection( registry, { id: block.clientId, title: state.value } ).then( function ( result ) {
+				saveState[1]( result && result.error
+					? { value: state.value, busy: false, error: result.error, saved: '' }
+					: { value: '', busy: false, error: '', saved: result.title } );
+			} );
+		}
+		group( 'section', 'section', __( 'Section', 'visual-edit-lite' ), structure.isSection && mode === 'default' && [
+			button( '＋ ' + __( 'Add a section after this one', 'visual-edit-lite' ), function () { window.dispatchEvent( new CustomEvent( 'clara-ve-open-patterns', { detail: { rootClientId: structure.root, index: structure.index + 1 } } ) ); }, { key: 'add-section', className: 'cve-w-wide' } ),
+			! saveState[0] && button( __( 'Save as a section…', 'visual-edit-lite' ), function () { saveState[1]( { value: at( attributes, 'metadata.name' ) || '', busy: false, error: '', saved: '' } ); }, { key: 'save-section', className: 'cve-w-wide' } ),
+			saveState[0] && h( 'div', { key: 'save-section-form', className: 'cve-w-inline', role: 'group', 'aria-label': __( 'Save as a section', 'visual-edit-lite' ) },
+				h( Field, { label: __( 'Name', 'visual-edit-lite' ), value: saveState[0].value, autoFocus: true, placeholder: __( 'What to call this section', 'visual-edit-lite' ),
+					onChange: function ( value ) { saveState[1]( Object.assign( {}, saveState[0], { value: value } ) ); },
+					onKeyDown: function ( event ) { if ( event.key === 'Enter' ) { event.preventDefault(); submitSave(); } } } ),
+				h( 'p', { className: 'cve-w-note' }, __( 'Saved sections appear under ＋ Section on every page. Saving happens at once — it is not an unsaved change — and a saved section is removed under Patterns in the WordPress admin.', 'visual-edit-lite' ) ),
+				saveState[0].error && h( c.Notice, { status: 'error', isDismissible: false }, saveState[0].error ),
+				saveState[0].saved && h( 'p', { className: 'cve-w-sub' }, __( 'Saved:', 'visual-edit-lite' ) + ' ' + saveState[0].saved ),
+				button( __( 'Save section', 'visual-edit-lite' ), submitSave, { disabled: saveState[0].busy || ! String( saveState[0].value ).trim() } ),
+				button( __( 'Cancel', 'visual-edit-lite' ), function () { saveState[1]( null ); }, { disabled: saveState[0].busy } ) )
+		], true );
 
 		groups = applyHooks( 'clara_ve.popup.groups', groups, { block: block, attributes: attributes, mode: mode, screen: screen, registry: registry, write: write, writeMany: writeMany, canWrite: canWrite, element: wp.element, fields: { Field: Field, NumberField: NumberField } } );
 		var tabNames = [ [ 'content', __( 'Content', 'visual-edit-lite' ) ], [ 'style', __( 'Style', 'visual-edit-lite' ) ], [ 'section', __( 'Section', 'visual-edit-lite' ) ] ];
@@ -1438,12 +1567,24 @@
 			props.onClose();
 		}
 		var List = be.__experimentalBlockPatternsList;
+		// Two kinds, kept apart: the theme's sections carry its demo wording
+		// and are scaffolding to fill in, the saved ones already hold this
+		// site's own words. One undifferentiated grid makes them look alike.
+		var themeRows = visible.filter( function ( pattern ) { return ! isSavedSection( pattern ); } );
+		var savedRows = visible.filter( isSavedSection );
+		function list( rows, label ) {
+			if ( ! rows.length ) { return null; }
+			return List ? h( 'div', { key: label, className: 'cve-w-pattern-grid' }, h( List, { blockPatterns: rows, shownPatterns: rows, onClickPattern: choose, label: label, isDraggable: false } ) ) :
+				h( 'div', { key: label, className: 'cve-w-site-list' }, h( 'p', { className: 'cve-w-sub' }, label ),
+					rows.map( function ( pattern ) { return button( pattern.title, function () { choose( pattern ); }, { key: pattern.name, title: pattern.description } ); } ) );
+		}
 		return h( c.Modal, { title: __( 'Add a section', 'visual-edit-lite' ), className: 'cve-w-dialog cve-w-patterns', onRequestClose: props.onClose },
-			h( 'p', { className: 'cve-w-note' }, __( 'Sections come from your theme, so they already match the design. The new section is added after the selected one.', 'visual-edit-lite' ) ),
+			h( 'p', { className: 'cve-w-note' }, __( 'Sections come from your theme and from sections you saved, so they already match the design. The new section is added after the selected one.', 'visual-edit-lite' ) ),
 			h( Field, { label: __( 'Search', 'visual-edit-lite' ), value: search[0], onChange: search[1], placeholder: __( 'Search sections…', 'visual-edit-lite' ) } ),
 			! patterns.length && h( 'p', null, __( 'This theme offers no sections that can be added here.', 'visual-edit-lite' ) ),
-			List ? h( 'div', { className: 'cve-w-pattern-grid' }, h( List, { blockPatterns: visible, shownPatterns: visible, onClickPattern: choose, label: __( 'Theme sections', 'visual-edit-lite' ), isDraggable: false } ) ) :
-				h( 'div', { className: 'cve-w-site-list' }, visible.map( function ( pattern ) { return button( pattern.title, function () { choose( pattern ); }, { key: pattern.name, title: pattern.description } ); } ) ) );
+			!! patterns.length && ! visible.length && h( 'p', null, __( 'No sections match that search.', 'visual-edit-lite' ) ),
+			list( themeRows, __( 'Theme sections', 'visual-edit-lite' ) ),
+			list( savedRows, __( 'Your sections', 'visual-edit-lite' ) ) );
 	}
 	function Workspace() {
 		var registry = wp.data.useRegistry();
@@ -1643,11 +1784,42 @@
 			actions().updateBlockAttributes( clientId, model.patch( live.attributes, next ) );
 			return '';
 		}
+		/**
+		 * The run of blocks a multi-block operation acts on, sorted by position.
+		 *
+		 * Both moveBlocksToPosition and replaceBlocks take a *consecutive* run
+		 * of siblings: handed a set with a gap in it they would carry the
+		 * blocks in between along, silently. So a gap is refused here, by name,
+		 * rather than discovered afterwards.
+		 *
+		 * @param {Array}  ids  Block client ids.
+		 * @param {string} verb What the operation is called, for the refusal.
+		 * @return {Object} { ids, root, index } or { error }.
+		 */
+		function siblings( ids, verb ) {
+			if ( ! Array.isArray( ids ) || ! ids.length ) { return { error: 'ids must be a list of block ids.' }; }
+			var unique = ids.filter( function ( value, position ) { return typeof value === 'string' && ids.indexOf( value ) === position; } );
+			var missing = unique.filter( function ( value ) { return ! editor().getBlock( value ); } );
+			if ( ! unique.length ) { return { error: 'ids must be a list of block ids.' }; }
+			if ( missing.length ) { return { error: 'Block not found: ' + missing.join( ', ' ) + '.' }; }
+			var roots = unique.map( function ( value ) { return editor().getBlockRootClientId( value ) || ''; } );
+			if ( roots.some( function ( value ) { return value !== roots[0]; } ) ) { return { error: 'Blocks to ' + verb + ' must be next to each other in the same container.' }; }
+			var sorted = unique.slice().sort( function ( a, b ) { return editor().getBlockIndex( a ) - editor().getBlockIndex( b ); } );
+			var first = editor().getBlockIndex( sorted[0] );
+			if ( sorted.some( function ( value, position ) { return editor().getBlockIndex( value ) !== first + position; } ) ) {
+				return { error: 'Blocks to ' + verb + ' must be next to each other in the same container.' };
+			}
+			return { ids: sorted, root: roots[0], index: first };
+		}
+		function groupingBlockName() {
+			var blocks = registry.select( 'core/blocks' );
+			return blocks && blocks.getGroupingBlockName ? blocks.getGroupingBlockName() : '';
+		}
 		function run( op ) {
 			if ( ! op || typeof op !== 'object' || typeof op.op !== 'string' ) { return 'Invalid operation.'; }
 			var id = op.id || op.clientId || '';
 			var live = id ? editor().getBlock( id ) : null;
-			var needsBlock = [ 'insert-pattern' ].indexOf( op.op ) < 0;
+			var needsBlock = [ 'insert-pattern', 'group', 'move-to' ].indexOf( op.op ) < 0;
 			if ( needsBlock && ! live ) { return 'Block not found.'; }
 			var root = live ? editor().getBlockRootClientId( id ) || '' : '';
 			var paths = {};
@@ -1721,6 +1893,57 @@
 					if ( op.direction === 'up' ) { actions().moveBlocksUp( [ id ], root || undefined ); return ''; }
 					if ( op.direction === 'down' ) { actions().moveBlocksDown( [ id ], root || undefined ); return ''; }
 					return 'direction must be up or down.';
+				case 'group':
+					// Core's own Group command: turn the blocks into one Group
+					// block and put it where they were. One replaceBlocks, so
+					// one Undo takes the whole thing back.
+					var toGroup = siblings( op.ids, 'group' );
+					if ( toGroup.error ) { return toGroup.error; }
+					var grouping = groupingBlockName();
+					if ( ! grouping ) { return 'This editor has no Group block.'; }
+					if ( ! editor().canRemoveBlocks( toGroup.ids ) ) { return 'These blocks cannot be grouped: one of them is locked in place.'; }
+					if ( ! editor().canInsertBlockType( grouping, toGroup.root ) ) { return 'A Group cannot go in this container.'; }
+					var grouped = wp.blocks.switchToBlockType( editor().getBlocksByClientId( toGroup.ids ), grouping );
+					if ( ! grouped || ! grouped.length ) { return 'These blocks cannot be grouped.'; }
+					actions().replaceBlocks( toGroup.ids, grouped ); return '';
+				case 'ungroup':
+					// The mirror image: the container goes, what was inside it
+					// stays, in the same place.
+					var ungroup = ( wp.blocks.getBlockType( live.name ) || {} ).transforms;
+					ungroup = ungroup && ungroup.ungroup;
+					if ( live.name !== groupingBlockName() && ! ungroup ) { return 'This block is not a container that can be ungrouped.'; }
+					var inside = editor().getBlocks( id );
+					if ( ! inside.length ) { return 'This block has nothing in it.'; }
+					if ( ! editor().canRemoveBlock( id ) ) { return 'This block cannot be removed.'; }
+					actions().replaceBlocks( [ id ], ungroup ? ungroup( live.attributes, inside ) : inside ); return '';
+				case 'move-to':
+					var moving = siblings( op.ids || ( id ? [ id ] : [] ), 'move' );
+					if ( moving.error ) { return moving.error; }
+					var where = op.target || {};
+					if ( ! where.id || ! editor().getBlock( where.id ) ) { return 'Unknown target block.'; }
+					if ( moving.ids.indexOf( where.id ) >= 0 || editor().getBlockParents( where.id ).some( function ( parent ) { return moving.ids.indexOf( parent ) >= 0; } ) ) { return 'A block cannot be moved inside itself.'; }
+					var position = where.position || 'after';
+					var toRoot, slot;
+					if ( 'into' === position ) {
+						toRoot = where.id;
+						slot = undefined === where.index ? editor().getBlockOrder( toRoot ).length : Math.max( 0, Math.min( editor().getBlockOrder( toRoot ).length, Number( where.index ) || 0 ) );
+					} else if ( 'before' === position || 'after' === position ) {
+						toRoot = editor().getBlockRootClientId( where.id ) || '';
+						slot = editor().getBlockIndex( where.id ) + ( 'after' === position ? 1 : 0 );
+					} else { return 'position must be before, after or into.'; }
+					// moveBlocksToPosition returns silently when WordPress
+					// refuses, so every reason is checked here and named.
+					if ( ! editor().canMoveBlocks( moving.ids ) ) { return 'These blocks cannot be moved.'; }
+					if ( toRoot !== moving.root ) {
+						if ( ! editor().canRemoveBlocks( moving.ids ) ) { return 'These blocks cannot be taken out of the container they are in.'; }
+						if ( ! editor().canInsertBlocks( moving.ids, toRoot ) ) { return 'These blocks cannot go there: that block either holds no blocks at all or does not allow these.'; }
+					} else if ( slot > moving.index ) {
+						// Within one container the order is rebuilt by taking the
+						// blocks out first, so an index past them counts one place
+						// too far for every block moved.
+						slot -= moving.ids.length;
+					}
+					actions().moveBlocksToPosition( moving.ids, moving.root, toRoot, slot ); return '';
 				case 'insert-pattern':
 					var target = live ? { rootClientId: root, index: editor().getBlockIndex( id ) + ( op.position === 'before' ? 0 : 1 ) } : insertionTarget( registry.select );
 					var pattern = themePatterns( editor(), target.rootClientId ).find( function ( item ) { return item.name === op.pattern; } );
@@ -1758,6 +1981,7 @@
 				emit( 'apply', result );
 				return result;
 			},
+			saveSection: function ( args ) { return saveSection( registry, args || {} ); },
 			getDocument: function () {
 				var entity = documentEntity(); var current = registry.select( 'core/editor' );
 				var titleValue = current.getEditedPostAttribute ? current.getEditedPostAttribute( 'title' ) : '';

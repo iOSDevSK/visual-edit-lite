@@ -40,12 +40,22 @@ ClaraVE.ready( function ( ve ) {
 | `select( id )` | Selects a block and opens its popup. `false` in the HTML editor |
 | `openPopup()` / `closePopup()` | Reopens or closes the popup for the selection |
 | `apply( ops )` | Promise of `{ applied: [ index ], refused: [ { index, op, reason } ] }` |
+| `saveSection( { id?, title, categories? } )` | Promise of `{ id, name: 'core/block/<id>', title, ignoredCategories }` or `{ error }`. Block mode only |
 | `getDocument()` | `{ mode, type, id, title, content }` for the open document |
 | `history.list()` | Promise of `{ entity: { type, id, title }, entries: [...] }` for the open document, newest first |
 | `history.restore( id )` | Promise. Block mode stages the version (Save publishes); HTML mode restores directly |
 | `on( event, callback )` | Subscribe; returns an unsubscribe function |
 
-Events: `ready`, `select`, `apply`, `save`, `restore`, `unlock`.
+Events: `ready`, `select`, `apply`, `save`, `save-section`, `restore`, `unlock`.
+
+`saveSection` is the one method here that is not an editor change. It saves the
+section around `id` (the selection by default) as an unsynced `wp_block` post,
+published at once: **Undo does not take it back**, and the open document is not
+touched. `categories` are existing `wp_pattern_category` slugs; unknown ones are
+ignored and returned as `ignoredCategories`, and none are created. A section
+holding a synced pattern, a template part or bound attributes is refused with a
+reason. The saved section then appears in `+ Section` and, on the server, in
+`GET /block-patterns` with `source: "saved"`.
 
 ## Operations
 
@@ -65,7 +75,10 @@ Events: `ready`, `select`, `apply`, `save`, `restore`, `unlock`.
 | `set-motion` | `{ id, entrance, hover }` | `cve-anim-*` / `cve-hover-*` classes | — |
 | `remove` / `duplicate` | `{ id }` | Structural, respecting locks | — |
 | `move` | `{ id, direction: 'up' \| 'down' }` | Structural, respecting locks | — |
-| `insert-pattern` | `{ pattern, id?, position?: 'before' \| 'after' }` | One of the active theme's own sections | — |
+| `group` | `{ ids }` | Wraps a run of neighbouring siblings in one Group block (whatever `getGroupingBlockName()` is). Blocks with a gap between them, or in different containers, are refused | — |
+| `ungroup` | `{ id }` | Replaces a Group with the blocks inside it, in its place | — |
+| `move-to` | `{ ids, target: { id, position: 'before' \| 'after' \| 'into', index? } }` | Moves a run of neighbouring siblings elsewhere, including into another container. A target inside the blocks being moved is refused | — |
+| `insert-pattern` | `{ pattern, id?, position?: 'before' \| 'after' }` | One of the active theme's own sections, or one saved on this site (`core/block/<id>`) | — |
 
 Every write re-checks WordPress's editing mode and bindings at the moment it
 runs. Content-only blocks accept content attributes only; bound attributes are

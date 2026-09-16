@@ -206,6 +206,10 @@ html.wp-toolbar:has(> body.cve-workspace-runtime), html.wp-toolbar:has(> body.cv
 .cve-w-history-badge { padding: 2px 8px; border: 1px solid #52525b; border-radius: 4px; color: #c8daff; font-size: 11px; }
 .cve-w-history-confirm { border: 1px solid #79797f; border-radius: 8px; padding: 12px; margin: 12px 0; }
 .cve-w-history-confirm button + button { margin-left: 8px; }
+/* The one control in the popup that saves at once asks in place first. */
+.cve-w-popup .cve-w-inline { margin: 2px 0 8px; padding: 8px; border: 1px solid #3a3a42; border-radius: 10px; background: #1b1b1f; }
+.cve-w-popup .cve-w-inline .cve-w-field { margin-top: 0; }
+.cve-w-popup .cve-w-inline button + button { margin-left: 8px; }
 .cve-w-history-entry input { background: #2c2c31; border: 1px solid #666; color: #fff; max-width: 100%; }
 
 @media (max-width: 782px) {

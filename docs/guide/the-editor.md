@@ -81,8 +81,26 @@ Blocks locked by the theme itself stay locked.
 ### Adding sections
 
 **＋ Section** and **Add a section after this one** show your theme's sections
-with a preview. The new section is inserted after the selected one, or at the
-end of the page, and is an ordinary change: Undo removes it.
+with a preview, under **Theme sections**, and the sections you have saved
+yourself under **Your sections**. The new section is inserted after the
+selected one, or at the end of the page, and is an ordinary change: Undo
+removes it.
+
+### Saving a section
+
+**Save as a section…** on the **Section** tab of a section's popup keeps that
+section as one of your site's own, so you can place it on any other page. Give
+it a name and it appears under **Your sections** straight away.
+
+What is saved is an independent copy: editing this page afterwards does not
+change it, and each copy you place is ordinary blocks you can edit one by one.
+Unlike everything else in the popup, saving happens at once — it is not an
+unsaved change and Undo does not take it back. Remove a saved section again
+under **Patterns** in the WordPress admin.
+
+A section holding a synced pattern, a template part, or content bound to this
+particular page cannot be saved, because the copy would not mean the same
+thing anywhere else; the form says which it was.
 
 ### Extensions
 

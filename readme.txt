@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.28.0
+Stable tag: 1.29.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -202,6 +202,25 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.29.0 =
+* Save a section and use it on any other page. **Save as a section…** on the
+  Section tab of a section's popup stores it as one of your site's own
+  sections, listed under ＋ Section as Your sections everywhere. Each copy you
+  place is ordinary blocks you can edit one by one, independent of the page it
+  came from. Saving happens at once rather than as an unsaved change, and a
+  saved section is removed again under Patterns in the WordPress admin. A
+  section holding a synced pattern, a template part or content bound to that
+  one page cannot be saved, and the form says which it was.
+* `ClaraVE.apply()` can treat a run of neighbouring blocks as one, with three
+  operations: `group` wraps them in a single Group, `ungroup` takes a Group
+  apart again in its place, and `move-to` moves a run of blocks elsewhere on
+  the page, including inside another container. Each is one change the editor
+  undoes in one step. Blocks that are not next to each other, or that
+  WordPress will not let move, are refused with the reason instead of quietly
+  doing nothing.
+* `ClaraVE.saveSection()` and a `save-section` event for the same, and
+  GET /block-patterns now says which source each section came from.
 
 = 1.28.0 =
 * A theme section shipped as one Custom HTML block — an FAQ of details, a

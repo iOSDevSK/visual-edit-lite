@@ -138,8 +138,12 @@ insert a pattern.
 ### `GET /block-patterns`
 `page` → the active theme's own patterns, with content and a text preview
 
-What **+ Section** offers. Core's bundled patterns and anything the theme
-marked `inserter: false` are excluded.
+What **+ Section** offers. Each row carries a `source` and its `categories`.
+Core's bundled patterns and anything the theme marked `inserter: false` are
+excluded. On a native block theme the list also holds the sections saved from
+this site (`source: "saved"`, named `core/block/<id>`): published, unsynced
+`wp_block` posts, minus any filed under `header` or `footer` and any holding a
+synced reference or a template part.
 
 ### `GET /lists`
 → the mailing lists at the connected provider

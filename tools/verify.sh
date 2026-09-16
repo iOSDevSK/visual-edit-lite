@@ -326,6 +326,17 @@ docker cp "$SRC/tests/regression-block-convert.php" "$WP:/tmp/regression-block-c
 if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVER["HTTP_HOST"] = "localhost"; require "/var/www/html/wp-load.php"; wp_set_current_user( 1 ); require "/tmp/regression-block-convert.php";' > "$CONVERT_OUT" 2>&1; then pass "sections convert to valid native blocks, embeds stay, sections added on the server convert"
 else sed -n '/FAIL/p' "$CONVERT_OUT" | head -5; bad "Custom HTML conversion regression"; fi
 
+# ------------------------------------------------------------- 5b4. sections ---
+# What a page may be built out of: the theme's own sections and the ones saved
+# from this site, one list with one set of rules. The regression was in no gate
+# until now, and it is the one that decides whether a wp_block post nobody can
+# edit ends up in front of somebody assembling a page.
+step "Sections"
+PATTERNS_OUT=$(mktemp)
+docker cp "$SRC/tests/regression-patterns.php" "$WP:/tmp/regression-patterns.php" >/dev/null
+if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVER["HTTP_HOST"] = "localhost"; require "/var/www/html/wp-load.php"; wp_set_current_user( 1 ); require "/tmp/regression-patterns.php";' > "$PATTERNS_OUT" 2>&1; then pass "$(tail -1 "$PATTERNS_OUT")"
+else sed -n '/FAIL/p' "$PATTERNS_OUT" | head -5; bad "saved sections regression"; fi
+
 # --------------------------------------------------- 5c. the theme contract ---
 # A converted theme's own runtime delegates to this plugin whenever the class
 # is loaded. A method it calls and this edition lacks is a fatal on the PUBLIC

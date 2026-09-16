@@ -1099,6 +1099,12 @@ class Clara_VE_REST {
 				'title'       => $pattern['title'],
 				'description' => $pattern['description'],
 				'preview'     => $pattern['preview'],
+				// Which kind of section this is: the theme's own, or one saved
+				// from this site. The browser groups them under their own
+				// sub-headings, and the categories are what keeps a header or
+				// footer out of the list of sections for a page's body.
+				'source'      => isset( $pattern['source'] ) ? $pattern['source'] : 'theme',
+				'categories'  => isset( $pattern['categories'] ) ? $pattern['categories'] : array(),
 				// Rendered, so the browser can show the section as it will
 				// look rather than as a paragraph of its words. It goes into a
 				// sandboxed frame on the other side: a theme's pattern may

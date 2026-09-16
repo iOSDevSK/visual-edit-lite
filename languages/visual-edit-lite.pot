@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Visual Edit Lite 1.28.0\n"
+"Project-Id-Version: Visual Edit Lite 1.29.0\n"
 "Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -290,8 +290,8 @@ msgstr ""
 #: includes/class-editor-page.php:366
 #: includes/class-editor-page.php:400
 #: assets/gutenberg.js:70
-#: assets/workspace.js:1544
-#: assets/workspace.js:1577
+#: assets/workspace.js:1685
+#: assets/workspace.js:1718
 msgid "Search appearance"
 msgstr ""
 
@@ -300,8 +300,8 @@ msgstr ""
 #: assets/workspace-history.js:142
 #: assets/workspace-history.js:143
 #: assets/workspace-history.js:146
-#: assets/workspace.js:1563
-#: assets/workspace.js:1563
+#: assets/workspace.js:1704
+#: assets/workspace.js:1704
 msgid "History"
 msgstr ""
 
@@ -319,7 +319,7 @@ msgstr ""
 
 #: includes/class-editor-page.php:371
 #: assets/workspace-history.js:132
-#: assets/workspace.js:1574
+#: assets/workspace.js:1715
 msgid "Save"
 msgstr ""
 
@@ -328,7 +328,7 @@ msgid "Front page preview"
 msgstr ""
 
 #: includes/class-editor-page.php:404
-#: assets/workspace.js:977
+#: assets/workspace.js:1106
 msgid "Loading…"
 msgstr ""
 
@@ -349,7 +349,7 @@ msgid "The copy is created as a draft, so it is not live until you publish it. E
 msgstr ""
 
 #: includes/class-editor-page.php:435
-#: assets/workspace.js:904
+#: assets/workspace.js:1033
 msgid "Duplicate"
 msgstr ""
 
@@ -378,7 +378,7 @@ msgstr ""
 #: includes/class-form-blocks.php:71
 #: includes/class-tokens.php:825
 #: visual-edit-lite.php:2114
-#: assets/workspace.js:702
+#: assets/workspace.js:805
 msgid "Thanks — check your inbox."
 msgstr ""
 
@@ -390,8 +390,8 @@ msgstr ""
 #: includes/class-form-settings.php:130
 #: includes/class-form-settings.php:131
 #: includes/class-form-settings.php:275
-#: assets/workspace.js:707
-#: assets/workspace.js:743
+#: assets/workspace.js:810
+#: assets/workspace.js:846
 msgid "Form Settings"
 msgstr ""
 
@@ -575,8 +575,8 @@ msgstr ""
 
 #: includes/class-form-settings.php:490
 #: assets/form-blocks.js:186
-#: assets/workspace.js:696
-#: assets/workspace.js:733
+#: assets/workspace.js:799
+#: assets/workspace.js:836
 msgid "Mailing list"
 msgstr ""
 
@@ -1060,7 +1060,7 @@ msgstr ""
 #: includes/class-parked-page.php:156
 #: includes/class-parked-page.php:404
 #: assets/gutenberg.js:66
-#: assets/workspace.js:1594
+#: assets/workspace.js:1735
 msgid "Pages"
 msgstr ""
 
@@ -1092,7 +1092,7 @@ msgstr ""
 #: includes/class-import-page.php:172
 #: includes/class-parked-page.php:409
 #: assets/gutenberg.js:74
-#: assets/workspace.js:1548
+#: assets/workspace.js:1689
 msgid "Form submissions"
 msgstr ""
 
@@ -1129,7 +1129,7 @@ msgstr ""
 
 #: includes/class-import-page.php:206
 #: assets/form-blocks.js:58
-#: assets/workspace.js:681
+#: assets/workspace.js:784
 msgid "Type"
 msgstr ""
 
@@ -1153,7 +1153,8 @@ msgstr ""
 #: includes/class-parked-page.php:215
 #: assets/workspace-history.js:128
 #: assets/workspace-history.js:132
-#: assets/workspace.js:925
+#: assets/workspace.js:996
+#: assets/workspace.js:1054
 msgid "Cancel"
 msgstr ""
 
@@ -1481,9 +1482,9 @@ msgstr ""
 
 #: includes/class-optin.php:126
 #: assets/form-blocks.js:164
-#: assets/workspace.js:681
-#: assets/workspace.js:691
-#: assets/workspace.js:691
+#: assets/workspace.js:784
+#: assets/workspace.js:794
+#: assets/workspace.js:794
 msgid "Email"
 msgstr ""
 
@@ -1493,9 +1494,9 @@ msgstr ""
 
 #: includes/class-optin.php:128
 #: assets/form-blocks.js:187
-#: assets/workspace.js:977
-#: assets/workspace.js:981
-#: assets/workspace.js:988
+#: assets/workspace.js:1106
+#: assets/workspace.js:1110
+#: assets/workspace.js:1117
 msgid "List"
 msgstr ""
 
@@ -1529,8 +1530,8 @@ msgid "Delete this record? The consent evidence goes with it."
 msgstr ""
 
 #: includes/class-optin.php:157
-#: assets/workspace.js:907
-#: assets/workspace.js:907
+#: assets/workspace.js:1036
+#: assets/workspace.js:1036
 msgid "Delete"
 msgstr ""
 
@@ -1759,11 +1760,11 @@ msgstr ""
 msgid "Could not rename that save."
 msgstr ""
 
-#: includes/class-rest.php:1118
+#: includes/class-rest.php:1124
 msgid "Restoring older saves requires an activated licence key. The last ten saves and the Original remain available."
 msgstr ""
 
-#: includes/class-rest.php:1122
+#: includes/class-rest.php:1128
 msgid "That save no longer exists."
 msgstr ""
 
@@ -2013,11 +2014,11 @@ msgstr ""
 #: visual-edit-lite.php:2008
 #: assets/form-blocks.js:170
 #: assets/form-blocks.js:185
-#: assets/workspace.js:675
-#: assets/workspace.js:689
-#: assets/workspace.js:730
-#: assets/workspace.js:1169
-#: assets/workspace.js:1178
+#: assets/workspace.js:778
+#: assets/workspace.js:792
+#: assets/workspace.js:833
+#: assets/workspace.js:1298
+#: assets/workspace.js:1307
 msgid "Form"
 msgstr ""
 
@@ -2042,17 +2043,17 @@ msgid "Ornament"
 msgstr ""
 
 #: assets/form-blocks.js:55
-#: assets/workspace.js:677
+#: assets/workspace.js:780
 msgid "Field"
 msgstr ""
 
 #: assets/form-blocks.js:56
-#: assets/workspace.js:678
+#: assets/workspace.js:781
 msgid "Label"
 msgstr ""
 
 #: assets/form-blocks.js:57
-#: assets/workspace.js:680
+#: assets/workspace.js:783
 msgid "Placeholder"
 msgstr ""
 
@@ -2061,12 +2062,12 @@ msgid "Choices (one per line)"
 msgstr ""
 
 #: assets/form-blocks.js:60
-#: assets/workspace.js:684
+#: assets/workspace.js:787
 msgid "Required"
 msgstr ""
 
 #: assets/form-blocks.js:61
-#: assets/workspace.js:686
+#: assets/workspace.js:789
 msgid "Name in submissions"
 msgstr ""
 
@@ -2107,22 +2108,23 @@ msgid "Send"
 msgstr ""
 
 #: assets/form-blocks.js:156
-#: assets/workspace.js:688
+#: assets/workspace.js:791
 msgid "Button"
 msgstr ""
 
 #: assets/form-blocks.js:156
-#: assets/workspace.js:688
+#: assets/workspace.js:791
 msgid "Button text"
 msgstr ""
 
 #: assets/form-blocks.js:163
+#: assets/workspace.js:989
 msgid "Name"
 msgstr ""
 
 #: assets/form-blocks.js:165
-#: assets/workspace.js:691
-#: assets/workspace.js:702
+#: assets/workspace.js:794
+#: assets/workspace.js:805
 msgid "Message"
 msgstr ""
 
@@ -2131,14 +2133,14 @@ msgid "A form whose fields, texts and button are edited like the rest of the pag
 msgstr ""
 
 #: assets/form-blocks.js:186
-#: assets/workspace.js:696
-#: assets/workspace.js:733
+#: assets/workspace.js:799
+#: assets/workspace.js:836
 msgid "Does"
 msgstr ""
 
 #: assets/form-blocks.js:186
-#: assets/workspace.js:696
-#: assets/workspace.js:733
+#: assets/workspace.js:799
+#: assets/workspace.js:836
 msgid "Contact form"
 msgstr ""
 
@@ -2147,8 +2149,8 @@ msgid "The list id at your provider. The Visual Edit popup offers the names inst
 msgstr ""
 
 #: assets/form-blocks.js:188
-#: assets/workspace.js:699
-#: assets/workspace.js:736
+#: assets/workspace.js:802
+#: assets/workspace.js:839
 msgid "Send to"
 msgstr ""
 
@@ -2185,7 +2187,7 @@ msgid "Edit the complete site"
 msgstr ""
 
 #: assets/gutenberg.js:67
-#: assets/workspace.js:1594
+#: assets/workspace.js:1735
 msgid "Posts"
 msgstr ""
 
@@ -2194,8 +2196,8 @@ msgid "More Visual Edit tools"
 msgstr ""
 
 #: assets/gutenberg.js:73
-#: assets/workspace.js:1547
-#: assets/workspace.js:1579
+#: assets/workspace.js:1688
+#: assets/workspace.js:1720
 msgid "SEO & sharing settings"
 msgstr ""
 
@@ -2300,13 +2302,13 @@ msgid "Text alignment"
 msgstr ""
 
 #: assets/gutenberg.js:363
-#: assets/workspace.js:162
-#: assets/workspace.js:177
-#: assets/workspace.js:214
-#: assets/workspace.js:496
-#: assets/workspace.js:622
-#: assets/workspace.js:629
-#: assets/workspace.js:809
+#: assets/workspace.js:263
+#: assets/workspace.js:278
+#: assets/workspace.js:315
+#: assets/workspace.js:599
+#: assets/workspace.js:725
+#: assets/workspace.js:732
+#: assets/workspace.js:912
 msgid "Inherit"
 msgstr ""
 
@@ -2323,8 +2325,8 @@ msgid "Right"
 msgstr ""
 
 #: assets/gutenberg.js:370
-#: assets/workspace.js:776
-#: assets/workspace.js:856
+#: assets/workspace.js:879
+#: assets/workspace.js:959
 msgid "Minimum height"
 msgstr ""
 
@@ -2365,7 +2367,7 @@ msgid "Replace image"
 msgstr ""
 
 #: assets/seo-panel.js:105
-#: assets/workspace.js:1120
+#: assets/workspace.js:1249
 msgid "Remove"
 msgstr ""
 
@@ -2414,7 +2416,7 @@ msgid "Synced pattern"
 msgstr ""
 
 #: assets/workspace-history.js:57
-#: assets/workspace.js:1594
+#: assets/workspace.js:1735
 msgid "Navigation"
 msgstr ""
 
@@ -2436,8 +2438,8 @@ msgid "Open a document to see its history."
 msgstr ""
 
 #: assets/workspace-history.js:124
-#: assets/workspace.js:250
-#: assets/workspace.js:1605
+#: assets/workspace.js:351
+#: assets/workspace.js:1746
 msgid "Retry"
 msgstr ""
 
@@ -2497,952 +2499,1009 @@ msgstr ""
 msgid "Close history"
 msgstr ""
 
-#: assets/workspace.js:176
+#: assets/workspace.js:154
+msgid "This section holds a synced pattern, which cannot be saved into a section."
+msgstr ""
+
+#: assets/workspace.js:155
+msgid "A template part cannot be saved as a section."
+msgstr ""
+
+#: assets/workspace.js:157
+msgid "This section holds content bound to this page (block bindings); a saved copy would bind to whatever page it lands on."
+msgstr ""
+
+#: assets/workspace.js:178
+#: assets/workspace.js:184
+msgid "Unknown block id."
+msgstr ""
+
+#: assets/workspace.js:180
+msgid "Only a whole section of a page can be saved — select the section, not a template or a block outside the page content."
+msgstr ""
+
+#: assets/workspace.js:182
+msgid "A saved section needs a name."
+msgstr ""
+
+#: assets/workspace.js:277
 msgid "Decrease"
 msgstr ""
 
-#: assets/workspace.js:185
+#: assets/workspace.js:286
 msgid "unit"
 msgstr ""
 
-#: assets/workspace.js:186
+#: assets/workspace.js:287
 msgid "Increase"
 msgstr ""
 
-#: assets/workspace.js:195
+#: assets/workspace.js:296
 msgid "↘ diagonal"
 msgstr ""
 
-#: assets/workspace.js:195
+#: assets/workspace.js:296
 msgid "→ left to right"
 msgstr ""
 
-#: assets/workspace.js:195
+#: assets/workspace.js:296
 msgid "↓ top to bottom"
 msgstr ""
 
-#: assets/workspace.js:195
+#: assets/workspace.js:296
 msgid "↗ diagonal, upward"
 msgstr ""
 
-#: assets/workspace.js:195
+#: assets/workspace.js:296
 msgid "← right to left"
 msgstr ""
 
-#: assets/workspace.js:195
+#: assets/workspace.js:296
 msgid "↑ bottom to top"
 msgstr ""
 
-#: assets/workspace.js:198
+#: assets/workspace.js:299
 msgid "Gradient preview"
 msgstr ""
 
-#: assets/workspace.js:201
-#: assets/workspace.js:201
+#: assets/workspace.js:302
+#: assets/workspace.js:302
 msgid "No gradient"
 msgstr ""
 
-#: assets/workspace.js:203
+#: assets/workspace.js:304
 msgid "From"
 msgstr ""
 
-#: assets/workspace.js:203
+#: assets/workspace.js:304
 msgid "To"
 msgstr ""
 
-#: assets/workspace.js:206
+#: assets/workspace.js:307
 msgid "colour"
 msgstr ""
 
-#: assets/workspace.js:208
-#: assets/workspace.js:863
+#: assets/workspace.js:309
+#: assets/workspace.js:966
 msgid "Direction"
 msgstr ""
 
-#: assets/workspace.js:209
+#: assets/workspace.js:310
 msgid "This gradient has custom stops. Edit them below without replacing the original."
 msgstr ""
 
-#: assets/workspace.js:210
-#: assets/workspace.js:500
+#: assets/workspace.js:311
+#: assets/workspace.js:603
 msgid "Custom"
 msgstr ""
 
-#: assets/workspace.js:211
+#: assets/workspace.js:312
 msgid "Edit gradient stops"
 msgstr ""
 
-#: assets/workspace.js:247
-#: assets/workspace.js:1543
+#: assets/workspace.js:348
+#: assets/workspace.js:1684
 msgid "Google Fonts"
 msgstr ""
 
-#: assets/workspace.js:251
+#: assets/workspace.js:352
 msgid "Save fonts updates the font library for the whole site."
 msgstr ""
 
-#: assets/workspace.js:252
-#: assets/workspace.js:1443
-#: assets/workspace.js:1603
+#: assets/workspace.js:353
+#: assets/workspace.js:1583
+#: assets/workspace.js:1744
 msgid "Search"
 msgstr ""
 
-#: assets/workspace.js:252
+#: assets/workspace.js:353
 msgid "Search Google Fonts…"
 msgstr ""
 
-#: assets/workspace.js:260
+#: assets/workspace.js:361
 msgid "Add font"
 msgstr ""
 
-#: assets/workspace.js:262
+#: assets/workspace.js:363
 msgid "Load more fonts"
 msgstr ""
 
-#: assets/workspace.js:263
+#: assets/workspace.js:364
 msgid "Save fonts"
 msgstr ""
 
-#: assets/workspace.js:496
-#: assets/workspace.js:622
+#: assets/workspace.js:599
+#: assets/workspace.js:725
 msgid "Custom…"
 msgstr ""
 
-#: assets/workspace.js:629
-#: assets/workspace.js:757
-#: assets/workspace.js:763
+#: assets/workspace.js:732
+#: assets/workspace.js:860
+#: assets/workspace.js:866
 msgid "Font"
 msgstr ""
 
-#: assets/workspace.js:662
-#: assets/workspace.js:1084
-#: assets/workspace.js:1084
+#: assets/workspace.js:765
+#: assets/workspace.js:1213
+#: assets/workspace.js:1213
 msgid "Link"
 msgstr ""
 
-#: assets/workspace.js:663
-#: assets/workspace.js:1087
+#: assets/workspace.js:766
+#: assets/workspace.js:1216
 msgid "URL"
 msgstr ""
 
-#: assets/workspace.js:664
+#: assets/workspace.js:767
 msgid "Open in"
 msgstr ""
 
-#: assets/workspace.js:664
+#: assets/workspace.js:767
 msgid "Same tab"
 msgstr ""
 
-#: assets/workspace.js:664
+#: assets/workspace.js:767
 msgid "New tab"
 msgstr ""
 
-#: assets/workspace.js:666
+#: assets/workspace.js:769
 msgid "Media"
 msgstr ""
 
-#: assets/workspace.js:668
+#: assets/workspace.js:771
 msgid "Choose or replace media"
 msgstr ""
 
-#: assets/workspace.js:669
+#: assets/workspace.js:772
 msgid "Alternative text"
 msgstr ""
 
-#: assets/workspace.js:671
-#: assets/workspace.js:672
+#: assets/workspace.js:774
+#: assets/workspace.js:775
 msgid "Shortcode"
 msgstr ""
 
-#: assets/workspace.js:679
+#: assets/workspace.js:782
 msgid "Note after the label"
 msgstr ""
 
-#: assets/workspace.js:681
-#: assets/workspace.js:691
-#: assets/workspace.js:747
-#: assets/workspace.js:749
+#: assets/workspace.js:784
+#: assets/workspace.js:794
+#: assets/workspace.js:850
+#: assets/workspace.js:852
 msgid "Text"
 msgstr ""
 
-#: assets/workspace.js:681
+#: assets/workspace.js:784
 msgid "Phone"
 msgstr ""
 
-#: assets/workspace.js:681
+#: assets/workspace.js:784
 msgid "Web address"
 msgstr ""
 
-#: assets/workspace.js:681
+#: assets/workspace.js:784
 msgid "Number"
 msgstr ""
 
-#: assets/workspace.js:681
+#: assets/workspace.js:784
 msgid "Date"
 msgstr ""
 
-#: assets/workspace.js:682
+#: assets/workspace.js:785
 msgid "Choices, one per line"
 msgstr ""
 
-#: assets/workspace.js:684
+#: assets/workspace.js:787
 msgid "No"
 msgstr ""
 
-#: assets/workspace.js:684
+#: assets/workspace.js:787
 msgid "Yes"
 msgstr ""
 
-#: assets/workspace.js:685
+#: assets/workspace.js:788
 msgid "Each field keeps its own name in submissions; a name another field already uses is numbered automatically."
 msgstr ""
 
-#: assets/workspace.js:690
+#: assets/workspace.js:793
 msgid "Add a field"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "New field"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "Long text"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "Choice list"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "Choose one"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "First choice"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "Second choice"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "Checkbox"
 msgstr ""
 
-#: assets/workspace.js:691
+#: assets/workspace.js:794
 msgid "I agree"
 msgstr ""
 
-#: assets/workspace.js:694
+#: assets/workspace.js:797
 msgid "Reorder or remove fields under Section › Items; click a field on the page to change it."
 msgstr ""
 
-#: assets/workspace.js:695
-#: assets/workspace.js:731
+#: assets/workspace.js:798
+#: assets/workspace.js:834
 msgid "Where it goes"
 msgstr ""
 
-#: assets/workspace.js:700
+#: assets/workspace.js:803
 msgid "After sending"
 msgstr ""
 
-#: assets/workspace.js:701
+#: assets/workspace.js:804
 msgid "Go to page"
 msgstr ""
 
-#: assets/workspace.js:701
+#: assets/workspace.js:804
 msgid "Stay on this page"
 msgstr ""
 
-#: assets/workspace.js:705
+#: assets/workspace.js:808
 msgid "The address is added to a mailing list at your provider, which sends the confirmation and the download."
 msgstr ""
 
-#: assets/workspace.js:706
+#: assets/workspace.js:809
 msgid "Submissions are stored under Form Submissions and emailed to you. The sender gets a confirmation."
 msgstr ""
 
-#: assets/workspace.js:732
+#: assets/workspace.js:835
 msgid "Sent by"
 msgstr ""
 
-#: assets/workspace.js:732
+#: assets/workspace.js:835
 msgid "Visual Edit Form Settings"
 msgstr ""
 
-#: assets/workspace.js:732
+#: assets/workspace.js:835
 msgid "This block's own settings"
 msgstr ""
 
-#: assets/workspace.js:739
+#: assets/workspace.js:842
 msgid "This form sends with its own plugin settings. Choose Visual Edit to store its answers under Form Submissions and send them like every other form on the site."
 msgstr ""
 
-#: assets/workspace.js:741
+#: assets/workspace.js:844
 msgid "The address is added to a mailing list at your provider. The form keeps its look and its own thank-you message."
 msgstr ""
 
-#: assets/workspace.js:742
+#: assets/workspace.js:845
 msgid "Submissions are stored under Form Submissions and emailed to you. The form keeps its look and its own thank-you message."
 msgstr ""
 
-#: assets/workspace.js:745
+#: assets/workspace.js:848
 msgid "This form is sent by the plugin that made it; its delivery is set in that plugin."
 msgstr ""
 
-#: assets/workspace.js:751
+#: assets/workspace.js:854
 msgid "Ornaments"
 msgstr ""
 
-#: assets/workspace.js:753
+#: assets/workspace.js:856
 msgid "Before the text"
 msgstr ""
 
-#: assets/workspace.js:753
+#: assets/workspace.js:856
 msgid "After the text"
 msgstr ""
 
-#: assets/workspace.js:754
+#: assets/workspace.js:857
 msgid "Converted to editable text. Use Undo to restore the ornament."
 msgstr ""
 
-#: assets/workspace.js:755
+#: assets/workspace.js:858
 msgid "Convert to editable text"
 msgstr ""
 
-#: assets/workspace.js:756
-#: assets/workspace.js:757
+#: assets/workspace.js:859
+#: assets/workspace.js:860
 msgid "Symbol"
 msgstr ""
 
-#: assets/workspace.js:757
-#: assets/workspace.js:797
+#: assets/workspace.js:860
+#: assets/workspace.js:900
 msgid "Colour"
 msgstr ""
 
-#: assets/workspace.js:757
-#: assets/workspace.js:765
-#: assets/workspace.js:798
-#: assets/workspace.js:806
-#: assets/workspace.js:822
-#: assets/workspace.js:855
+#: assets/workspace.js:860
+#: assets/workspace.js:868
+#: assets/workspace.js:901
+#: assets/workspace.js:909
+#: assets/workspace.js:925
+#: assets/workspace.js:958
 msgid "Size"
 msgstr ""
 
-#: assets/workspace.js:762
-#: assets/workspace.js:855
+#: assets/workspace.js:865
+#: assets/workspace.js:958
 msgid "Typography"
 msgstr ""
 
-#: assets/workspace.js:764
+#: assets/workspace.js:867
 msgid "＋ Add Google fonts"
 msgstr ""
 
-#: assets/workspace.js:766
-#: assets/workspace.js:799
+#: assets/workspace.js:869
+#: assets/workspace.js:902
 msgid "Weight"
 msgstr ""
 
-#: assets/workspace.js:766
-#: assets/workspace.js:871
+#: assets/workspace.js:869
+#: assets/workspace.js:1000
 msgid "Style"
 msgstr ""
 
-#: assets/workspace.js:766
-#: assets/workspace.js:800
-#: assets/workspace.js:823
+#: assets/workspace.js:869
+#: assets/workspace.js:903
+#: assets/workspace.js:926
 msgid "Case"
 msgstr ""
 
-#: assets/workspace.js:766
+#: assets/workspace.js:869
 msgid "Decoration"
 msgstr ""
 
-#: assets/workspace.js:766
+#: assets/workspace.js:869
 msgid "Line height"
 msgstr ""
 
-#: assets/workspace.js:766
-#: assets/workspace.js:801
-#: assets/workspace.js:824
+#: assets/workspace.js:869
+#: assets/workspace.js:904
+#: assets/workspace.js:927
 msgid "Letter spacing"
 msgstr ""
 
-#: assets/workspace.js:767
-#: assets/workspace.js:767
-#: assets/workspace.js:855
+#: assets/workspace.js:870
+#: assets/workspace.js:870
+#: assets/workspace.js:958
 msgid "Align"
 msgstr ""
 
-#: assets/workspace.js:769
+#: assets/workspace.js:872
 msgid "Colours"
 msgstr ""
 
-#: assets/workspace.js:770
-#: assets/workspace.js:804
-#: assets/workspace.js:816
+#: assets/workspace.js:873
+#: assets/workspace.js:907
+#: assets/workspace.js:919
 msgid "Text colour"
 msgstr ""
 
-#: assets/workspace.js:771
-#: assets/workspace.js:805
-#: assets/workspace.js:817
+#: assets/workspace.js:874
+#: assets/workspace.js:908
+#: assets/workspace.js:920
 msgid "Background"
 msgstr ""
 
-#: assets/workspace.js:772
+#: assets/workspace.js:875
 msgid "Gradient"
 msgstr ""
 
-#: assets/workspace.js:775
-#: assets/workspace.js:856
+#: assets/workspace.js:878
+#: assets/workspace.js:959
 msgid "Size and spacing"
 msgstr ""
 
-#: assets/workspace.js:777
+#: assets/workspace.js:880
 msgid "Aspect ratio"
 msgstr ""
 
-#: assets/workspace.js:778
+#: assets/workspace.js:881
 msgid "Height"
 msgstr ""
 
-#: assets/workspace.js:779
-#: assets/workspace.js:856
+#: assets/workspace.js:882
+#: assets/workspace.js:959
 msgid "Padding"
 msgstr ""
 
-#: assets/workspace.js:780
-#: assets/workspace.js:856
+#: assets/workspace.js:883
+#: assets/workspace.js:959
 msgid "Margin"
 msgstr ""
 
-#: assets/workspace.js:782
+#: assets/workspace.js:885
 msgid "Border and shadow"
 msgstr ""
 
-#: assets/workspace.js:783
-#: assets/workspace.js:810
-#: assets/workspace.js:820
+#: assets/workspace.js:886
+#: assets/workspace.js:913
+#: assets/workspace.js:923
 msgid "Border colour"
 msgstr ""
 
-#: assets/workspace.js:784
-#: assets/workspace.js:811
+#: assets/workspace.js:887
+#: assets/workspace.js:914
 msgid "Border width"
 msgstr ""
 
-#: assets/workspace.js:785
+#: assets/workspace.js:888
 msgid "Border style"
 msgstr ""
 
-#: assets/workspace.js:786
-#: assets/workspace.js:813
-#: assets/workspace.js:821
+#: assets/workspace.js:889
+#: assets/workspace.js:916
+#: assets/workspace.js:924
 msgid "Corners"
 msgstr ""
 
-#: assets/workspace.js:787
+#: assets/workspace.js:890
 msgid "Radius"
 msgstr ""
 
-#: assets/workspace.js:788
+#: assets/workspace.js:891
 msgid "Shadow"
 msgstr ""
 
-#: assets/workspace.js:790
+#: assets/workspace.js:893
 msgid "Motion"
 msgstr ""
 
-#: assets/workspace.js:791
+#: assets/workspace.js:894
 msgid "Entrance"
 msgstr ""
 
-#: assets/workspace.js:792
+#: assets/workspace.js:895
 msgid "Hover"
 msgstr ""
 
-#: assets/workspace.js:795
+#: assets/workspace.js:898
 msgid "Form labels"
 msgstr ""
 
-#: assets/workspace.js:796
+#: assets/workspace.js:899
 msgid "Styles every form inside this block. The fields and their texts come from the form itself."
 msgstr ""
 
-#: assets/workspace.js:803
+#: assets/workspace.js:906
 msgid "Form fields"
 msgstr ""
 
-#: assets/workspace.js:807
+#: assets/workspace.js:910
 msgid "Placeholder colour"
 msgstr ""
 
-#: assets/workspace.js:808
+#: assets/workspace.js:911
 msgid "Border"
 msgstr ""
 
-#: assets/workspace.js:809
+#: assets/workspace.js:912
 msgid "Shape"
 msgstr ""
 
-#: assets/workspace.js:809
+#: assets/workspace.js:912
 msgid "Line underneath"
 msgstr ""
 
-#: assets/workspace.js:809
+#: assets/workspace.js:912
 msgid "Box"
 msgstr ""
 
-#: assets/workspace.js:809
+#: assets/workspace.js:912
 msgid "No border"
 msgstr ""
 
-#: assets/workspace.js:812
+#: assets/workspace.js:915
 msgid "Border when typing"
 msgstr ""
 
-#: assets/workspace.js:815
+#: assets/workspace.js:918
 msgid "Form button"
 msgstr ""
 
-#: assets/workspace.js:818
+#: assets/workspace.js:921
 msgid "Text colour on hover"
 msgstr ""
 
-#: assets/workspace.js:819
+#: assets/workspace.js:922
 msgid "Background on hover"
 msgstr ""
 
-#: assets/workspace.js:857
+#: assets/workspace.js:960
 msgid "Visibility"
 msgstr ""
 
-#: assets/workspace.js:857
+#: assets/workspace.js:960
 msgid "Hide on phones"
 msgstr ""
 
-#: assets/workspace.js:857
+#: assets/workspace.js:960
 msgid "Hide on tablets and phones"
 msgstr ""
 
-#: assets/workspace.js:861
-#: assets/workspace.js:862
+#: assets/workspace.js:964
+#: assets/workspace.js:965
 msgid "Layout"
 msgstr ""
 
-#: assets/workspace.js:864
+#: assets/workspace.js:967
 msgid "Justify"
 msgstr ""
 
-#: assets/workspace.js:865
+#: assets/workspace.js:968
 msgid "Gap"
 msgstr ""
 
-#: assets/workspace.js:867
+#: assets/workspace.js:970
 msgid "Items"
 msgstr ""
 
-#: assets/workspace.js:868
-#: assets/workspace.js:871
-#: assets/workspace.js:1564
+#: assets/workspace.js:985
+#: assets/workspace.js:1000
+#: assets/workspace.js:1705
 msgid "Section"
 msgstr ""
 
-#: assets/workspace.js:868
+#: assets/workspace.js:986
 msgid "Add a section after this one"
 msgstr ""
 
-#: assets/workspace.js:871
+#: assets/workspace.js:987
+msgid "Save as a section…"
+msgstr ""
+
+#: assets/workspace.js:988
+msgid "Save as a section"
+msgstr ""
+
+#: assets/workspace.js:989
+msgid "What to call this section"
+msgstr ""
+
+#: assets/workspace.js:992
+msgid "Saved sections appear under ＋ Section on every page. Saving happens at once — it is not an unsaved change — and a saved section is removed under Patterns in the WordPress admin."
+msgstr ""
+
+#: assets/workspace.js:994
+msgid "Saved:"
+msgstr ""
+
+#: assets/workspace.js:995
+msgid "Save section"
+msgstr ""
+
+#: assets/workspace.js:1000
 msgid "Content"
 msgstr ""
 
-#: assets/workspace.js:888
+#: assets/workspace.js:1017
 msgid "Visual Edit block settings"
 msgstr ""
 
-#: assets/workspace.js:895
+#: assets/workspace.js:1024
 msgid "Block path"
 msgstr ""
 
-#: assets/workspace.js:897
-#: assets/workspace.js:1117
+#: assets/workspace.js:1026
+#: assets/workspace.js:1246
 msgid "Select"
 msgstr ""
 
-#: assets/workspace.js:900
+#: assets/workspace.js:1029
 msgid "Select the parent block"
 msgstr ""
 
-#: assets/workspace.js:900
+#: assets/workspace.js:1029
 msgid "Select the parent block (Alt+↑)"
 msgstr ""
 
-#: assets/workspace.js:901
-#: assets/workspace.js:901
+#: assets/workspace.js:1030
+#: assets/workspace.js:1030
 msgid "Keep the popup in this place"
 msgstr ""
 
-#: assets/workspace.js:902
+#: assets/workspace.js:1031
 msgid "Close"
 msgstr ""
 
-#: assets/workspace.js:902
+#: assets/workspace.js:1031
 msgid "Close and undo the changes made in this popup"
 msgstr ""
 
-#: assets/workspace.js:903
+#: assets/workspace.js:1032
 msgid "Block actions"
 msgstr ""
 
-#: assets/workspace.js:905
-#: assets/workspace.js:905
-#: assets/workspace.js:1118
+#: assets/workspace.js:1034
+#: assets/workspace.js:1034
+#: assets/workspace.js:1247
 msgid "Move up"
 msgstr ""
 
-#: assets/workspace.js:906
-#: assets/workspace.js:906
-#: assets/workspace.js:1119
+#: assets/workspace.js:1035
+#: assets/workspace.js:1035
+#: assets/workspace.js:1248
 msgid "Move down"
 msgstr ""
 
-#: assets/workspace.js:908
+#: assets/workspace.js:1037
 msgid "Content-only editing: text and media can change, the design is locked by WordPress."
 msgstr ""
 
-#: assets/workspace.js:908
-#: assets/workspace.js:909
+#: assets/workspace.js:1037
+#: assets/workspace.js:1038
 msgid "Unlock design"
 msgstr ""
 
-#: assets/workspace.js:909
+#: assets/workspace.js:1038
 msgid "Editing this block is disabled by WordPress."
 msgstr ""
 
-#: assets/workspace.js:912
+#: assets/workspace.js:1041
 msgid "Advanced"
 msgstr ""
 
-#: assets/workspace.js:912
+#: assets/workspace.js:1041
 msgid "All WordPress settings for this block"
 msgstr ""
 
-#: assets/workspace.js:913
+#: assets/workspace.js:1042
 msgid "Native block and plugin settings. Changes stay in the document; use Undo to revert them."
 msgstr ""
 
-#: assets/workspace.js:915
+#: assets/workspace.js:1044
 msgid "Screen size"
 msgstr ""
 
-#: assets/workspace.js:915
-#: assets/workspace.js:1560
+#: assets/workspace.js:1044
+#: assets/workspace.js:1701
 msgid "Desktop"
 msgstr ""
 
-#: assets/workspace.js:915
-#: assets/workspace.js:1560
+#: assets/workspace.js:1044
+#: assets/workspace.js:1701
 msgid "Tablet"
 msgstr ""
 
-#: assets/workspace.js:915
-#: assets/workspace.js:1560
+#: assets/workspace.js:1044
+#: assets/workspace.js:1701
 msgid "Mobile"
 msgstr ""
 
-#: assets/workspace.js:916
+#: assets/workspace.js:1045
 msgid "These values apply to phones (600px and narrower). Empty fields keep the larger screen’s value."
 msgstr ""
 
-#: assets/workspace.js:916
+#: assets/workspace.js:1045
 msgid "These values apply to tablets and phones (781px and narrower). Empty fields keep the desktop value."
 msgstr ""
 
-#: assets/workspace.js:917
+#: assets/workspace.js:1046
 msgid "Nothing on this block can differ per screen size."
 msgstr ""
 
-#: assets/workspace.js:919
+#: assets/workspace.js:1048
 msgid "Nothing here can be changed from Visual Edit."
 msgstr ""
 
-#: assets/workspace.js:922
+#: assets/workspace.js:1051
 msgid "Reset styles"
 msgstr ""
 
-#: assets/workspace.js:922
+#: assets/workspace.js:1051
 msgid "Remove this block’s own styling"
 msgstr ""
 
-#: assets/workspace.js:925
+#: assets/workspace.js:1054
 msgid "Apply"
 msgstr ""
 
-#: assets/workspace.js:958
+#: assets/workspace.js:1087
 msgid "Make this form editable"
 msgstr ""
 
-#: assets/workspace.js:959
+#: assets/workspace.js:1088
 msgid "There is no form in this block."
 msgstr ""
 
-#: assets/workspace.js:959
+#: assets/workspace.js:1088
 msgid "The form could not be read. Try again."
 msgstr ""
 
-#: assets/workspace.js:959
+#: assets/workspace.js:1088
 msgid "Turns the form into fields you can change here — labels, placeholders, choices, the button — keeping its look. Submissions then go to Form Submissions. Undo restores the original block."
 msgstr ""
 
-#: assets/workspace.js:982
+#: assets/workspace.js:1111
 msgid "No mailing list provider is connected yet — pick one in Form Settings. Until then this form has nowhere to put an address."
 msgstr ""
 
-#: assets/workspace.js:1061
+#: assets/workspace.js:1190
 msgid "Select text on the page first"
 msgstr ""
 
-#: assets/workspace.js:1072
+#: assets/workspace.js:1201
 msgid "Enter a web address first."
 msgstr ""
 
-#: assets/workspace.js:1073
+#: assets/workspace.js:1202
 msgid "This address is not allowed."
 msgstr ""
 
-#: assets/workspace.js:1077
+#: assets/workspace.js:1206
 msgid "Select the text on the page again."
 msgstr ""
 
-#: assets/workspace.js:1081
+#: assets/workspace.js:1210
 msgid "Text formatting"
 msgstr ""
 
-#: assets/workspace.js:1082
-#: assets/workspace.js:1082
+#: assets/workspace.js:1211
+#: assets/workspace.js:1211
 msgid "Bold"
 msgstr ""
 
-#: assets/workspace.js:1083
-#: assets/workspace.js:1083
+#: assets/workspace.js:1212
+#: assets/workspace.js:1212
 msgid "Italic"
 msgstr ""
 
-#: assets/workspace.js:1085
+#: assets/workspace.js:1214
 msgid "Select text on the page to format it."
 msgstr ""
 
-#: assets/workspace.js:1094
+#: assets/workspace.js:1223
 msgid "Apply link"
 msgstr ""
 
-#: assets/workspace.js:1095
+#: assets/workspace.js:1224
 msgid "Remove link"
 msgstr ""
 
-#: assets/workspace.js:1122
+#: assets/workspace.js:1251
 msgid "Add item"
 msgstr ""
 
-#: assets/workspace.js:1122
+#: assets/workspace.js:1251
 msgid "Adds a copy of the last item"
 msgstr ""
 
-#: assets/workspace.js:1426
+#: assets/workspace.js:1555
 msgid "Open Visual Edit settings"
 msgstr ""
 
-#: assets/workspace.js:1441
-#: assets/workspace.js:1564
+#: assets/workspace.js:1581
+#: assets/workspace.js:1705
 msgid "Add a section"
 msgstr ""
 
-#: assets/workspace.js:1442
-msgid "Sections come from your theme, so they already match the design. The new section is added after the selected one."
+#: assets/workspace.js:1582
+msgid "Sections come from your theme and from sections you saved, so they already match the design. The new section is added after the selected one."
 msgstr ""
 
-#: assets/workspace.js:1443
+#: assets/workspace.js:1583
 msgid "Search sections…"
 msgstr ""
 
-#: assets/workspace.js:1444
+#: assets/workspace.js:1584
 msgid "This theme offers no sections that can be added here."
 msgstr ""
 
-#: assets/workspace.js:1445
+#: assets/workspace.js:1585
+msgid "No sections match that search."
+msgstr ""
+
+#: assets/workspace.js:1586
 msgid "Theme sections"
 msgstr ""
 
-#: assets/workspace.js:1539
+#: assets/workspace.js:1587
+msgid "Your sections"
+msgstr ""
+
+#: assets/workspace.js:1680
 msgid "Page settings"
 msgstr ""
 
-#: assets/workspace.js:1540
+#: assets/workspace.js:1681
 msgid "Site styles"
 msgstr ""
 
-#: assets/workspace.js:1541
+#: assets/workspace.js:1682
 msgid "Page structure (list view)"
 msgstr ""
 
-#: assets/workspace.js:1542
+#: assets/workspace.js:1683
 msgid "All blocks"
 msgstr ""
 
-#: assets/workspace.js:1545
+#: assets/workspace.js:1686
 msgid "Lock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1545
+#: assets/workspace.js:1686
 msgid "Unlock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1546
+#: assets/workspace.js:1687
 msgid "Hide WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1546
+#: assets/workspace.js:1687
 msgid "Show WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1549
+#: assets/workspace.js:1690
 msgid "Open in the WordPress editor"
 msgstr ""
 
-#: assets/workspace.js:1550
-#: assets/workspace.js:1620
+#: assets/workspace.js:1691
+#: assets/workspace.js:1761
 msgid "Back to the dashboard"
 msgstr ""
 
-#: assets/workspace.js:1558
+#: assets/workspace.js:1699
 msgid "Visual Edit"
 msgstr ""
 
-#: assets/workspace.js:1559
+#: assets/workspace.js:1700
 msgid "Your website"
 msgstr ""
 
-#: assets/workspace.js:1559
+#: assets/workspace.js:1700
 msgid "Switch page, template or part"
 msgstr ""
 
-#: assets/workspace.js:1560
+#: assets/workspace.js:1701
 msgid "Device"
 msgstr ""
 
-#: assets/workspace.js:1561
-#: assets/workspace.js:1561
-#: assets/workspace.js:1566
+#: assets/workspace.js:1702
+#: assets/workspace.js:1702
+#: assets/workspace.js:1707
 msgid "Undo"
 msgstr ""
 
-#: assets/workspace.js:1562
-#: assets/workspace.js:1562
+#: assets/workspace.js:1703
+#: assets/workspace.js:1703
 msgid "Redo"
 msgstr ""
 
-#: assets/workspace.js:1563
+#: assets/workspace.js:1704
 msgid "Saved versions and restore"
 msgstr ""
 
-#: assets/workspace.js:1564
+#: assets/workspace.js:1705
 msgid "Add a section from your theme"
 msgstr ""
 
-#: assets/workspace.js:1565
+#: assets/workspace.js:1706
 msgid "Design unlocked"
 msgstr ""
 
-#: assets/workspace.js:1565
+#: assets/workspace.js:1706
 msgid "Lock pattern design again"
 msgstr ""
 
-#: assets/workspace.js:1566
+#: assets/workspace.js:1707
 msgid "Version restored — Save to keep it"
 msgstr ""
 
-#: assets/workspace.js:1571
+#: assets/workspace.js:1712
 msgid "Saving…"
 msgstr ""
 
-#: assets/workspace.js:1571
+#: assets/workspace.js:1712
 msgid "Save failed — changes kept"
 msgstr ""
 
-#: assets/workspace.js:1571
+#: assets/workspace.js:1712
 msgid "unsaved"
 msgstr ""
 
-#: assets/workspace.js:1571
+#: assets/workspace.js:1712
 msgid "Saved"
 msgstr ""
 
-#: assets/workspace.js:1572
+#: assets/workspace.js:1713
 msgid "Preview"
 msgstr ""
 
-#: assets/workspace.js:1572
+#: assets/workspace.js:1713
 msgid "View site"
 msgstr ""
 
-#: assets/workspace.js:1573
-#: assets/workspace.js:1573
+#: assets/workspace.js:1714
+#: assets/workspace.js:1714
 msgid "More"
 msgstr ""
 
-#: assets/workspace.js:1579
+#: assets/workspace.js:1720
 msgid "This site does not print search titles and descriptions from Visual Edit: the theme provides its own, or the site-wide SEO & sharing settings are not enabled yet. Values saved here are kept."
 msgstr ""
 
-#: assets/workspace.js:1581
+#: assets/workspace.js:1722
 msgid "Click anything on the page to change it."
 msgstr ""
 
-#: assets/workspace.js:1581
+#: assets/workspace.js:1722
 msgid "Got it"
 msgstr ""
 
-#: assets/workspace.js:1594
+#: assets/workspace.js:1735
 msgid "Templates"
 msgstr ""
 
-#: assets/workspace.js:1594
+#: assets/workspace.js:1735
 msgid "Template parts"
 msgstr ""
 
-#: assets/workspace.js:1594
+#: assets/workspace.js:1735
 msgid "Synced patterns"
 msgstr ""
 
-#: assets/workspace.js:1596
+#: assets/workspace.js:1737
 msgid "There are unsaved changes. Leave this document?"
 msgstr ""
 
-#: assets/workspace.js:1602
+#: assets/workspace.js:1743
 msgid "Show"
 msgstr ""
 
-#: assets/workspace.js:1603
+#: assets/workspace.js:1744
 msgid "Search…"
 msgstr ""
 
-#: assets/workspace.js:1605
+#: assets/workspace.js:1746
 msgid "Could not load this content."
 msgstr ""
 
-#: assets/workspace.js:1606
+#: assets/workspace.js:1747
 msgid "No results."
 msgstr ""
 
-#: assets/workspace.js:1614
+#: assets/workspace.js:1755
 msgid "Previous"
 msgstr ""
 
-#: assets/workspace.js:1615
+#: assets/workspace.js:1756
 msgid "Next"
 msgstr ""
 
-#: assets/workspace.js:1619
+#: assets/workspace.js:1760
 msgid "Open the WordPress Site Editor"
 msgstr ""
