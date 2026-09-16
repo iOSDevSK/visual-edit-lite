@@ -1,10 +1,10 @@
 === Visual Edit Lite – Visual Editor for Block Themes ===
-Contributors: filipdvoran
+Contributors: webtalkbot
 Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.30.1
+Stable tag: 1.30.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -202,6 +202,11 @@ are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
 == Changelog ==
+
+= 1.30.2 =
+
+* Changed: Contributors names the wordpress.org account that owns the plugin,
+  and the 1.27.0 upgrade notice fits the directory's 300-character limit.
 
 = 1.30.1 =
 
@@ -568,12 +573,10 @@ so all of it ships here:
 == Upgrade Notice ==
 
 = 1.27.0 =
-Block themes now edit the way converted themes do: the page, one toolbar, one
-popup. Forms became editable blocks, and where a form sends is signed into the
-page and checked for every form. If your theme was converted from HTML, this
-release is important: pages with forms were showing visitors a critical error,
-and submissions that got through were being discarded. Both are fixed. Nothing
-needs migrating.
+Block themes now edit the way converted themes do: one toolbar, one popup.
+Forms are editable blocks, and where a form sends is signed into the page.
+Important for themes converted from HTML: pages with forms showed a critical
+error and submissions were discarded — both fixed. Nothing to migrate.
 
 = 1.19.8 =
 Staggered and carousel card lists are editable as collections again, listing
