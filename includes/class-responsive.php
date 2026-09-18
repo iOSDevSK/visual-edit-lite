@@ -117,7 +117,11 @@ class Clara_VE_Responsive {
 			return array();
 		}
 		$rules = json_decode( $raw, true );
-		return is_array( $rules ) ? $rules : array();
+		// Validated on the way out as well as on the way in: the meta is
+		// sanitised when it is written through the API, but a row can also
+		// arrive by import or straight from the database, and what comes out
+		// of here is compiled into a stylesheet.
+		return is_array( $rules ) ? self::clean( $rules ) : array();
 	}
 
 	/**

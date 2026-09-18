@@ -93,13 +93,10 @@ class Clara_VE_Native_History {
 		$live = self::live( $target );
 		if ( is_wp_error( $live ) ) { return $live; }
 		self::baseline( $target, $live );
-		return rest_ensure_response( array( 'entity' => array( 'type' => $target['type'], 'id' => $target['id'], 'title' => $live['title'] ), 'entries' => Clara_VE_History::visible_entries( $target['key'], $live ) ) );
+		return rest_ensure_response( array( 'entity' => array( 'type' => $target['type'], 'id' => $target['id'], 'title' => $live['title'] ), 'entries' => Clara_VE_History::list_entries( Clara_VE_History::MAX_ENTRIES, $target['key'], $live ) ) );
 	}
 
 	private static function entry( $target, $id ) {
-		if ( ! Clara_VE_History::may_restore( $id, $target['key'], array( 'source' => '', 'responsive' => array() ) ) ) {
-			return new WP_Error( 'clara_ve_history_missing', __( 'That version is not available for this document.', 'visual-edit-lite' ), array( 'status' => 404 ) );
-		}
 		$entry = Clara_VE_History::get( $id, $target['key'] );
 		if ( ! $entry || ! is_string( $entry['source'] ) ) { return new WP_Error( 'clara_ve_history_missing', __( 'That version could not be read.', 'visual-edit-lite' ), array( 'status' => 404 ) ); }
 		return $entry;

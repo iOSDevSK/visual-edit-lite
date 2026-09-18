@@ -1003,7 +1003,7 @@
 		var active = tabState[0] === 'advanced' && hasAdvanced ? 'advanced' : ( tabs.some( function ( item ) { return item[0] === tabState[0]; } ) ? tabState[0] : ( tabs[0] ? tabs[0][0] : ( hasAdvanced ? '' : '' ) ) );
 		function chooseTab( name ) { lastTab = name; tabState[1]( name ); }
 		var footerExtras = applyHooks( 'clara_ve.popup.footer', [], { block: block, attributes: attributes, mode: mode, registry: registry } );
-		// Actions about the whole block (Pro's Send to chat) sit above the first tab's groups, as in the HTML editor.
+		// Actions about the whole block, which extensions add, sit above the first tab's groups, as in the HTML editor.
 		var topExtras = applyHooks( 'clara_ve.popup.top', [], { block: block, attributes: attributes, mode: mode, registry: registry } );
 		var shown = groups.filter( function ( entry ) { return entry.tab === active; } );
 		var title = at( attributes, 'metadata.name' ) || ( canText && wp.htmlEntities ? wp.htmlEntities.decodeEntities( String( attributes[textKey] || '' ).replace( /<[^>]*>/g, '' ) ).slice( 0, 80 ) : '' ) || ( type ? type.title : block.name );
@@ -1709,9 +1709,8 @@
 			button( h( Fragment, null, '＋ ', h( 'span', { className: 'cve-w-label' }, __( 'Section', 'visual-edit-lite' ) ) ), function () { patterns[1]( {} ); }, { 'aria-label': __( 'Add a section', 'visual-edit-lite' ), title: __( 'Add a section from your theme', 'visual-edit-lite' ) } ),
 			status.unlocked && button( h( Fragment, null, h( 'span', { className: 'dashicons dashicons-unlock', 'aria-hidden': 'true' } ), ' ' + __( 'Design unlocked', 'visual-edit-lite' ) ), function () { setDesignLock( registry, false ); }, { className: 'cve-w-chip', title: __( 'Lock pattern design again', 'visual-edit-lite' ) } ),
 			restored[0] && status.dirty > 0 && h( 'span', { className: 'cve-w-chip is-restored', role: 'status' }, __( 'Version restored — Save to keep it', 'visual-edit-lite' ), button( __( 'Undo', 'visual-edit-lite' ), function () { nativeAction( 'undo', undefined, registry ); } ) ),
-			// Extensions add toolbar controls here, beside the status (Visual Edit
-			// Pro puts its AI assistant button and credit balance in this slot).
-			// Each entry is an element; give it a key.
+			// Extensions add toolbar controls here, beside the status. Each entry
+			// is an element; give it a key.
 			applyHooks( 'clara_ve.toolbar.extras', [], { registry: registry, status: status, element: wp.element } ),
 			h( 'span', { className: 'cve-w-status', 'aria-live': 'polite', title: status.error || undefined }, status.saving ? __( 'Saving…', 'visual-edit-lite' ) : status.error ? __( 'Save failed — changes kept', 'visual-edit-lite' ) : status.dirty ? status.dirty + ' ' + __( 'unsaved', 'visual-edit-lite' ) : '● ' + __( 'Saved', 'visual-edit-lite' ) ),
 			status.viewable && wp.editor && wp.editor.PostPreviewButton ? h( wp.editor.PostPreviewButton, { className: 'cve-w-preview', textContent: h( Fragment, null, h( 'span', { className: 'dashicons dashicons-visibility', 'aria-hidden': 'true' } ), ' ' + __( 'Preview', 'visual-edit-lite' ) ) } ) : h( 'a', { href: status.link || config.homeUrl, target: '_blank', rel: 'noopener' }, __( 'View site', 'visual-edit-lite' ) ),

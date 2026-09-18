@@ -249,7 +249,12 @@ class Clara_VE_Import_Legacy {
 	 */
 	public static function copy_media_asset( $rel_path, $key, $extract_dir ) {
 		$rel_path = ltrim( (string) wp_parse_url( $rel_path, PHP_URL_PATH ), '/' );
-		if ( '' === $rel_path ) {
+		// The path comes out of the imported HTML, so it is checked the way the
+		// bundle importer checks its own: it may not climb out of the extracted
+		// folder, and only a file type WordPress accepts as an upload is copied.
+		$rel_path = Clara_VE_Bundle_Reader::safe_relative( $rel_path );
+		$kind     = wp_check_filetype( basename( $rel_path ) );
+		if ( '' === $rel_path || empty( $kind['ext'] ) ) {
 			return null;
 		}
 		$source_path = trailingslashit( $extract_dir ) . $rel_path;
@@ -341,8 +346,8 @@ class Clara_VE_Import_Legacy {
 	/**
 	 * Register a copied media file as a REAL Media Library attachment, not
 	 * just bytes on disk with a URL pointing at them — otherwise nothing that
-	 * expects a genuine attachment (attachment_url_to_postid(), "Edit image
-	 * (AI)", "Generate video (AI)", the exporter's own media collection) can
+	 * expects a genuine attachment (attachment_url_to_postid(), the content
+	 * exporter's own media collection) can
 	 * see these images at all. Idempotent.
 	 *
 	 * @param string $url  Public URL of the file.

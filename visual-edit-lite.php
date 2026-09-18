@@ -3,7 +3,7 @@
  * Plugin Name: Visual Edit Lite – Visual Editor for Block Themes
  * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
  * Description: Visual editing for raw-HTML sites and complete native Gutenberg editing for block themes, with responsive controls, movement, forms, SEO and AI-readiness.
- * Version: 1.30.3
+ * Version: 1.31.0
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Filip Dvoran
@@ -57,7 +57,7 @@ if ( clara_ve_lite_pro_active() ) {
 	return;
 }
 
-define( 'CLARA_VE_VERSION', '1.30.3' );
+define( 'CLARA_VE_VERSION', '1.31.0' );
 // Signals schema-1 generated themes that this plugin delegates every public
 // rendering concern to them. Themes generated before that contract ignore the
 // signal and continue to receive the complete legacy runtime below.
@@ -99,13 +99,13 @@ function clara_ve_theme_owns_public_runtime() {
  *
  * What Lite therefore does NOT contain, rather than merely hiding it: the AI
  * Assistant and AI image/video tools, the AI Settings screen, Cloudflare
- * Turnstile on forms, and Theme Export. History lists the last ten saves plus
- * the Original, which is exactly what an unregistered Pro install shows; the
- * saves themselves are recorded to the same depth either way.
+ * Turnstile on forms, and Theme Export.
  *
  * Everything else — editing, saving, forms, menus, dynamic tokens, SEO,
- * redirects, AI-readiness/llms.txt, block mode, motion, import — is the full
- * Pro behaviour.
+ * redirects, AI-readiness/llms.txt, block mode, motion, import — is here in
+ * full. Edit history keeps ten saves per page plus the Original, and lists and
+ * restores every one of them: a list shorter than the table behind it would be
+ * a limit a payment lifts, which the directory does not allow (guideline 5).
  */
 
 // The unqualified name of the pattern whose rendered HTML is the editable
@@ -817,8 +817,8 @@ function clara_ve_theme_is_converted( $slug ) {
  * need. Measured on amanda-rose-blocks with 1.20.7.
  *
  * This is NOT an on/off switch for the plugin. On a foreign theme it remains
- * a fully working editor, AI chat, history and export; it simply stops
- * behaving like that theme's runtime.
+ * a fully working editor with its history; it simply stops behaving like
+ * that theme's runtime.
  *
  * Three signals, cheapest first, any one of which is enough:
  *   - the theme declares a contract (anchors, menus or variant parts);
@@ -1664,7 +1664,10 @@ function clara_ve_contract_notice() {
 	$relevant  = 'nav-menus' === $screen_id
 		|| 'themes' === $screen_id
 		|| false !== strpos( $screen_id, 'visual-edit' )
-		|| false !== strpos( $screen_id, '-setup' );
+		// A converted theme's own setup screen: Appearance → "<theme> setup".
+		// Matched by both ends, so another plugin's "…-setup" page elsewhere
+		// in the admin never gets this plugin's notice.
+		|| ( 0 === strpos( $screen_id, 'appearance_page_' ) && '-setup' === substr( $screen_id, -6 ) );
 	if ( ! $relevant || ! current_user_can( 'edit_theme_options' ) ) {
 		return;
 	}
@@ -1991,6 +1994,28 @@ function clara_ve_asset_version( $relative ) {
 }
 
 /**
+ * The script behind the Form Settings and SEO & Sharing screens: which rows
+ * show for the chosen mode, and the media-library pickers.
+ *
+ * Both screens call this from admin_enqueue_scripts, once they have matched
+ * their own hook. The pickers are wp.media, so the media library comes with it.
+ */
+function clara_ve_enqueue_settings_script() {
+	wp_enqueue_media();
+	wp_enqueue_script( 'clara-ve-admin-settings', CLARA_VE_URL . 'assets/admin-settings.js', array(), clara_ve_asset_version( 'assets/admin-settings.js' ), true );
+	wp_add_inline_script(
+		'clara-ve-admin-settings',
+		'window.claraVeSettings = ' . wp_json_encode(
+			array(
+				'chooseFile' => __( 'Choose the file', 'visual-edit-lite' ),
+				'useImage'   => __( 'Use this image', 'visual-edit-lite' ),
+			)
+		) . ';',
+		'before'
+	);
+}
+
+/**
  * Inject the edit bridge into the front page when previewing in edit mode.
  * The bridge is deferred and enqueued at the earliest priority so it stamps
  * source paths on the pristine DOM before any of the page's own deferred
@@ -2126,11 +2151,11 @@ function clara_ve_enqueue_form_submit() {
 add_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_form_submit', 5 );
 
 /**
- * Print the ::before ornament CSS layer on the front page. Rules are keyed by
+ * Enqueue the ::before ornament CSS layer on the front page. Rules are keyed by
  * structural element paths and compiled to :nth-child selectors, so the saved
  * markup itself stays byte-identical.
  */
-function clara_ve_print_pseudo_css() {
+function clara_ve_enqueue_pseudo_css() {
 	$key = clara_ve_current_key();
 	if ( null === $key ) {
 		return;
@@ -2156,7 +2181,15 @@ function clara_ve_print_pseudo_css() {
 			$body = '';
 			foreach ( $pseudos[ $which ] as $key => $value ) {
 				$css_name = strtolower( preg_replace( '/([A-Z])/', '-$1', (string) $key ) );
-				$body    .= $css_name . ':' . $value . ' !important;';
+				// Checked here as well as on save. The map also arrives from an
+				// import and from a history restore, and whatever reaches this
+				// line goes into a stylesheet verbatim: a property must look like
+				// one, and a value may not end its declaration, open a rule or
+				// start a tag. A lone ">" stays legal — it is a chevron ornament.
+				if ( ! preg_match( '/^[a-z-]+$/', $css_name ) || ! is_scalar( $value ) || preg_match( '/[{};<]/', (string) $value ) ) {
+					continue;
+				}
+				$body .= $css_name . ':' . $value . ' !important;';
 			}
 			if ( '' !== $body ) {
 				$css .= $selector . '::' . $which . '{' . $body . "}\n";
@@ -2164,12 +2197,33 @@ function clara_ve_print_pseudo_css() {
 		}
 	}
 	if ( $css ) {
-		// Not esc_html(): entities are not decoded inside <style>, so a `>`
-		// child selector would render as a literal &gt; and stop matching.
-		echo '<style id="clara-ve-pseudo-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		clara_ve_add_front_css( 'clara-ve-pseudo-css', $css );
 	}
 }
-add_action( 'wp_head', 'clara_ve_print_pseudo_css', 60 );
+add_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_pseudo_css', 60 );
+
+/**
+ * Hand a compiled CSS layer to WordPress instead of printing a <style> tag.
+ *
+ * The handle has no file behind it: core prints a source-less style's inline
+ * CSS on its own, as `<style id="{handle}-inline-css">`, in the same place and
+ * through the same filters as every other stylesheet on the page — so an
+ * optimisation plugin can defer, combine or drop it like any other.
+ *
+ * Callers run late on wp_enqueue_scripts so the layer lands after the theme's
+ * own styles in the queue. Order is not what makes these rules win, though —
+ * every declaration they carry is !important — it only keeps the head readable.
+ *
+ * @param string $handle Style handle, unique per layer.
+ * @param string $css    Already-validated CSS. Tags are stripped here as the
+ *                       last step, because a literal "</style" is the one way
+ *                       out of a stylesheet and into the document.
+ */
+function clara_ve_add_front_css( $handle, $css ) {
+	wp_register_style( $handle, false, array(), CLARA_VE_VERSION );
+	wp_enqueue_style( $handle );
+	wp_add_inline_style( $handle, wp_strip_all_tags( $css ) );
+}
 
 /**
  * Compile the article template's typography specimen into real CSS for every
@@ -2191,11 +2245,11 @@ add_action( 'wp_head', 'clara_ve_print_pseudo_css', 60 );
  * The specimen itself never reaches a visitor — clara_ve_strip_specimen()
  * removes it outside the edit preview.
  *
- * Modelled on clara_ve_print_pseudo_css() above, including its property-name
+ * Modelled on clara_ve_enqueue_pseudo_css() above, including its property-name
  * normalisation, and hardened the same way: only well-formed declarations
  * survive, so an edited source can't inject a rule or escape the block.
  */
-function clara_ve_print_article_css() {
+function clara_ve_enqueue_article_css() {
 	if ( ! is_singular( 'post' ) ) {
 		return;
 	}
@@ -2218,11 +2272,10 @@ function clara_ve_print_article_css() {
 	}
 
 	if ( '' !== $css ) {
-		// See the note above: escaping would break selectors inside <style>.
-		echo '<style id="clara-ve-article-css">' . wp_strip_all_tags( $css ) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		clara_ve_add_front_css( 'clara-ve-article-css', $css );
 	}
 }
-add_action( 'wp_head', 'clara_ve_print_article_css', 61 );
+add_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_article_css', 61 );
 
 /**
  * @param string $source Article template HTML.
@@ -2485,8 +2538,8 @@ function clara_ve_delegate_public_runtime_to_theme() {
 	// menu and put its class on the block, while the font FILE was never
 	// requested and every browser quietly fell back to sans-serif. The font
 	// looked chosen and was not there.
-	remove_action( 'wp_head', 'clara_ve_print_pseudo_css', 60 );
-	remove_action( 'wp_head', 'clara_ve_print_article_css', 61 );
+	remove_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_pseudo_css', 60 );
+	remove_action( 'wp_enqueue_scripts', 'clara_ve_enqueue_article_css', 61 );
 	remove_action( 'template_redirect', array( 'Clara_VE_Redirects', 'maybe_redirect' ), 0 );
 	remove_action( 'wp_head', array( 'Clara_VE_SEO', 'emit' ), 1 );
 	remove_filter( 'pre_get_document_title', array( 'Clara_VE_SEO', 'filter_document_title' ) );
@@ -2543,8 +2596,8 @@ function clara_ve_public_seo_is_configured() {
  * as two of every tag and two JSON-LD graphs on the same page.
  *
  * Kept deliberately narrow. Only public metadata delivery stands down; the
- * editor, the AI, history, export, redirects and the admin screens are
- * untouched, and a converted theme reaches none of this code.
+ * editor, history, redirects and the admin screens are untouched, and a
+ * converted theme reaches none of this code.
  */
 function clara_ve_stand_down_public_seo_on_foreign_theme() {
 	if ( clara_ve_active_theme_is_ours() ) {
@@ -2661,9 +2714,9 @@ function clara_ve_activate() {
 register_activation_hook( __FILE__, 'clara_ve_activate' );
 
 /**
- * Deactivation: unschedule the AI-job cron events (their args vary per job,
- * so the hook is cleared wholesale) and drop cached rewrite rules so the
- * /llms.txt route disappears with the plugin instead of 404-ing oddly.
+ * Deactivation: drop cached rewrite rules so the /llms.txt route disappears
+ * with the plugin instead of 404-ing oddly. The plugin schedules no cron
+ * events, so there is nothing else to unhook.
  * Data — options, tables, submissions — is deliberately untouched here;
  * deactivate/reactivate must round-trip losslessly. Deletion is handled by
  * uninstall.php, on its own terms.

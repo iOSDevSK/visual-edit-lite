@@ -934,11 +934,9 @@ class Clara_VE_SEO {
 			// wp_json_encode already escapes the payload; the remaining risk in
 			// a <script> context is a literal "</script" inside a string value,
 			// which the slash escape below neutralises without changing what
-			// the JSON parser reads.
-			printf(
-				"<script type=\"application/ld+json\">%s</script>\n",
-				str_replace( '</', '<\/', $json ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			);
+			// the JSON parser reads. JSON-LD is data, not a script to enqueue,
+			// so it goes out through core's own tag printer.
+			wp_print_inline_script_tag( str_replace( '</', '<\/', $json ), array( 'type' => 'application/ld+json' ) );
 		}
 	}
 }

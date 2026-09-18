@@ -175,9 +175,10 @@ $empty = Clara_VE_Native_History::target( 'page', 4 );
 $live['/wp/v2/pages/4'] = document( '' );
 check( count( Clara_VE_Native_History::listing( history_request( 'page', 4 ) )->get_data()['entries'] ) === 1, 'Empty document has a restorable Original' );
 for ( $i = 0; $i < 305; $i++ ) { Clara_VE_History::record( 'Version ' . $i, array(), 'save', null, null, $empty['key'], array() ); }
-$entries = Clara_VE_History::visible_entries( $empty['key'], array( 'source' => 'Version 304' ) );
-check( count( $entries ) === 11 && end( $entries )['message'] === 'Original', '10 saves plus Original survive pruning' );
-check( ! Clara_VE_History::may_restore( $entries[0]['id'] - 12, $empty['key'], array( 'source' => '' ) ), 'Hidden older versions rejected server-side' );
+$entries = Clara_VE_Native_History::listing( history_request( 'page', 4 ) )->get_data()['entries'];
+check( count( $entries ) === 11 && end( $entries )['message'] === 'Original', 'Ten saves plus the Original are kept, and all of them are listed' );
+$unrestorable = array_filter( $entries, function ( $entry ) { return is_wp_error( Clara_VE_Native_History::snapshot( history_request( 'page', 4, $entry['id'] ) ) ); } );
+check( array() === $unrestorable, 'Every listed save can be restored' );
 $theme = 'other-theme';
 check( count( Clara_VE_Native_History::listing( history_request( 'page', 1 ) )->get_data()['entries'] ) === 3, 'Page history survives theme switches' );
 check( is_wp_error( Clara_VE_Native_History::target( 'page', '../1' ) ) && is_wp_error( Clara_VE_Native_History::target( 'wp_template', '../sailing//header' ) ), 'Malformed/path traversal IDs rejected' );

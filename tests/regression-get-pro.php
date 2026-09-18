@@ -1,24 +1,24 @@
 <?php
 /**
- * Regression: the upsell is three menu items in the right places, one screen,
- * and nothing at all when the paid edition is installed.
+ * Regression: the upsell is ONE plain menu item, last, with one screen behind
+ * it — and nothing at all when the paid edition is installed.
  *
  * Three things are being guarded.
  *
- * The first is WHERE the two feature items sit. They stand in for screens the
- * paid edition really has, so they are only honest if they are in the same
- * places: AI Settings straight after Form Submissions, Export Theme straight
- * after SEO & Sharing. Those positions are computed from the menu as it
- * already stands, so one more screen added to Lite would move them — which is
- * precisely the change nothing else would notice.
+ * The first is that it stays one item and stays plain. An item named after a
+ * paid feature, greyed and badged, reads as a feature that is present and
+ * switched off — which is what the WordPress.org review objected to, whatever
+ * the code behind it does. So: exactly one row of this plugin's own that names
+ * Pro, no markup in its label, no script added to the admin, and its few style
+ * rules loaded on its own screen only.
  *
- * The second is that the screen behind them says what it is meant to say and
- * links where it is meant to link, with the rel that stops the opened tab from
- * reaching back into the admin.
+ * The second is that the screen says what it is meant to say and links where
+ * it is meant to link, with the rel that stops the opened tab from reaching
+ * back into the admin.
  *
  * The third is the stand-down. Lite switches itself off when Visual Edit Pro
- * is active, and an upsell item next to the real AI Settings would be the
- * worst version of this feature. The stand-down is a file-scope return before
+ * is active, and an upsell item next to the real product would be the worst
+ * version of this feature. The stand-down is a file-scope return before
  * anything is required, so it cannot be proved inside a WordPress that has
  * already booted: the check below boots a SECOND one, with the paid edition
  * pre-seeded into the active-plugin list, and asserts that this file's class
@@ -69,86 +69,85 @@ $position = static function ( $slug ) use ( $slugs ) {
 
 $check( 'the Visual Edit menu has rows at all', count( $rows ) > 3 );
 
-// ------------------------------------------------------- 1. the three items
+// ---------------------------------------------------------- 1. the one item
 
-$assistant = $position( Clara_VE_Get_Pro::PAGE_ASSISTANT );
-$export    = $position( Clara_VE_Get_Pro::PAGE_EXPORT );
-$buy       = $position( Clara_VE_Get_Pro::BUY_URL );
-
-$check( 'the AI Settings item is registered', $assistant >= 0 );
-$check( 'the Export Theme item is registered', $export >= 0 );
-$check( 'the Get Pro item is registered', $buy >= 0 );
-$check( 'Get Pro is a plain link to the pricing page, not a screen', $buy >= 0 && Clara_VE_Get_Pro::BUY_URL === $slugs[ $buy ] );
-
-$check(
-	'all three ask for the capability the parent menu asks for',
-	$assistant >= 0 && $export >= 0 && $buy >= 0
-		&& 'edit_theme_options' === $caps[ $assistant ]
-		&& 'edit_theme_options' === $caps[ $export ]
-		&& 'edit_theme_options' === $caps[ $buy ]
-);
-
-// None of the three may answer on a slug the paid edition uses for the real
-// screen: two plugins under one slug is a collision, not an upsell.
-$check(
-	'the upsell slugs are not the paid screens own slugs',
-	! in_array( 'visual-edit-ai', $slugs, true ) && ! in_array( 'visual-edit-export', $slugs, true )
-);
-
-// ------------------------------------------------------------- 2. the order
-
-$submissions = $position( 'edit.php?post_type=' . Clara_VE_Forms::CPT );
-$sharing     = $position( Clara_VE_SEO_Settings::PAGE );
-
-$check( 'Form Submissions is in the menu to sit after', $submissions >= 0 );
-$check( 'SEO and Sharing is in the menu to sit after', $sharing >= 0 );
-$check( 'AI Settings comes directly after Form Submissions', $submissions >= 0 && $assistant === $submissions + 1 );
-$check( 'Export Theme comes directly after SEO and Sharing', $sharing >= 0 && $export === $sharing + 1 );
-$check( 'Get Pro is the last item in the menu', $buy === count( $slugs ) - 1 );
-
-// The badge and the prominent label are what make the three read as what they
-// are. They live in the menu TITLE, which is index 0.
 $labels = array();
 foreach ( $rows as $row ) {
 	$labels[] = isset( $row[0] ) ? (string) $row[0] : '';
 }
-$check( 'AI Settings carries the Pro badge', $assistant >= 0 && false !== strpos( $labels[ $assistant ], 'cve-pro-badge' ) );
-$check( 'Export Theme carries the Pro badge', $export >= 0 && false !== strpos( $labels[ $export ], 'cve-pro-badge' ) );
-$check( 'Get Pro carries the prominent label', $buy >= 0 && false !== strpos( $labels[ $buy ], 'cve-get-pro' ) );
+$item = $position( Clara_VE_Get_Pro::PAGE );
 
-// ------------------------------------------------------------ 3. the screen
+$check( 'the Visual Edit Pro item is registered', $item >= 0 );
+$check( 'it asks for the capability the parent menu asks for', $item >= 0 && 'edit_theme_options' === $caps[ $item ] );
+$check( 'it is the last item in the menu', $item === count( $slugs ) - 1 );
+$check( 'its label is plain text — no badge, no pill, no markup', $item >= 0 && wp_strip_all_tags( $labels[ $item ] ) === $labels[ $item ] );
 
-ob_start();
-Clara_VE_Get_Pro::render_assistant();
-$with_assistant = ob_get_clean();
-
-ob_start();
-Clara_VE_Get_Pro::render_export();
-$with_export = ob_get_clean();
-
-$check( 'the screen names the paid edition', false !== strpos( $with_assistant, 'Visual Edit Pro' ) );
-$check( 'the screen links to the pricing page', false !== strpos( $with_assistant, Clara_VE_Get_Pro::BUY_URL ) );
-$check( 'the link opens safely', false !== strpos( $with_assistant, 'rel="noopener noreferrer"' ) );
-$check( 'the button says what it does', false !== strpos( $with_assistant, 'Buy Visual Edit Pro' ) );
-$check( 'the AI Settings item answers that feature first', false !== strpos( $with_assistant, 'cve-pro-card' ) && false !== strpos( $with_assistant, 'AI Settings' ) );
-$check( 'the Export Theme item answers that feature first', false !== strpos( $with_export, 'cve-pro-card' ) && false !== strpos( $with_export, 'Export Theme' ) );
-// The menu link itself opens in a new tab: a menu entry cannot carry a
-// target, so assets() adds one to that single anchor from an inline script.
-if ( ! wp_script_is( 'common', 'registered' ) ) {
-	wp_register_script( 'common', admin_url( 'js/common.js' ), array(), false, true );
+$upsell_rows = 0;
+foreach ( $slugs as $slug ) {
+	if ( 0 === strpos( $slug, 'visual-edit-lite-' ) || false !== strpos( $slug, 'html2wp.dev' ) ) {
+		++$upsell_rows;
+	}
 }
-Clara_VE_Get_Pro::assets();
-$after = wp_scripts()->get_data( 'common', 'after' );
-$js    = is_array( $after ) ? implode( "\n", $after ) : (string) $after;
-$check( 'the Get Pro link opens in a new tab', false !== strpos( $js, '_blank' ) && false !== strpos( $js, 'noopener noreferrer' ) && false !== strpos( $js, 'html2wp.dev' ) );
+$check( 'it is the ONLY upsell row in the menu', 1 === $upsell_rows );
+$check( 'no menu row is an off-site link', array() === preg_grep( '#^https?://#', $slugs ) );
+
+$badged = 0;
+foreach ( $labels as $label ) {
+	if ( false !== stripos( $label, 'cve-pro-badge' ) || false !== stripos( $label, 'cve-get-pro' ) ) {
+		++$badged;
+	}
+}
+$check( 'no row wears a Pro badge', 0 === $badged );
+
+// It may not answer on a slug the paid edition uses for a real screen: two
+// plugins under one slug is a collision, not an upsell.
+$check(
+	'the slug is not one of the paid screens own slugs',
+	! in_array( 'visual-edit-ai', $slugs, true ) && ! in_array( 'visual-edit-export', $slugs, true )
+);
+
+// ------------------------------------------------------------ 2. the screen
+
+ob_start();
+Clara_VE_Get_Pro::render();
+$screen = ob_get_clean();
+
+$check( 'the screen names the paid edition', false !== strpos( $screen, 'Visual Edit Pro' ) );
+$check( 'the screen says Pro is a separate plugin', false !== strpos( $screen, 'separate' ) );
+$check( 'the screen links to the pricing page', false !== strpos( $screen, Clara_VE_Get_Pro::BUY_URL ) );
+$check( 'the link opens safely', false !== strpos( $screen, 'rel="noopener noreferrer"' ) );
+$check( 'there is exactly one outbound link', 1 === substr_count( $screen, 'href="http' ) );
 
 // Nothing is fetched from anywhere, and nothing is reported anywhere. A src or
 // href pointing off-site other than the one button would be both.
 $check(
 	'the screen loads nothing from outside',
-	false === stripos( $with_assistant, '<script' ) && false === stripos( $with_assistant, '<img' ) && false === stripos( $with_assistant, '<link' )
+	false === stripos( $screen, '<script' ) && false === stripos( $screen, '<img' ) && false === stripos( $screen, '<link' )
 );
-$check( 'the link carries no campaign parameters', false === strpos( $with_assistant, 'utm_' ) && false === strpos( Clara_VE_Get_Pro::BUY_URL, 'utm_' ) );
+$check( 'the link carries no campaign parameters', false === strpos( $screen, 'utm_' ) && false === strpos( Clara_VE_Get_Pro::BUY_URL, 'utm_' ) );
+
+// ---------------------------------------------- 3. nothing on other screens
+
+// The few style rules belong to the screen. On any other admin page this
+// class adds no CSS, and it adds no script anywhere.
+if ( ! wp_style_is( 'common', 'registered' ) ) {
+	wp_register_style( 'common', admin_url( 'css/common.css' ), array(), false );
+}
+if ( ! wp_script_is( 'common', 'registered' ) ) {
+	wp_register_script( 'common', admin_url( 'js/common.js' ), array(), false, true );
+}
+$inline_css = static function () {
+	$after = wp_styles()->get_data( 'common', 'after' );
+	return is_array( $after ) ? implode( "\n", $after ) : (string) $after;
+};
+Clara_VE_Get_Pro::assets( 'index.php' );
+Clara_VE_Get_Pro::assets( 'toplevel_page_visual-edit' );
+$check( 'no CSS is added to other admin screens', false === strpos( $inline_css(), 'cve-pro-page' ) );
+Clara_VE_Get_Pro::assets( 'visual-edit-lite_page_' . Clara_VE_Get_Pro::PAGE );
+$check( 'the screen gets its own CSS', false !== strpos( $inline_css(), 'cve-pro-page' ) );
+$after_js = wp_scripts()->get_data( 'common', 'after' );
+$after_js = is_array( $after_js ) ? implode( "\n", $after_js ) : (string) $after_js;
+$check( 'no script is added to the admin at all', false === strpos( $after_js, 'html2wp.dev' ) && false === strpos( $after_js, 'adminmenu' ) );
 
 // ---------------------------------------------------------- 4. the stand-down
 
@@ -217,4 +216,4 @@ if ( $failed ) {
 	echo 'FAILED (' . count( $failed ) . "):\n - " . implode( "\n - ", $failed ) . "\n";
 	exit( 1 );
 }
-echo "PASS: three upsell items in the right places, one honest screen, and none of it beside the real thing\n";
+echo "PASS: one plain upsell item, one honest screen, nothing on any other admin page, and none of it beside the real thing\n";

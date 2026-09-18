@@ -3,7 +3,7 @@
  *
  * One surface for both editors: the Gutenberg workspace (block themes) and the
  * raw-HTML editor (converted themes) each register an implementation. Other
- * plugins, including Visual Edit Pro's assistant, drive the editor through
+ * plugins drive the editor through
  * operations instead of reaching into either editor's internals:
  *
  *   ClaraVE.ready( function ( ve ) {

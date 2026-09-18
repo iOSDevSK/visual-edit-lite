@@ -104,7 +104,7 @@ class Clara_VE_Redirects {
 		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 			return '';
 		}
-		$uri  = wp_unslash( $_SERVER['REQUEST_URI'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$uri  = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
 		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 		if ( '' === $path ) {
 			return '';
@@ -126,7 +126,7 @@ class Clara_VE_Redirects {
 		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 			return '';
 		}
-		$uri = wp_unslash( $_SERVER['REQUEST_URI'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
 		return (string) wp_parse_url( $uri, PHP_URL_QUERY );
 	}
 

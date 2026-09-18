@@ -117,94 +117,6 @@ class Clara_VE_Zip {
 	}
 
 	/**
-	 * Copy a directory tree into $dest.
-	 *
-	 * $skip applies to the TOP LEVEL ONLY, and that restriction is the whole
-	 * point. Matching those names at any depth looks tidier and quietly
-	 * destroys themes: "vendor" is a composer directory at the theme root, but
-	 * it is also assets/css/vendor/ and assets/js/vendor/, where a theme keeps
-	 * the third-party front-end libraries its design depends on. Dropping
-	 * those does not produce an obvious error — a stylesheet registered with a
-	 * dependency that no longer exists is silently not printed at all, so the
-	 * exported theme installs cleanly and renders with no CSS.
-	 *
-	 * Same reasoning for "src": a root-level src/ is unbuilt source, a nested
-	 * one may be anything. When in doubt this copies too much, which costs
-	 * bytes; the other direction costs the design.
-	 *
-	 * @param string   $source_dir
-	 * @param string   $dest_dir
-	 * @param string[] $skip Top-level names to exclude (directories or files).
-	 * @return int Number of files copied.
-	 */
-	public static function copy_tree( $source_dir, $dest_dir, array $skip = array() ) {
-		$source_dir = untrailingslashit( $source_dir );
-		$dest_dir   = untrailingslashit( $dest_dir );
-		$skip_map   = array_flip( $skip );
-		$copied     = 0;
-
-		wp_mkdir_p( $dest_dir );
-		$handle = @opendir( $source_dir ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		if ( ! $handle ) {
-			return 0;
-		}
-
-		while ( false !== ( $entry = readdir( $handle ) ) ) {
-			if ( '.' === $entry || '..' === $entry || isset( $skip_map[ $entry ] ) ) {
-				continue;
-			}
-			// Dotfiles are editor/tooling config (.editorconfig, .eslintrc.json,
-			// .gitignore, .DS_Store) — never part of a shipped theme, and
-			// listing each one by name would just rot.
-			if ( '.' === $entry[0] ) {
-				continue;
-			}
-			$from = $source_dir . '/' . $entry;
-			$to   = $dest_dir . '/' . $entry;
-			if ( is_dir( $from ) ) {
-				// No $skip below the top level — see the docblock.
-				$copied += self::copy_tree( $from, $to, array() );
-			} elseif ( copy( $from, $to ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_copy
-				++$copied;
-			}
-		}
-		closedir( $handle );
-		return $copied;
-	}
-
-	/**
-	 * Total byte size of a directory tree, for the export screen's estimate.
-	 *
-	 * @param string   $dir
-	 * @param string[] $skip
-	 * @return int
-	 */
-	public static function dir_size( $dir, array $skip = array() ) {
-		$dir = untrailingslashit( $dir );
-		if ( ! is_dir( $dir ) ) {
-			return 0;
-		}
-		$skip_map = array_flip( $skip );
-		$total    = 0;
-		$handle   = @opendir( $dir ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		if ( ! $handle ) {
-			return 0;
-		}
-		while ( false !== ( $entry = readdir( $handle ) ) ) {
-			if ( '.' === $entry || '..' === $entry || '.' === $entry[0] || isset( $skip_map[ $entry ] ) ) {
-				continue;
-			}
-			$path   = $dir . '/' . $entry;
-			// Top-level-only skipping, to match copy_tree() — otherwise the
-			// size shown on the export screen quietly under-reports what the
-			// ZIP will actually contain.
-			$total += is_dir( $path ) ? self::dir_size( $path, array() ) : (int) filesize( $path );
-		}
-		closedir( $handle );
-		return $total;
-	}
-
-	/**
 	 * Recursively delete a scratch directory.
 	 *
 	 * @param string $dir
@@ -262,6 +174,18 @@ class Clara_VE_Zip {
 					dirname( $base )
 				)
 			);
+		}
+		// A scratch folder can hold an export with form submissions in it, under
+		// a web-served path, for as long as the download takes. The folder name
+		// is random; these keep its parent from being listed or served as well.
+		// Written to the PARENT only: the folder itself is handed to unzip and
+		// to the importer, which read what is in it.
+		$parent = dirname( $base );
+		if ( ! file_exists( $parent . '/index.php' ) ) {
+			file_put_contents( $parent . '/index.php', "<?php\n// Silence is golden.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- a fixed string into the plugin's own scratch folder under uploads.
+		}
+		if ( ! file_exists( $parent . '/.htaccess' ) ) {
+			file_put_contents( $parent . '/.htaccess', "Require all denied\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- as above.
 		}
 		return $base;
 	}

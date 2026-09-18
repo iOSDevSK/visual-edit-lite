@@ -242,7 +242,7 @@ $check( 'and the removal reached storage', false === strpos( (string) get_post_f
 // The point of history is that a structural change is as undoable as any
 // other. A section deleted by accident is exactly the edit somebody needs
 // back, and it is the one that cannot be retyped.
-$entries = Clara_VE_History::visible_entries( $key );
+$entries = Clara_VE_History::list_entries( Clara_VE_History::MAX_ENTRIES, $key );
 $check( 'the change was recorded', ! empty( $entries ) );
 $all = Clara_VE_History::list_entries( 100, $key );
 // Oldest last: the final row is the baseline taken before the first edit.

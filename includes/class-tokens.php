@@ -271,6 +271,9 @@ class Clara_VE_Tokens {
 		$args = array(
 			'post_type'      => 'post',
 			'post_status'    => 'publish',
+			// A listing is reachable without logging in (the load-more route),
+			// so a password-protected post stays out of it altogether.
+			'has_password'   => false,
 			'posts_per_page' => isset( $atts['count'] ) ? max( 1, (int) $atts['count'] ) : 3,
 			// ID is a TIEBREAK, not a preference. Two posts sharing a
 			// publication date — ordinary on an imported archive, where a whole
@@ -428,11 +431,33 @@ class Clara_VE_Tokens {
 	 * @return array|WP_Error { html, has_more }
 	 */
 	public static function render_posts_page( $key, $page ) {
-		$key    = sanitize_key( $key );
-		$page   = max( 1, (int) $page );
+		$key  = sanitize_key( $key );
+		$page = max( 1, (int) $page );
+
+		// One answer for every refusal below. Two different ones would tell an
+		// anonymous caller which post ids exist and which of them hold content.
+		$none = new WP_Error( 'clara_ve_no_listing', 'That page has no posts listing.', array( 'status' => 404 ) );
+
+		// The route is public, so the page the card template is read FROM has
+		// to be public too. A key can name any page this plugin edits — a
+		// draft, a private or password-protected page, one parked with its
+		// theme — and the posts query below being limited to published posts
+		// says nothing about where the markup around them came from.
+		$bound_id = Clara_VE_Source_Store::block_key_post_id( $key );
+		if ( ! $bound_id ) {
+			$bound    = Clara_VE_Source_Store::find_page_by_key( $key );
+			$bound_id = $bound ? (int) $bound->ID : 0;
+		}
+		if ( $bound_id ) {
+			$bound = get_post( $bound_id );
+			if ( ! $bound || 'publish' !== $bound->post_status || '' !== (string) $bound->post_password || ! is_post_type_viewable( $bound->post_type ) ) {
+				return $none;
+			}
+		}
+
 		$source = Clara_VE_Source_Store::get_current_source( $key );
 		if ( '' === trim( (string) $source ) ) {
-			return new WP_Error( 'clara_ve_no_source', 'No such page.', array( 'status' => 404 ) );
+			return $none;
 		}
 
 		// Comments are masked for the same reason hydrate() masks them: a token
@@ -441,7 +466,7 @@ class Clara_VE_Tokens {
 		// need the button to say which, and no design here has two.
 		$masked = preg_replace( '/<!--.*?-->/s', '', $source );
 		if ( ! preg_match( '/\[wp-posts([^\]]*)\](.*?)\[\/wp-posts\]/s', null === $masked ? $source : $masked, $m ) ) {
-			return new WP_Error( 'clara_ve_no_listing', 'That page has no posts listing.', array( 'status' => 404 ) );
+			return $none;
 		}
 
 		$atts  = shortcode_parse_atts( $m[1] );

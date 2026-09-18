@@ -127,5 +127,4 @@ See [SEO](../seo-and-ai/seo.md) and
 | **SEO & Sharing** | Site-wide identity: name, type, logo, social profiles |
 | **SEO & AI Readiness** | The read-only report of what needs attention |
 | **Import Content** | Bringing content in from a ZIP |
-| **AI Settings** *(Pro)*, **Export Theme** *(Pro)* | Reading what the paid edition adds — both open one explanation screen, they are not switched-off features |
-| **Get Pro** | Opens the pricing page in a new browser tab |
+| **Visual Edit Pro** | Reading what the separate paid plugin adds. One screen of text and one link; nothing in Lite depends on it |

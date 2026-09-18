@@ -4,8 +4,8 @@
  *
  * A block theme registers its patterns — a hero, a testimonial row, a footer
  * strip — and those are the pieces somebody assembling a page actually wants.
- * Two callers need the same list for the same reason: the AI, which composes a
- * page by naming patterns, and the editor's "Add section" browser, where a
+ * Two callers need the same list for the same reason: an extension that composes
+ * a page by naming patterns, and the editor's "Add section" browser, where a
  * person picks one by eye. Keeping one list means a pattern the theme hides
  * from the inserter is hidden from both, and a pattern nobody may insert is
  * not one the model can propose either.

@@ -33,8 +33,8 @@ where available. Global Styles versions contain only their styles/settings.
 It does not restore titles, publication status, SEO, arbitrary plugin metadata,
 media files or the separately saved VE Google Fonts selection.
 
-The latest ten saves plus the oldest **Original** are available. Up to 300
-entries are retained per document, preserving the oldest. Original means the
+The latest ten saves plus the oldest **Original** are kept per document, and
+all of them are listed and restorable. Original means the
 first captured state, not necessarily the theme's factory design; versions
 lost before tracking began cannot be reconstructed. Existing VE page/post
 history is reused where present.
@@ -97,10 +97,11 @@ the theme delivered it — is always at the bottom of the list, no matter how
 much you have edited since, so there is always a way back to the delivered
 design.
 
-Older saves are not deleted, only not listed: the plugin keeps recording up to
-300 versions per page in the database. Those rows are your own content in your
-own database, and nothing removes them to make a point — they are there for
-backups, for WP-CLI, and for whatever you run next.
+Ten is how deep the history is, not how much of it is shown. The list is
+everything the plugin holds for that page: when an eleventh save is made the
+oldest save is dropped, and the Original never is. A page that arrives with a
+longer log — from an earlier version, or from Visual Edit Pro — is trimmed to
+ten saves and the Original the next time its history is opened or it is saved.
 
 The cap is per page, not shared across the site — so a page you are working on
 heavily cannot push another page's history out.

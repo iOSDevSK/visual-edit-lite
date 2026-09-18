@@ -46,14 +46,14 @@ class Clara_VE_Block_Gate {
 	/**
 	 * Judge a write.
 	 *
-	 * |                        | patch | AI edit      | AI create | restore |
+	 * |                        | patch | text edit    | create    | restore |
 	 * | delimiter grammar      |  yes  | new ones     | whole doc |  yes    |
 	 * | output idempotency     |  yes  |  —           |  —        |  yes    |
 	 * | structural invariance  |  yes  | conditional  |  —        |  —      |
 	 * | per-block schema       |  yes  | new ones     | whole doc |  yes    |
 	 *
 	 * Idempotency is only meaningful where $out came out of serialize_blocks();
-	 * an AI edit is a text substitution on markup a human or an importer may
+	 * a text edit is a substitution on markup a human or an importer may
 	 * have written, whose delimiter JSON spacing PHP would re-encode
 	 * differently, so requiring it there would reject correct edits. Creation
 	 * is canonicalized instead — see canonicalize().
@@ -460,8 +460,8 @@ class Clara_VE_Block_Gate {
 	}
 
 	/**
-	 * @param string $check   Which check failed — the REST layer and the AI
-	 *                        tools both branch on this rather than the prose.
+	 * @param string $check   Which check failed — callers branch on this
+	 *                        rather than the prose.
 	 * @param string $message
 	 * @param array  $data
 	 * @return WP_Error

@@ -55,12 +55,12 @@ class Clara_VE_Parked_Page {
 	 * @return void
 	 */
 	public static function intercept_delete() {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- routing only: this redirects to a confirmation screen and changes nothing. The deletion itself is handle_delete(), behind check_admin_referer().
 		if ( ! isset( $_GET['action'] ) || 'delete' !== $_GET['action'] || ! isset( $_GET['stylesheet'] ) ) {
 			return;
 		}
 		// phpcs:enable
-		$slug = sanitize_key( wp_unslash( $_GET['stylesheet'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$slug = sanitize_key( wp_unslash( $_GET['stylesheet'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- as above: read to choose which confirmation screen to show.
 		$rows = self::rows();
 		if ( ! isset( $rows[ $slug ] ) ) {
 			return;
@@ -302,8 +302,11 @@ class Clara_VE_Parked_Page {
 	 * @return void
 	 */
 	public static function handle_export() {
-		if ( ! current_user_can( 'edit_theme_options' ) ) {
-			wp_die( esc_html__( 'You need theme-editing permissions to export content.', 'visual-edit-lite' ) );
+		// manage_options, not edit_theme_options: the export carries form
+		// submissions and subscribers, and those are behind manage_options on
+		// their own screens. The same data does not get a lower bar here.
+		if ( ! current_user_can( 'edit_theme_options' ) || ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You need administrator permissions to export content.', 'visual-edit-lite' ) );
 		}
 		check_admin_referer( 'clara_ve_park_export' );
 		$slug = isset( $_POST['theme'] ) ? sanitize_key( wp_unslash( $_POST['theme'] ) ) : '';
@@ -311,8 +314,6 @@ class Clara_VE_Parked_Page {
 		$built = Clara_VE_Bundle_Writer::build(
 			array(
 				'theme'                => $slug,
-				'package'              => 'content',
-				'mode'                 => 'site',
 				'media'                => 'referenced',
 				'include_private_data' => true,
 			)
@@ -343,7 +344,7 @@ class Clara_VE_Parked_Page {
 		if ( ! current_user_can( 'edit_theme_options' ) ) {
 			wp_die( esc_html__( 'You need theme-editing permissions to see this.', 'visual-edit-lite' ) );
 		}
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only view routing: which screen to render and which notice to show. Nothing is written from these values.
 		$confirm = isset( $_GET['confirm'] ) ? sanitize_key( wp_unslash( $_GET['confirm'] ) ) : '';
 		if ( '' !== $confirm ) {
 			self::render_confirm( $confirm );

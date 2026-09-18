@@ -1,10 +1,17 @@
 /**
- * Visual editor host — the open-design manual-edit UX, minus AI:
+ * Visual editor host — the open-design manual-edit UX:
  * permanent dashed guides in the canvas, a draggable dark floating inspector
  * anchored to the selection with TYPOGRAPHY controls (font, size, weight,
  * color, align, line, tracking), image swap via the WP Media Library, link
  * fields, per-element delete/reset/Cancel/Save, and a global Save that
  * patches the canonical source (DOMParser round-trip, open-design style).
+ *
+ * Portions of this file are derived from Open Design
+ * (https://github.com/nexu-io/open-design), Copyright 2026 Open Design
+ * contributors, licensed under the Apache License, Version 2.0
+ * (https://www.apache.org/licenses/LICENSE-2.0). This file has been modified:
+ * ported from TypeScript and adapted for WordPress. It is distributed here
+ * under GPL-2.0-or-later, which that licence permits at GPL version 3.
  */
 ( function () {
 	'use strict';
@@ -89,7 +96,7 @@
 	}
 
 	// Switch the editor onto a key the FRAME has already navigated to. Same
-	// bookkeeping as switchToKey (source, history, AI thread, toolbar) minus
+	// bookkeeping as switchToKey (source, history, toolbar) minus
 	// the navigation — the frame is already showing the right page, and
 	// re-pointing it would throw away the very article the user clicked.
 	function adoptKey( key ) {
@@ -736,7 +743,7 @@
 				el.insertBefore( frag, el.firstChild ); // sources before any <track>
 			}
 		} else if ( patch.kind === 'convert-to-video' ) {
-			// "Generate video (AI)" result, source-side: swap the <img> for a
+			// Image-to-video, source-side: swap the <img> for a
 			// real <video> at the same tree position — mirrors bridge.js's
 			// live-DOM version of this same conversion exactly.
 			var video = doc.createElement( 'video' );
@@ -1900,8 +1907,8 @@
 				if ( patch.kind === 'set-style' || patch.kind === 'set-pseudo' ) {
 					patch.styles = Object.assign( {}, patches[ i ].styles, patch.styles );
 				}
-				// Swapping the picture — from the Media Library, an AI job, an
-				// import — says nothing about where it points, so the address
+				// Swapping the picture — from the Media Library or an import —
+				// says nothing about where it points, so the address
 				// already recorded carries over instead of being replaced by
 				// nothing. Handled here rather than at each call site so a new
 				// one cannot quietly drop the link again.
@@ -2091,7 +2098,7 @@
 	// eventually expires (and dies with the login session). When it does, the
 	// page still renders — it just comes back as an ordinary front-end view,
 	// with no bridge. Everything downstream then fails silently: nothing is
-	// selectable, a finished AI result has nowhere to apply itself, and Save
+	// selectable, a finished background task has nowhere to apply itself, and Save
 	// stays disabled with no explanation. So: if the frame navigates and no
 	// 'ready' handshake follows, say plainly that the session expired.
 
@@ -4402,8 +4409,7 @@
 			panel.appendChild( pick );
 
 			// Swap the <img> for a <video> using an EXISTING library video —
-			// the same img->video conversion the AI video job produces, just
-			// with a hand-picked source instead of a generated one. The current
+			// an img->video conversion with a hand-picked source. The current
 			// image becomes the poster so the element keeps a still frame
 			// before playback.
 			//
@@ -4487,18 +4493,14 @@
 
 			// ---- Image hosted somewhere else ----
 			// A converted design routinely points at a CDN or a stock-photo
-			// host, and the AI tools refuse such a source on purpose: they only
-			// read files this site serves itself, because an endpoint that
-			// fetches any URL it is handed is a way to read arbitrary files and
-			// probe the server's own network. That leaves the owner stuck for a
-			// reason they cannot act on, so offer the action instead of the
-			// explanation — one click copies the image into this site's Media
-			// Library and repoints the markup, after which every tool works.
+			// host, which leaves the page depending on somebody else's server
+			// for a picture it shows. One click copies the image into this
+			// site's Media Library and repoints the markup.
 			var srcIsRemote = /^https?:\/\//i.test( target.fields.src || '' )
 				&& 0 !== ( target.fields.src || '' ).indexOf( window.location.origin );
 			if ( srcIsRemote ) {
 				var remoteNote = el( 'p', 'cve-note',
-					'This image is hosted on another site, so it cannot be AI-edited or turned into video from here. Import it and those become available.' );
+					'This image is hosted on another site, so this page depends on that site to show it. Import it to keep a copy in your Media Library.' );
 				panel.appendChild( remoteNote );
 				var importBtn = el( 'button', 'cve-btn cve-btn-block', 'Import image into this site' );
 				importBtn.addEventListener( 'click', function () {

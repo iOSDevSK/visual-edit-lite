@@ -25,17 +25,12 @@ defined( 'ABSPATH' ) || exit;
 
 class Clara_VE_History {
 
-	// Hard ceiling on stored entries PER page_key. Gzip'd single-page HTML
-	// runs roughly 8-20KB per entry, so even at the cap one page's history
-	// stays a few MB at most.
-	const MAX_ENTRIES = 300;
-
-	// How many entries an UNLICENSED install may see and restore (plus the
-	// Original, which is always offered — see visible_entries()). Storage is
-	// NOT trimmed to this: the full log keeps accumulating up to MAX_ENTRIES,
-	// so activating a licence later reveals the history that was recorded all
-	// along rather than a hole.
-	const VISIBLE_ENTRIES = 10;   // How many saves the list shows. Everything is still recorded to MAX_ENTRIES.
+	// Hard ceiling on stored entries PER page_key: the ten most recent saves
+	// plus the Original, which prune() never evicts. This is how deep the
+	// history IS, not how much of it is shown — the panel lists every row the
+	// table holds and any of them can be restored. Gzip'd single-page HTML runs
+	// roughly 8-20KB per entry, so a page's history stays well under a MB.
+	const MAX_ENTRIES = 11;
 
 	const DB_VERSION_OPTION = 'clara_ve_history_db_version';
 	const DB_VERSION        = '3';
@@ -333,7 +328,13 @@ class Clara_VE_History {
 		self::maybe_install();
 		$page_key = self::scoped_key( $page_key );
 		$table    = self::table();
-		$rows     = $wpdb->get_results(
+		// Pruned here as well as on save, so the list and the table never
+		// disagree. A page that arrives with a longer log than this version
+		// keeps would otherwise sit there until its next save with rows nobody
+		// can reach,
+		// and with the Original cut off the end of the list by the LIMIT below.
+		self::prune( $page_key );
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT id, content_hash, responsive, message, kind, restored_from_id, created_at FROM {$table} WHERE page_key = %s ORDER BY id DESC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$page_key,
@@ -400,55 +401,6 @@ class Clara_VE_History {
 			);
 		}
 		return $out;
-	}
-
-	/**
-	 * What the history panel shows and what restore accepts, licence-aware.
-	 *
-	 * Licensed: the full list (up to MAX_ENTRIES). Unlicensed: the newest
-	 * VISIBLE_ENTRIES plus — always — the oldest entry, because the
-	 * Original must stay restorable at every tier. list_entries() returns
-	 * newest-first, so the Original lands at the tail of the panel, where
-	 * the oldest entry belongs visually anyway.
-	 *
-	 * This is also the server-side authority for restores: restore goes
-	 * through an id allow-list derived from the same function, so hiding
-	 * rows in the panel and refusing them on the wire can never disagree.
-	 *
-	 * @param string $page_key
-	 * @return array Same shape as list_entries().
-	 */
-	public static function visible_entries( $page_key = CLARA_VE_DEFAULT_KEY, $live = null ) {
-		$all = self::list_entries( self::MAX_ENTRIES, $page_key, $live );
-
-		if ( count( $all ) <= self::VISIBLE_ENTRIES ) {
-			return $all;
-		}
-
-		$visible = array_slice( $all, 0, self::VISIBLE_ENTRIES );
-		$oldest  = end( $all );
-
-		if ( $oldest && $oldest['id'] !== $visible[ count( $visible ) - 1 ]['id'] ) {
-			$visible[] = $oldest;
-		}
-
-		return $visible;
-	}
-
-	/**
-	 * Whether the given entry may be restored under the current licence.
-	 *
-	 * @param int    $id
-	 * @param string $page_key
-	 * @return bool
-	 */
-	public static function may_restore( $id, $page_key = CLARA_VE_DEFAULT_KEY, $live = null ) {
-		foreach ( self::visible_entries( $page_key, $live ) as $entry ) {
-			if ( (int) $entry['id'] === (int) $id ) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**

@@ -312,17 +312,13 @@ class Clara_VE_REST {
 	 * Copy an image the design points at on SOMEONE ELSE'S server into this
 	 * site's Media Library, and hand back the local URL.
 	 *
-	 * A converted design routinely references a CDN or a stock-photo host, and
-	 * the AI image and video tools refuse such a source outright — they only
-	 * read files this site serves itself, because an endpoint that fetches
-	 * whatever URL a caller supplies is a way to read arbitrary files and to
-	 * probe the network from inside the server (see
-	 * Clara_VE_Media::resolve_local_image). That refusal is right, and it
-	 * left the owner with no way forward: the fix is mechanical, so the plugin
-	 * does it here instead of explaining it.
+	 * A converted design routinely references a CDN or a stock-photo host,
+	 * which leaves the page depending on somebody else's server for a picture
+	 * it shows. The fix is mechanical, so the plugin does it here.
 	 *
-	 * This endpoint DOES fetch a remote URL, which is exactly what the other
-	 * one will not do, so the difference has to be paid for:
+	 * This endpoint fetches a remote URL a caller supplies — a way to read
+	 * arbitrary files and to probe the network from inside the server unless
+	 * it is fenced in — so that has to be paid for:
 	 *
 	 *  - it is capability-gated to someone who may already edit raw theme HTML;
 	 *  - wp_http_validate_url() rejects a private, loopback or non-HTTP target,
@@ -333,7 +329,7 @@ class Clara_VE_REST {
 	 *    wp_check_filetype_and_ext() on the downloaded bytes rather than by the
 	 *    URL's extension or the server's content-type, both of which the remote
 	 *    host controls;
-	 *  - and the size ceiling is the same 16 MB the AI tools use.
+	 *  - and the size ceiling is 16 MB (Clara_VE_Media::MAX_SOURCE_BYTES).
 	 *
 	 * The remote copy is left alone; the markup is repointed by the editor's
 	 * ordinary set-image patch, so the change is one the owner can undo.
@@ -905,7 +901,7 @@ class Clara_VE_REST {
 		// Save — so simply opening the History panel already shows something
 		// restorable, even before the user has saved anything themselves.
 		Clara_VE_History::ensure_baseline( $key );
-		return rest_ensure_response( Clara_VE_History::visible_entries( $key ) );
+		return rest_ensure_response( Clara_VE_History::list_entries( Clara_VE_History::MAX_ENTRIES, $key ) );
 	}
 
 	public static function rename_history( WP_REST_Request $request ) {
@@ -1080,7 +1076,7 @@ class Clara_VE_REST {
 				'saved'   => (bool) $saved,
 				'post'    => $post_id,
 				'key'     => $key,
-				'history' => Clara_VE_History::visible_entries( $key ),
+				'history' => Clara_VE_History::list_entries( Clara_VE_History::MAX_ENTRIES, $key ),
 			)
 		);
 	}
@@ -1118,11 +1114,7 @@ class Clara_VE_REST {
 	public static function restore_history( WP_REST_Request $request ) {
 		$key = sanitize_key( (string) $request->get_param( 'key' ) ) ?: CLARA_VE_DEFAULT_KEY;
 		$id  = (int) $request->get_param( 'id' );
-		// Licence gate on the wire, not just in the panel: unlicensed installs
-		// may restore the newest ten and the Original, nothing between.
-		if ( ! Clara_VE_History::may_restore( $id, $key ) ) {
-			return new WP_Error( 'clara_ve_license_required', __( 'Restoring older saves requires an activated licence key. The last ten saves and the Original remain available.', 'visual-edit-lite' ), array( 'status' => 403 ) );
-		}
+
 		$entry = Clara_VE_History::get( $id, $key );
 		if ( ! $entry ) {
 			return new WP_Error( 'clara_ve_not_found', __( 'That save no longer exists.', 'visual-edit-lite' ), array( 'status' => 404 ) );
@@ -1154,7 +1146,7 @@ class Clara_VE_REST {
 			array(
 				'source'  => Clara_VE_Source_Store::untokenize( $entry['source'] ),
 				'pseudo'  => $entry['pseudo'],
-				'history' => Clara_VE_History::visible_entries( $key ),
+				'history' => Clara_VE_History::list_entries( Clara_VE_History::MAX_ENTRIES, $key ),
 			)
 		);
 	}

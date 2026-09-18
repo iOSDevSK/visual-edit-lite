@@ -75,6 +75,19 @@ class Clara_VE_Form_Settings {
 		// for the guard in keep_or_encrypt to pass the value through untouched.
 		add_action( 'admin_init', array( __CLASS__, 'repair_double_encrypted_secrets' ), 20 );
 		add_action( 'admin_post_clara_ve_send_test_email', array( __CLASS__, 'handle_test_email' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue' ) );
+	}
+
+	/**
+	 * The media library and the script for this screen: the rows that follow
+	 * the chosen opt-in mode and mailer, and the download-file picker.
+	 *
+	 * @param string $hook
+	 */
+	public static function enqueue( $hook ) {
+		if ( false !== strpos( (string) $hook, self::PAGE ) ) {
+			clara_ve_enqueue_settings_script();
+		}
 	}
 
 	/**
@@ -246,9 +259,7 @@ class Clara_VE_Form_Settings {
 		// answers "Key not found" and nothing in the site says why.
 		//
 		// A real API key never decrypts (it isn't our base64 IV+cipher shape), so
-		// a value that DOES decrypt cleanly is already ours. Same guard, same
-		// reasoning as sanitize_secret() in class-ai-settings.php, which hit this
-		// first; this class was written without it.
+		// a value that DOES decrypt cleanly is already ours.
 		if ( '' !== self::decrypt( $raw ) ) {
 			return $raw;
 		}
@@ -262,12 +273,25 @@ class Clara_VE_Form_Settings {
 
 	// ---- Admin page ----
 
+	/**
+	 * Start a row hidden when it belongs to a choice that is not the current
+	 * one. assets/admin-settings.js keeps it in step from there; doing the first
+	 * pass here means the screen does not open with every mailer's fields
+	 * showing and then fold them away.
+	 *
+	 * @param string $value   The choice this row belongs to.
+	 * @param string $current The choice in effect.
+	 */
+	private static function hidden_unless( $value, $current ) {
+		if ( $value !== $current ) {
+			echo ' style="display:none"';
+		}
+	}
+
 	public static function render() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You need administrator permissions to manage form settings.', 'visual-edit-lite' ) );
 		}
-		// The file picker below is wp.media; without this it is a dead button.
-		wp_enqueue_media();
 		$akismet_ready = self::akismet_available();
 		$mailer        = self::mailer();
 		?>
@@ -333,11 +357,11 @@ class Clara_VE_Form_Settings {
 					</tr>
 				</table>
 
-				<div class="cve-mailer-section" data-mailer="default">
+				<div class="cve-mailer-section" data-mailer="default"<?php self::hidden_unless( 'default', $mailer ); ?>>
 					<p class="description" style="max-width:680px"><?php esc_html_e( 'WordPress sends mail directly from the web server. Fine for a quick test, but it commonly lands in spam or is dropped in production — pick a real provider above.', 'visual-edit-lite' ); ?></p>
 				</div>
 
-				<div class="cve-mailer-section" data-mailer="smtp">
+				<div class="cve-mailer-section" data-mailer="smtp"<?php self::hidden_unless( 'smtp', $mailer ); ?>>
 					<table class="form-table" role="presentation">
 						<tr>
 							<th scope="row"><label for="<?php echo esc_attr( self::OPT_SMTP_HOST ); ?>"><?php esc_html_e( 'SMTP host', 'visual-edit-lite' ); ?></label></th>
@@ -379,7 +403,7 @@ class Clara_VE_Form_Settings {
 					</table>
 				</div>
 
-				<div class="cve-mailer-section" data-mailer="brevo">
+				<div class="cve-mailer-section" data-mailer="brevo"<?php self::hidden_unless( 'brevo', $mailer ); ?>>
 					<table class="form-table" role="presentation">
 						<tr>
 							<th scope="row"><label for="<?php echo esc_attr( self::OPT_API_BREVO ); ?>"><?php esc_html_e( 'Brevo API key', 'visual-edit-lite' ); ?></label></th>
@@ -391,7 +415,7 @@ class Clara_VE_Form_Settings {
 					</table>
 				</div>
 
-				<div class="cve-mailer-section" data-mailer="sendgrid">
+				<div class="cve-mailer-section" data-mailer="sendgrid"<?php self::hidden_unless( 'sendgrid', $mailer ); ?>>
 					<table class="form-table" role="presentation">
 						<tr>
 							<th scope="row"><label for="<?php echo esc_attr( self::OPT_API_SENDGRID ); ?>"><?php esc_html_e( 'SendGrid API key', 'visual-edit-lite' ); ?></label></th>
@@ -403,7 +427,7 @@ class Clara_VE_Form_Settings {
 					</table>
 				</div>
 
-				<div class="cve-mailer-section" data-mailer="postmark">
+				<div class="cve-mailer-section" data-mailer="postmark"<?php self::hidden_unless( 'postmark', $mailer ); ?>>
 					<table class="form-table" role="presentation">
 						<tr>
 							<th scope="row"><label for="<?php echo esc_attr( self::OPT_API_POSTMARK ); ?>"><?php esc_html_e( 'Postmark server token', 'visual-edit-lite' ); ?></label></th>
@@ -415,7 +439,7 @@ class Clara_VE_Form_Settings {
 					</table>
 				</div>
 
-				<div class="cve-mailer-section" data-mailer="mailgun">
+				<div class="cve-mailer-section" data-mailer="mailgun"<?php self::hidden_unless( 'mailgun', $mailer ); ?>>
 					<table class="form-table" role="presentation">
 						<tr>
 							<th scope="row"><label for="<?php echo esc_attr( self::OPT_API_MAILGUN ); ?>"><?php esc_html_e( 'Mailgun API key', 'visual-edit-lite' ); ?></label></th>
@@ -440,52 +464,6 @@ class Clara_VE_Form_Settings {
 						</tr>
 					</table>
 				</div>
-
-				<script>
-				( function () {
-					// The opt-in rows that belong to the mode not chosen are
-					// noise: three email fields for a flow the site is not
-					// running.
-					var mode = document.getElementById( 'clara_ve_optin_mode' );
-					function syncOptin() {
-						var rows = document.querySelectorAll( '.cve-optin-row' );
-						for ( var i = 0; i < rows.length; i++ ) {
-							rows[ i ].style.display = ( rows[ i ].getAttribute( 'data-optin' ) === mode.value ) ? '' : 'none';
-						}
-					}
-					if ( mode ) {
-						mode.addEventListener( 'change', syncOptin );
-						syncOptin();
-					}
-					var pick = document.getElementById( 'cve-pick-file' );
-					if ( pick && window.wp && window.wp.media ) {
-						pick.addEventListener( 'click', function () {
-							var frame = window.wp.media( { title: 'Choose the file', multiple: false } );
-							frame.on( 'select', function () {
-								var att = frame.state().get( 'selection' ).first().toJSON();
-								document.getElementById( 'clara_ve_optin_deliver_file' ).value = att.url;
-							} );
-							frame.open();
-						} );
-					}
-				} )();
-				</script>
-
-				<script>
-				( function () {
-					var sel = document.getElementById( 'clara_ve_mailer' );
-					if ( ! sel ) { return; }
-					function sync() {
-						var v = sel.value;
-						var boxes = document.querySelectorAll( '.cve-mailer-section' );
-						for ( var i = 0; i < boxes.length; i++ ) {
-							boxes[ i ].style.display = ( boxes[ i ].getAttribute( 'data-mailer' ) === v ) ? '' : 'none';
-						}
-					}
-					sel.addEventListener( 'change', sync );
-					sync();
-				} )();
-				</script>
 
 				<h2><?php esc_html_e( 'Mailing list', 'visual-edit-lite' ); ?></h2>
 				<p class="description" style="max-width:680px">
@@ -524,7 +502,7 @@ class Clara_VE_Form_Settings {
 							</p>
 						</td>
 					</tr>
-					<tr class="cve-optin-row" data-optin="plugin">
+					<tr class="cve-optin-row" data-optin="plugin"<?php self::hidden_unless( 'plugin', Clara_VE_Optin::mode() ); ?>>
 						<th scope="row"><label for="<?php echo esc_attr( Clara_VE_Optin::OPT_CONFIRM_SUBJECT ); ?>"><?php esc_html_e( 'Confirmation email', 'visual-edit-lite' ); ?></label></th>
 						<td>
 							<input type="text" class="large-text" id="<?php echo esc_attr( Clara_VE_Optin::OPT_CONFIRM_SUBJECT ); ?>" name="<?php echo esc_attr( Clara_VE_Optin::OPT_CONFIRM_SUBJECT ); ?>" value="<?php echo esc_attr( (string) get_option( Clara_VE_Optin::OPT_CONFIRM_SUBJECT, '' ) ); ?>" placeholder="<?php echo esc_attr( Clara_VE_Optin::default_confirm_subject() ); ?>" />
@@ -532,7 +510,7 @@ class Clara_VE_Form_Settings {
 							<p class="description"><?php esc_html_e( 'Must contain {confirm_url} — that is the link. {site} is your From name.', 'visual-edit-lite' ); ?></p>
 						</td>
 					</tr>
-					<tr class="cve-optin-row" data-optin="plugin">
+					<tr class="cve-optin-row" data-optin="plugin"<?php self::hidden_unless( 'plugin', Clara_VE_Optin::mode() ); ?>>
 						<th scope="row"><label for="<?php echo esc_attr( Clara_VE_Optin::OPT_DELIVER_SUBJECT ); ?>"><?php esc_html_e( 'Delivery email', 'visual-edit-lite' ); ?></label></th>
 						<td>
 							<input type="text" class="large-text" id="<?php echo esc_attr( Clara_VE_Optin::OPT_DELIVER_SUBJECT ); ?>" name="<?php echo esc_attr( Clara_VE_Optin::OPT_DELIVER_SUBJECT ); ?>" value="<?php echo esc_attr( (string) get_option( Clara_VE_Optin::OPT_DELIVER_SUBJECT, '' ) ); ?>" placeholder="<?php echo esc_attr( Clara_VE_Optin::default_deliver_subject() ); ?>" />
@@ -540,7 +518,7 @@ class Clara_VE_Form_Settings {
 							<p class="description"><?php esc_html_e( 'Sent after they confirm, never before. {download_url} is the file below.', 'visual-edit-lite' ); ?></p>
 						</td>
 					</tr>
-					<tr class="cve-optin-row" data-optin="plugin">
+					<tr class="cve-optin-row" data-optin="plugin"<?php self::hidden_unless( 'plugin', Clara_VE_Optin::mode() ); ?>>
 						<th scope="row"><label for="<?php echo esc_attr( Clara_VE_Optin::OPT_DELIVER_FILE ); ?>"><?php esc_html_e( 'The file they get', 'visual-edit-lite' ); ?></label></th>
 						<td>
 							<input type="url" class="large-text" id="<?php echo esc_attr( Clara_VE_Optin::OPT_DELIVER_FILE ); ?>" name="<?php echo esc_attr( Clara_VE_Optin::OPT_DELIVER_FILE ); ?>" value="<?php echo esc_attr( (string) get_option( Clara_VE_Optin::OPT_DELIVER_FILE, '' ) ); ?>" />
@@ -548,7 +526,7 @@ class Clara_VE_Form_Settings {
 							<p class="description"><?php esc_html_e( 'Upload the PDF to Media and pick it here. Leave blank if the confirmation email is all you send.', 'visual-edit-lite' ); ?></p>
 						</td>
 					</tr>
-					<tr class="cve-optin-row" data-optin="provider">
+					<tr class="cve-optin-row" data-optin="provider"<?php self::hidden_unless( 'provider', Clara_VE_Optin::mode() ); ?>>
 						<th scope="row"><label for="<?php echo esc_attr( Clara_VE_Lists::OPT_DOI_TEMPLATE ); ?>"><?php esc_html_e( 'Provider template id', 'visual-edit-lite' ); ?></label></th>
 						<td>
 							<input type="number" min="0" step="1" class="small-text" id="<?php echo esc_attr( Clara_VE_Lists::OPT_DOI_TEMPLATE ); ?>" name="<?php echo esc_attr( Clara_VE_Lists::OPT_DOI_TEMPLATE ); ?>" value="<?php echo esc_attr( (string) get_option( Clara_VE_Lists::OPT_DOI_TEMPLATE, '' ) ); ?>" />
@@ -832,9 +810,8 @@ class Clara_VE_Form_Settings {
 	}
 
 	// ---- Secret-at-rest crypto (AES-256-CBC keyed by the site auth salt) ----
-	// Mirrors class-ai-settings.php: protects against a DB-only leak (a backup,
-	// read-only DB access), not against full file+DB compromise (the salt lives
-	// in wp-config.php).
+	// Protects against a DB-only leak (a backup, read-only DB access), not
+	// against full file+DB compromise (the salt lives in wp-config.php).
 
 	private static function encrypt( $plain ) {
 		if ( '' === $plain ) {

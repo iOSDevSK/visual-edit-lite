@@ -194,26 +194,29 @@ $ids = array();
 for ( $i = 1; $i <= 15; $i++ ) {
     $ids[ $i ] = Clara_VE_History::record( "<p>v{$i}</p>", array(), "save", ( 1 === $i ? "Original" : "Save {$i}" ), null, $key );
 }
-$visible = Clara_VE_History::visible_entries( $key );
-$vids    = wp_list_pluck( $visible, "id" );
-$out[] = array( "history lists 11 (10 + Original)", 11 === count( $visible ) );
-$out[] = array( "Original is the last row", end( $vids ) === $ids[1] );
-$out[] = array( "Original stays restorable", true === Clara_VE_History::may_restore( $ids[1], $key ) );
-$out[] = array( "an unlisted save is refused", false === Clara_VE_History::may_restore( $ids[5], $key ) );
-$out[] = array( "nothing pruned below 300", 15 === count( Clara_VE_History::list_entries( 300, $key ) ) );
+$listed = Clara_VE_History::list_entries( 300, $key );
+$lids   = wp_list_pluck( $listed, "id" );
+$out[] = array( "history keeps 11 (10 + Original)", 11 === count( $listed ) );
+$out[] = array( "Original is the last row", end( $lids ) === $ids[1] );
+$out[] = array( "Original stays restorable", is_array( Clara_VE_History::get( $ids[1], $key ) ) );
+// Guideline 5: what is stored is what is listed, and what is listed can be
+// restored. A row kept in the table but withheld from the panel is a limit a
+// payment lifts, whatever it is called -- so there must be no such row and no
+// method whose job is to refuse one.
+$restorable = array_filter( $lids, function ( $id ) use ( $key ) { return is_array( Clara_VE_History::get( $id, $key ) ); } );
+$out[] = array( "every listed save can be restored", count( $restorable ) === count( $lids ) );
+$out[] = array( "no restore gate", ! method_exists( "Clara_VE_History", "may_restore" ) && ! method_exists( "Clara_VE_History", "visible_entries" ) );
 
 wp_set_current_user( 1 );
 require_once ABSPATH . "wp-admin/includes/plugin.php";
 do_action( "admin_menu" );
 global $submenu;
 $slugs = wp_list_pluck( (array) ( isset( $submenu["visual-edit"] ) ? $submenu["visual-edit"] : array() ), 2 );
-// Checked by SLUG, not by label. Lite now offers two upsell items that WEAR
-// the names of the paid screens, so a label check here would pass on the
-// upsell and prove nothing. What must be absent is the real screen, and a
-// screen is its slug.
+// Checked by SLUG: what must be absent is the real screen, and a screen is
+// its slug.
 $out[] = array( "no real AI Settings screen", ! in_array( "visual-edit-ai", $slugs, true ) );
 $out[] = array( "no real Export Theme screen", ! in_array( "visual-edit-export", $slugs, true ) );
-$out[] = array( "the upsell registers its three items", in_array( "visual-edit-lite-pro-ai", $slugs, true ) && in_array( "visual-edit-lite-pro-export", $slugs, true ) && in_array( "https://html2wp.dev/pricing/#visualedit", $slugs, true ) );
+$out[] = array( "the upsell is one plain item, and the last one", "visual-edit-lite-pro" === end( $slugs ) && 1 === count( preg_grep( "#^visual-edit-lite-|html2wp#", $slugs ) ) );
 
 ob_start(); Clara_VE_Editor_Page::render(); $html = ob_get_clean();
 $out[] = array( "editor renders", 500 < strlen( $html ) );
@@ -343,8 +346,8 @@ if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVE
 else sed -n '/FAIL/p' "$PATTERNS_OUT" | head -5; bad "saved sections regression"; fi
 
 # ---------------------------------------------------------------- 5b5. Get Pro ---
-# The upsell: three items in the places the paid edition keeps the real
-# screens, one page behind them, and none of it on a site that already has Pro.
+# The upsell: one plain item at the end of the menu, one page behind it, nothing
+# on any other admin screen, and none of it on a site that already has Pro.
 # The last part boots a second WordPress from inside the test, because the
 # stand-down is a file-scope return that an already-booted process is past.
 step "Get Pro"

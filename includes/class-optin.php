@@ -94,8 +94,8 @@ class Clara_VE_Optin {
 
 		$page   = max( 1, isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$offset = ( $page - 1 ) * self::PER_PAGE;
-		$total  = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::table() ); // phpcs:ignore
-		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' ORDER BY id DESC LIMIT %d OFFSET %d', self::PER_PAGE, $offset ) ); // phpcs:ignore
+		$total  = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::table() ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- the plugin's own subscribers table: the name comes from $wpdb->prefix and a constant, never from a request, and an admin list that must show what was just written is not cached.
+		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' ORDER BY id DESC LIMIT %d OFFSET %d', self::PER_PAGE, $offset ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- the plugin's own subscribers table: the name comes from $wpdb->prefix and a constant, never from a request, and an admin list that must show what was just written is not cached.
 		$pages  = (int) ceil( $total / self::PER_PAGE );
 		?>
 		<div class="wrap">
@@ -195,7 +195,7 @@ class Clara_VE_Optin {
 		check_admin_referer( 'clara_ve_export_optins' );
 
 		global $wpdb;
-		$rows = $wpdb->get_results( 'SELECT email,status,list_id,form_id,ip,created_at,confirmed_at,consent_text FROM ' . self::table() . ' ORDER BY id DESC', ARRAY_A ); // phpcs:ignore
+		$rows = $wpdb->get_results( 'SELECT email,status,list_id,form_id,ip,created_at,confirmed_at,consent_text FROM ' . self::table() . ' ORDER BY id DESC', ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- the plugin's own subscribers table: the name comes from $wpdb->prefix and a constant, never from a request, and an admin list that must show what was just written is not cached.
 
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
@@ -223,7 +223,7 @@ class Clara_VE_Optin {
 		check_admin_referer( 'clara_ve_delete_optin_' . $id );
 
 		global $wpdb;
-		$wpdb->delete( self::table(), array( 'id' => $id ), array( '%d' ) ); // phpcs:ignore
+		$wpdb->delete( self::table(), array( 'id' => $id ), array( '%d' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the plugin's own subscribers table; there is no core API for it.
 
 		wp_safe_redirect( add_query_arg( 'deleted', '1', admin_url( 'admin.php?page=' . self::PAGE ) ) );
 		exit;
@@ -365,7 +365,7 @@ class Clara_VE_Optin {
 		$id  = (int) $request->get_param( 'id' );
 		$raw = (string) $request->get_param( 't' );
 
-		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' WHERE id = %d', $id ) ); // phpcs:ignore
+		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' WHERE id = %d', $id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- the plugin's own subscribers table: the name comes from $wpdb->prefix and a constant, never from a request, and an admin list that must show what was just written is not cached.
 
 		// One landing page for every outcome, deliberately. A link opened twice
 		// (the second time from a mail client's prefetch, or a week later out of
@@ -373,6 +373,15 @@ class Clara_VE_Optin {
 		// confirm anything — so both end on the same page and only the first
 		// one does any work.
 		if ( ! $row || ! hash_equals( (string) $row->token_hash, hash( 'sha256', $raw ) ) ) {
+			self::land();
+		}
+
+		// A link is good for as long as a pending row is kept. sweep() only
+		// runs on the next signup, so on a quiet site an old row can outlive
+		// its welcome; the age is checked here as well, against the same clock
+		// the row was written with.
+		$age = (int) current_time( 'timestamp' ) - (int) strtotime( (string) $row->created_at ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested -- compared with a current_time( 'mysql' ) value, so it has to be the same local clock.
+		if ( 'confirmed' !== $row->status && $age > self::PENDING_DAYS * DAY_IN_SECONDS ) {
 			self::land();
 		}
 
@@ -444,7 +453,9 @@ class Clara_VE_Optin {
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
 				'DELETE FROM ' . self::table() . " WHERE status = 'pending' AND created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
-				gmdate( 'Y-m-d H:i:s', time() - ( self::PENDING_DAYS * DAY_IN_SECONDS ) )
+				// created_at is written with current_time( 'mysql' ), the site's
+				// local clock, so the cut-off is taken from the same one.
+				gmdate( 'Y-m-d H:i:s', (int) current_time( 'timestamp' ) - ( self::PENDING_DAYS * DAY_IN_SECONDS ) ) // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested -- see above.
 			)
 		);
 	}

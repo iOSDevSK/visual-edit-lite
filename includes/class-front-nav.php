@@ -229,7 +229,7 @@ class Clara_VE_Front_Nav {
 				return false;
 			}
 		}
-		$request = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$request = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$request_path = untrailingslashit( (string) wp_parse_url( $request, PHP_URL_PATH ) );
 		$item_path    = untrailingslashit( (string) wp_parse_url( $url, PHP_URL_PATH ) );
 		return $item_path === $request_path;

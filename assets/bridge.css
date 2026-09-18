@@ -1,6 +1,13 @@
 /* Edit-mode affordances — ported from open-design's guide overlay:
    every editable element carries a permanent dashed outline, hover turns
-   solid, selection adds the glow ring, inline editing tints the field. */
+   solid, selection adds the glow ring, inline editing tints the field.
+
+   Portions of this file are derived from Open Design
+   (https://github.com/nexu-io/open-design), Copyright 2026 Open Design
+   contributors, licensed under the Apache License, Version 2.0
+   (https://www.apache.org/licenses/LICENSE-2.0). This file has been modified
+   and adapted for WordPress; it is distributed here under GPL-2.0-or-later,
+   which that licence permits at GPL version 3. */
 
 /* Every stamped element is selectable in edit mode. Wrappers and empty
    decorative elements (a 1px rule, a spacer) carry a faint dashed outline so

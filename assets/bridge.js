@@ -1,6 +1,13 @@
 /**
- * In-page edit bridge, ported from Design Ready Editor (open-design)
+ * In-page edit bridge, ported from Open Design's
  * apps/web/src/edit-mode/bridge.ts and adapted for WordPress.
+ *
+ * Portions of this file are derived from Open Design
+ * (https://github.com/nexu-io/open-design), Copyright 2026 Open Design
+ * contributors, licensed under the Apache License, Version 2.0
+ * (https://www.apache.org/licenses/LICENSE-2.0). This file has been modified:
+ * ported from TypeScript and adapted for WordPress. It is distributed here
+ * under GPL-2.0-or-later, which that licence permits at GPL version 3.
  *
  * - Runs as the FIRST deferred script: stamps `data-cve-path` (source path
  *   indexes) and `data-cve-kind` on the pristine DOM before the page's own

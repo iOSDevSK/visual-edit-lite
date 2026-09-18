@@ -677,9 +677,9 @@ class Clara_VE_Source_Store {
 	}
 
 	/**
-	 * Structural shape guard, shared by class-rest.php::save_source(), the AI
-	 * Assistant's edit tool, and the ZIP importer so the rules live in exactly
-	 * one place.
+	 * Structural shape guard, shared by class-rest.php::save_source(), the ZIP
+	 * importer and any extension that writes a page, so the rules live in
+	 * exactly one place.
 	 *
 	 * Two layers, and the split matters:
 	 *
@@ -800,8 +800,8 @@ class Clara_VE_Source_Store {
 	 * source (establishes/updates the keyed option, mirrors into
 	 * post_content, seeds a History baseline if this key has no history
 	 * yet). The front-page key is special-cased: there's no Page row for it
-	 * at all, just a save_source() call. Shared by the AI Assistant's
-	 * create_visual_page tool and the ZIP importer so "make this key's page
+	 * at all, just a save_source() call. Shared by the ZIP importer and any
+	 * extension that creates a page so "make this key's page
 	 * exist with this content" has exactly one implementation instead of
 	 * two drifting copies.
 	 *
@@ -820,8 +820,8 @@ class Clara_VE_Source_Store {
 		// gets a real, publicly reachable Page: /header/, /footer/,
 		// /article-template/, serving raw chrome markup to visitors. The front
 		// page has always been special-cased here; these three were not, and
-		// every caller that could reach them (an import, the AI Assistant's
-		// create_visual_page) created the stray page.
+		// every caller that could reach them (an import, an extension creating
+		// a page) created the stray page.
 		if ( self::is_chrome_key( $key ) ) {
 			Clara_VE_History::ensure_baseline( $key );
 			self::save_source( $key, $content );
@@ -832,7 +832,7 @@ class Clara_VE_Source_Store {
 		if ( CLARA_VE_DEFAULT_KEY === $key ) {
 			// BEFORE the write, not after: ensure_baseline() seeds the log from
 			// whatever is live RIGHT NOW, so on a key that has no history yet
-			// (a first-ever import, a first AI-created page) calling it after
+			// (a first-ever import, a first programmatically created page) calling it after
 			// save_source() would capture the incoming content as the
 			// "Original" and lose the pre-write state for good. It no-ops once
 			// any entry exists, so the trailing call below stays correct for
@@ -905,11 +905,11 @@ class Clara_VE_Source_Store {
 	 *
 	 * Structural only — no preview URLs, no "is there a post to preview this
 	 * on" filtering. Consumers that need either (the page picker in
-	 * Clara_VE_REST::list_visual_pages(), the AI Assistant's list_pages tool,
-	 * the exporter) build it on top of this, so the enumeration itself lives
+	 * Clara_VE_REST::list_visual_pages(), the content exporter, any extension)
+	 * build it on top of this, so the enumeration itself lives
 	 * in exactly one place. A second, drifting copy of it has already cost
-	 * real debugging once: the AI tool's own list silently omitted
-	 * header/footer, so the model had no way to discover it could edit the
+	 * real debugging once: a second list silently omitted
+	 * header/footer, so its caller had no way to discover it could edit the
 	 * nav or the footer links at all.
 	 *
 	 * @return array<int,array{key:string,kind:string,post_id:int|null,title:string,slug:string}>
@@ -1159,7 +1159,7 @@ class Clara_VE_Source_Store {
 
 		$content = self::page_content_for( $key, $source );
 
-		// Plugin-driven saves (including every AI Assistant edit) shouldn't
+		// Plugin-driven saves shouldn't
 		// spam WordPress's native Revisions UI with internal churn — the
 		// plugin's own History table already gives full point-in-time
 		// versioning for this content. A human hand-editing the Custom HTML

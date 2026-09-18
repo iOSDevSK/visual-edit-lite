@@ -207,6 +207,14 @@ class Clara_VE_Forms {
 			if ( in_array( $key, $skip, true ) ) {
 				continue;
 			}
+			// Field names become the submission's meta keys, and they arrive
+			// from an anonymous visitor. A leading underscore is how WordPress
+			// marks a key as internal, and this plugin keeps its own
+			// bookkeeping (the theme a submission belongs to, its spam verdict)
+			// under such keys — so a form field may not be named like one.
+			if ( 0 === strpos( sanitize_key( (string) $key ), '_' ) ) {
+				continue;
+			}
 			if ( is_scalar( $value ) ) {
 				$fields[ sanitize_key( $key ) ] = sanitize_textarea_field( (string) $value );
 				continue;

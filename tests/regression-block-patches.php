@@ -319,7 +319,7 @@ $check( 'an administrator may write to this page', true === Clara_VE_REST::can_e
 $response = Clara_VE_REST::save_block_patches( $request );
 $check( 'the endpoint saves', ! is_wp_error( $response ) && ! empty( $response->get_data()['saved'] ) );
 $check( 'the page carries the change', false !== strpos( get_post_field( 'post_content', $page_id ), 'Saved through the endpoint.' ) );
-$check( 'and the change is in the history, so it can be taken back', ! empty( Clara_VE_History::visible_entries( Clara_VE_Source_Store::block_key( $page_id ) ) ) );
+$check( 'and the change is in the history, so it can be taken back', ! empty( Clara_VE_History::list_entries( Clara_VE_History::MAX_ENTRIES, Clara_VE_Source_Store::block_key( $page_id ) ) ) );
 
 $subscriber = get_users( array( 'role' => 'subscriber', 'number' => 1, 'fields' => 'ID' ) );
 $subscriber = $subscriber ? (int) $subscriber[0] : (int) wp_insert_user(

@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Visual Edit Lite 1.30.3\n"
+"Project-Id-Version: Visual Edit Lite 1.31.0\n"
 "Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,15 +72,15 @@ msgstr ""
 #: includes/class-block-patch.php:571
 #: includes/class-page-actions.php:61
 #: includes/class-page-actions.php:146
-#: includes/class-rest.php:938
+#: includes/class-rest.php:934
 msgid "That page no longer exists."
 msgstr ""
 
 #: includes/class-block-patch.php:87
 #: includes/class-block-patch.php:146
-#: includes/class-responsive.php:162
-#: includes/class-rest.php:988
-#: includes/class-rest.php:1019
+#: includes/class-responsive.php:166
+#: includes/class-rest.php:984
+#: includes/class-rest.php:1015
 msgid "This page is not edited as blocks."
 msgstr ""
 
@@ -145,18 +145,18 @@ msgid "That block is not shaped the way this editor knows how to change. Open th
 msgstr ""
 
 #: includes/class-block-patch.php:620
-#: includes/class-responsive.php:170
+#: includes/class-responsive.php:174
 msgid "That is not a screen size this editor offers."
 msgstr ""
 
 #: includes/class-block-patch.php:623
-#: includes/class-responsive.php:173
+#: includes/class-responsive.php:177
 msgid "That is not a property that can differ by screen."
 msgstr ""
 
 #: includes/class-block-patch.php:636
 #: includes/class-block-supports.php:883
-#: includes/class-responsive.php:184
+#: includes/class-responsive.php:188
 msgid "That is not a value this editor can store for %s."
 msgstr ""
 
@@ -223,80 +223,72 @@ msgstr ""
 msgid "This bundle declares an implausible number of submissions or subscribers and was not opened."
 msgstr ""
 
-#: includes/class-bundle-writer.php:92
+#: includes/class-bundle-writer.php:55
 msgid "The theme %s is not installed on this site, so there is nothing to package."
 msgstr ""
 
-#: includes/class-bundle-writer.php:106
-msgid "A content-only export needs content in it. Choose a different option."
-msgstr ""
-
-#: includes/class-bundle-writer.php:119
-msgid "This theme has no screenshot.png, so WordPress would show it as a blank tile. Generate one first: node tools/make-screenshot.mjs"
-msgstr ""
-
-#: includes/class-bundle-writer.php:138
+#: includes/class-bundle-writer.php:74
 msgid "Could not prepare a temporary directory for the export."
 msgstr ""
 
 #: includes/class-editor-page.php:20
 #: includes/class-editor-page.php:21
 #: visual-edit-lite.php:985
-#: visual-edit-lite.php:2328
-#: visual-edit-lite.php:2346
-#: visual-edit-lite.php:2358
-#: visual-edit-lite.php:2383
+#: visual-edit-lite.php:2381
+#: visual-edit-lite.php:2399
+#: visual-edit-lite.php:2411
+#: visual-edit-lite.php:2436
 #: assets/gutenberg.js:58
 #: assets/gutenberg.js:314
 msgid "Visual Edit Lite"
 msgstr ""
 
-#: includes/class-editor-page.php:346
+#: includes/class-editor-page.php:342
 msgid "You need theme-editing and unfiltered HTML permissions to use the visual editor."
 msgstr ""
 
-#: includes/class-editor-page.php:355
+#: includes/class-editor-page.php:351
 msgid "Visual Edit Lite — Front Page"
 msgstr ""
 
-#: includes/class-editor-page.php:356
+#: includes/class-editor-page.php:352
 msgid "Switch page"
 msgstr ""
 
-#: includes/class-editor-page.php:357
+#: includes/class-editor-page.php:353
 msgid "Preview live page in a new tab"
 msgstr ""
 
-#: includes/class-editor-page.php:358
+#: includes/class-editor-page.php:354
 msgid "Toggle edit mode"
 msgstr ""
 
-#: includes/class-editor-page.php:359
+#: includes/class-editor-page.php:355
 msgid "Preview device"
 msgstr ""
 
-#: includes/class-editor-page.php:360
+#: includes/class-editor-page.php:356
 msgid "Desktop — full width"
 msgstr ""
 
-#: includes/class-editor-page.php:361
+#: includes/class-editor-page.php:357
 msgid "Tablet — 820 × 1180"
 msgstr ""
 
-#: includes/class-editor-page.php:362
+#: includes/class-editor-page.php:358
 msgid "Mobile — 390 × 844"
 msgstr ""
 
-#: includes/class-editor-page.php:366
-#: includes/class-editor-page.php:400
+#: includes/class-editor-page.php:362
+#: includes/class-editor-page.php:396
 #: assets/gutenberg.js:70
 #: assets/workspace.js:1689
-#: assets/workspace.js:1722
+#: assets/workspace.js:1721
 msgid "Search appearance"
 msgstr ""
 
-#: includes/class-editor-page.php:367
-#: includes/class-editor-page.php:383
+#: includes/class-editor-page.php:363
+#: includes/class-editor-page.php:379
 #: assets/workspace-history.js:142
 #: assets/workspace-history.js:143
 #: assets/workspace-history.js:146
@@ -305,50 +297,50 @@ msgstr ""
 msgid "History"
 msgstr ""
 
-#: includes/class-editor-page.php:368
+#: includes/class-editor-page.php:364
 msgid "Duplicate this page"
 msgstr ""
 
-#: includes/class-editor-page.php:369
+#: includes/class-editor-page.php:365
 msgid "Move this page to the trash"
 msgstr ""
 
-#: includes/class-editor-page.php:370
+#: includes/class-editor-page.php:366
 msgid "Discard changes"
 msgstr ""
 
-#: includes/class-editor-page.php:371
+#: includes/class-editor-page.php:367
 #: assets/workspace-history.js:132
-#: assets/workspace.js:1719
+#: assets/workspace.js:1718
 msgid "Save"
 msgstr ""
 
-#: includes/class-editor-page.php:377
+#: includes/class-editor-page.php:373
 msgid "Front page preview"
 msgstr ""
 
-#: includes/class-editor-page.php:404
+#: includes/class-editor-page.php:400
 #: assets/workspace.js:1106
 msgid "Loading…"
 msgstr ""
 
-#: includes/class-editor-page.php:415
+#: includes/class-editor-page.php:411
 msgid "Duplicate page"
 msgstr ""
 
-#: includes/class-editor-page.php:427
+#: includes/class-editor-page.php:423
 msgid "Title"
 msgstr ""
 
-#: includes/class-editor-page.php:431
+#: includes/class-editor-page.php:427
 msgid "Address (slug)"
 msgstr ""
 
-#: includes/class-editor-page.php:434
+#: includes/class-editor-page.php:430
 msgid "The copy is created as a draft, so it is not live until you publish it. Everything on the page comes with it — pictures, settings and search appearance."
 msgstr ""
 
-#: includes/class-editor-page.php:435
+#: includes/class-editor-page.php:431
 #: assets/workspace.js:1033
 msgid "Duplicate"
 msgstr ""
@@ -366,369 +358,369 @@ msgid "The Google Fonts list was not in the expected format."
 msgstr ""
 
 #: includes/class-form-blocks.php:69
-#: visual-edit-lite.php:2117
+#: visual-edit-lite.php:2142
 msgid "Sending…"
 msgstr ""
 
 #: includes/class-form-blocks.php:70
-#: visual-edit-lite.php:2118
+#: visual-edit-lite.php:2143
 msgid "Sent!"
 msgstr ""
 
 #: includes/class-form-blocks.php:71
-#: includes/class-tokens.php:825
-#: visual-edit-lite.php:2119
+#: includes/class-tokens.php:850
+#: visual-edit-lite.php:2144
 #: assets/workspace.js:805
 msgid "Thanks — check your inbox."
 msgstr ""
 
 #: includes/class-form-blocks.php:72
-#: visual-edit-lite.php:2120
+#: visual-edit-lite.php:2145
 msgid "Something went wrong — please try again."
 msgstr ""
 
-#: includes/class-form-settings.php:130
-#: includes/class-form-settings.php:131
-#: includes/class-form-settings.php:275
+#: includes/class-form-settings.php:143
+#: includes/class-form-settings.php:144
+#: includes/class-form-settings.php:299
 #: assets/workspace.js:810
 #: assets/workspace.js:846
 msgid "Form Settings"
 msgstr ""
 
-#: includes/class-form-settings.php:267
+#: includes/class-form-settings.php:293
 msgid "You need administrator permissions to manage form settings."
 msgstr ""
 
-#: includes/class-form-settings.php:277
+#: includes/class-form-settings.php:301
 msgid "Where contact-form submissions are sent, how they are protected from spam, and how email leaves the site. These apply to every [wp-form] on the site; a form can still override the recipient with its own to=\"\" attribute."
 msgstr ""
 
-#: includes/class-form-settings.php:284
+#: includes/class-form-settings.php:308
 msgid "Send submissions to"
 msgstr ""
 
-#: includes/class-form-settings.php:287
+#: includes/class-form-settings.php:311
 msgid "Leave blank to use the site admin email."
 msgstr ""
 
-#: includes/class-form-settings.php:291
+#: includes/class-form-settings.php:315
 msgid "From name"
 msgstr ""
 
-#: includes/class-form-settings.php:295
+#: includes/class-form-settings.php:319
 msgid "From address"
 msgstr ""
 
-#: includes/class-form-settings.php:298
+#: includes/class-form-settings.php:322
 msgid "Must be an address on this site's own domain — sending \"from\" a visitor's Gmail fails spam checks. The visitor's own address is set as Reply-To so you can reply directly."
 msgstr ""
 
-#: includes/class-form-settings.php:302
+#: includes/class-form-settings.php:326
 msgid "Minimum fill time (seconds)"
 msgstr ""
 
-#: includes/class-form-settings.php:305
+#: includes/class-form-settings.php:329
 msgid "Submissions sent faster than this after the page loads are treated as bots and rejected. 0 disables the check. 3 is a good default."
 msgstr ""
 
-#: includes/class-form-settings.php:309
+#: includes/class-form-settings.php:333
 msgid "Akismet spam filtering"
 msgstr ""
 
-#: includes/class-form-settings.php:311
+#: includes/class-form-settings.php:335
 msgid "Check submissions against Akismet"
 msgstr ""
 
-#: includes/class-form-settings.php:312
+#: includes/class-form-settings.php:336
 msgid "Akismet is installed and configured — recommended."
 msgstr ""
 
-#: includes/class-form-settings.php:312
+#: includes/class-form-settings.php:336
 msgid "Install and configure the free Akismet plugin to enable this."
 msgstr ""
 
-#: includes/class-form-settings.php:318
+#: includes/class-form-settings.php:342
 msgid "Email delivery"
 msgstr ""
 
-#: includes/class-form-settings.php:319
+#: includes/class-form-settings.php:343
 msgid "Pick how the site sends email. WordPress's default server mail very often lands in spam — connect a real provider for reliable delivery, no extra plugin needed. The API options send over HTTPS, so they work even on hosts that block outbound SMTP ports. For best results also add SPF/DKIM DNS records for your domain at your provider."
 msgstr ""
 
-#: includes/class-form-settings.php:322
+#: includes/class-form-settings.php:346
 msgid "Mailer"
 msgstr ""
 
-#: includes/class-form-settings.php:325
+#: includes/class-form-settings.php:349
 msgid "Default (WordPress server mail)"
 msgstr ""
 
-#: includes/class-form-settings.php:326
+#: includes/class-form-settings.php:350
 msgid "Other SMTP"
 msgstr ""
 
-#: includes/class-form-settings.php:327
+#: includes/class-form-settings.php:351
 msgid "Brevo (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:328
+#: includes/class-form-settings.php:352
 msgid "SendGrid (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:329
+#: includes/class-form-settings.php:353
 msgid "Postmark (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:330
+#: includes/class-form-settings.php:354
 msgid "Mailgun (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:337
+#: includes/class-form-settings.php:361
 msgid "WordPress sends mail directly from the web server. Fine for a quick test, but it commonly lands in spam or is dropped in production — pick a real provider above."
 msgstr ""
 
-#: includes/class-form-settings.php:343
+#: includes/class-form-settings.php:367
 msgid "SMTP host"
 msgstr ""
 
-#: includes/class-form-settings.php:347
+#: includes/class-form-settings.php:371
 msgid "Port"
 msgstr ""
 
-#: includes/class-form-settings.php:350
+#: includes/class-form-settings.php:374
 msgid "587 for TLS (most common), 465 for SSL, 25 for none."
 msgstr ""
 
-#: includes/class-form-settings.php:354
+#: includes/class-form-settings.php:378
 msgid "Encryption"
 msgstr ""
 
-#: includes/class-form-settings.php:358
+#: includes/class-form-settings.php:382
 msgid "TLS (recommended)"
 msgstr ""
 
-#: includes/class-form-settings.php:360
+#: includes/class-form-settings.php:384
 #: assets/gutenberg.js:319
 #: assets/gutenberg.js:333
 msgid "None"
 msgstr ""
 
-#: includes/class-form-settings.php:365
+#: includes/class-form-settings.php:389
 msgid "Authentication"
 msgstr ""
 
-#: includes/class-form-settings.php:366
+#: includes/class-form-settings.php:390
 msgid "This server requires a username and password"
 msgstr ""
 
-#: includes/class-form-settings.php:369
+#: includes/class-form-settings.php:393
 msgid "Username"
 msgstr ""
 
-#: includes/class-form-settings.php:373
+#: includes/class-form-settings.php:397
 msgid "Password"
 msgstr ""
 
-#: includes/class-form-settings.php:376
+#: includes/class-form-settings.php:400
 msgid "Stored encrypted. Leave blank to keep the saved password."
 msgstr ""
 
-#: includes/class-form-settings.php:385
+#: includes/class-form-settings.php:409
 msgid "Brevo API key"
 msgstr ""
 
-#: includes/class-form-settings.php:388
+#: includes/class-form-settings.php:412
 msgid "Brevo → SMTP & API → API Keys (v3). Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:397
+#: includes/class-form-settings.php:421
 msgid "SendGrid API key"
 msgstr ""
 
-#: includes/class-form-settings.php:400
+#: includes/class-form-settings.php:424
 msgid "SendGrid → Settings → API Keys (Mail Send permission). Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:409
+#: includes/class-form-settings.php:433
 msgid "Postmark server token"
 msgstr ""
 
-#: includes/class-form-settings.php:412
+#: includes/class-form-settings.php:436
 msgid "Postmark → your Server → API Tokens. Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:421
+#: includes/class-form-settings.php:445
 msgid "Mailgun API key"
 msgstr ""
 
-#: includes/class-form-settings.php:424
+#: includes/class-form-settings.php:448
 msgid "Mailgun → Send → API keys. Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:428
+#: includes/class-form-settings.php:452
 msgid "Mailgun domain"
 msgstr ""
 
-#: includes/class-form-settings.php:432
+#: includes/class-form-settings.php:456
 msgid "Region"
 msgstr ""
 
-#: includes/class-form-settings.php:490
+#: includes/class-form-settings.php:468
 #: assets/form-blocks.js:186
 #: assets/workspace.js:799
 #: assets/workspace.js:836
 msgid "Mailing list"
 msgstr ""
 
-#: includes/class-form-settings.php:492
+#: includes/class-form-settings.php:470
 msgid "Where a form set to \"Mailing list\" sends its subscribers. This is separate from the mailer above — the mailer is how email leaves this site, a mailing list is where contacts live and where the welcome email and the download come from. Most transports have no lists at all, so the two are chosen independently."
 msgstr ""
 
-#: includes/class-form-settings.php:496
+#: includes/class-form-settings.php:474
 msgid "Provider"
 msgstr ""
 
-#: includes/class-form-settings.php:506
+#: includes/class-form-settings.php:484
 msgid "Add the Brevo API key above — the list uses the same key as the mailer."
 msgstr ""
 
-#: includes/class-form-settings.php:508
+#: includes/class-form-settings.php:486
 msgid "Brevo reuses the API key you already entered above; there is nothing else to paste."
 msgstr ""
 
-#: includes/class-form-settings.php:515
+#: includes/class-form-settings.php:493
 msgid "Double opt-in"
 msgstr ""
 
-#: includes/class-form-settings.php:518
+#: includes/class-form-settings.php:496
 msgid "Off — subscribe immediately"
 msgstr ""
 
-#: includes/class-form-settings.php:519
+#: includes/class-form-settings.php:497
 msgid "On, handled here — works with any mailer"
 msgstr ""
 
-#: includes/class-form-settings.php:520
+#: includes/class-form-settings.php:498
 msgid "On, handled by the provider"
 msgstr ""
 
-#: includes/class-form-settings.php:523
+#: includes/class-form-settings.php:501
 msgid "Handled here: the address is held, a confirmation email goes out through your normal mailer, and only a click subscribes it and sends the download. Works on plain SMTP, Gmail, SendGrid — anything. The consent record (time, IP, wording) stays in this site. Handled by the provider: Brevo does the same thing with its own template, set below."
 msgstr ""
 
-#: includes/class-form-settings.php:528
+#: includes/class-form-settings.php:506
 msgid "Confirmation email"
 msgstr ""
 
-#: includes/class-form-settings.php:532
+#: includes/class-form-settings.php:510
 msgid "Must contain {confirm_url} — that is the link. {site} is your From name."
 msgstr ""
 
-#: includes/class-form-settings.php:536
+#: includes/class-form-settings.php:514
 msgid "Delivery email"
 msgstr ""
 
-#: includes/class-form-settings.php:540
+#: includes/class-form-settings.php:518
 msgid "Sent after they confirm, never before. {download_url} is the file below."
 msgstr ""
 
-#: includes/class-form-settings.php:544
+#: includes/class-form-settings.php:522
 msgid "The file they get"
 msgstr ""
 
-#: includes/class-form-settings.php:547
+#: includes/class-form-settings.php:525
 #: assets/seo-panel.js:104
 msgid "Choose from Media Library"
 msgstr ""
 
-#: includes/class-form-settings.php:548
+#: includes/class-form-settings.php:526
 msgid "Upload the PDF to Media and pick it here. Leave blank if the confirmation email is all you send."
 msgstr ""
 
-#: includes/class-form-settings.php:552
+#: includes/class-form-settings.php:530
 msgid "Provider template id"
 msgstr ""
 
-#: includes/class-form-settings.php:555
+#: includes/class-form-settings.php:533
 msgid "The id of a double opt-in template at your provider. Only used when the provider handles it."
 msgstr ""
 
-#: includes/class-form-settings.php:559
+#: includes/class-form-settings.php:537
 msgid "After confirming, go to"
 msgstr ""
 
-#: includes/class-form-settings.php:562
+#: includes/class-form-settings.php:540
 msgid "Where the confirmation link lands. Only used when a double opt-in template is set."
 msgstr ""
 
-#: includes/class-form-settings.php:566
+#: includes/class-form-settings.php:544
 msgid "Consent line"
 msgstr ""
 
-#: includes/class-form-settings.php:568
+#: includes/class-form-settings.php:546
 msgid "Show a consent note under every connected form"
 msgstr ""
 
-#: includes/class-form-settings.php:571
+#: includes/class-form-settings.php:549
 msgid "Off by default — turn it on if you collect addresses under GDPR and want the note visible at the point of consent. Link to your privacy policy inside the text with normal HTML: <a href=\"/privacy/\">Privacy Policy</a>."
 msgstr ""
 
-#: includes/class-form-settings.php:578
+#: includes/class-form-settings.php:556
 msgid "Uninstall"
 msgstr ""
 
-#: includes/class-form-settings.php:581
+#: includes/class-form-settings.php:559
 msgid "On plugin deletion"
 msgstr ""
 
-#: includes/class-form-settings.php:583
+#: includes/class-form-settings.php:561
 msgid "Also delete all stored data — form submissions, subscribers, edit history and edited page sources"
 msgstr ""
 
-#: includes/class-form-settings.php:585
+#: includes/class-form-settings.php:563
 msgid "Off: deleting the plugin keeps your data in the database, so reinstalling picks up where you left off. On: deleting the plugin removes everything it ever stored. Saved passwords and API keys are removed on deletion either way."
 msgstr ""
 
-#: includes/class-form-settings.php:595
+#: includes/class-form-settings.php:573
 msgid "Send a test email"
 msgstr ""
 
-#: includes/class-form-settings.php:599
+#: includes/class-form-settings.php:577
 msgid "Test email sent. Check the inbox (and spam folder)."
 msgstr ""
 
-#: includes/class-form-settings.php:600
+#: includes/class-form-settings.php:578
 msgid "Sending failed — check the mailer credentials above (save first)."
 msgstr ""
 
-#: includes/class-form-settings.php:606
+#: includes/class-form-settings.php:584
 msgid "Sends a test message to %s using the mailer selected above (save first)."
 msgstr ""
 
-#: includes/class-form-settings.php:612
+#: includes/class-form-settings.php:590
 msgid "Send test email"
 msgstr ""
 
-#: includes/class-form-settings.php:630
+#: includes/class-form-settings.php:608
 msgid "•••••••• (saved — leave blank to keep)"
 msgstr ""
 
-#: includes/class-form-settings.php:735
+#: includes/class-form-settings.php:713
 msgid "By submitting this form you agree to us storing and using the details above to reply to you."
 msgstr ""
 
-#: includes/class-form-settings.php:809
+#: includes/class-form-settings.php:787
 #: includes/class-optin.php:92
 #: includes/class-optin.php:193
 #: includes/class-optin.php:220
 msgid "You need administrator permissions."
 msgstr ""
 
-#: includes/class-form-settings.php:818
+#: includes/class-form-settings.php:796
 msgid "Visual Edit — test email"
 msgstr ""
 
-#: includes/class-form-settings.php:819
+#: includes/class-form-settings.php:797
 msgid "This is a test email. If you received it, your email delivery settings are working."
 msgstr ""
 
@@ -753,20 +745,20 @@ msgstr ""
 msgid "Please wait a moment before submitting again."
 msgstr ""
 
-#: includes/class-forms.php:267
+#: includes/class-forms.php:275
 #: includes/class-import-plan.php:1490
 msgid "%1$s — %2$s"
 msgstr ""
 
-#: includes/class-forms.php:526
+#: includes/class-forms.php:534
 msgid "New form submission: %s"
 msgstr ""
 
-#: includes/class-forms.php:564
+#: includes/class-forms.php:572
 msgid "Thanks — we got your message (%s)"
 msgstr ""
 
-#: includes/class-forms.php:567
+#: includes/class-forms.php:575
 msgid "Thanks for getting in touch — your message reached %s and someone will read it shortly.\n\nThis is an automatic confirmation; there's no need to reply to it."
 msgstr ""
 
@@ -855,7 +847,7 @@ msgid "Rank Math manages robots.txt itself, so the AI crawler rules here will no
 msgstr ""
 
 #: includes/class-geo-audit.php:586
-#: includes/class-seo-settings.php:164
+#: includes/class-seo-settings.php:165
 msgid "You do not have permission to do that."
 msgstr ""
 
@@ -944,7 +936,7 @@ msgid "Every page carries it, blog posts as articles"
 msgstr ""
 
 #: includes/class-geo-audit.php:750
-#: includes/class-seo-settings.php:257
+#: includes/class-seo-settings.php:258
 msgid "AI assistants"
 msgstr ""
 
@@ -986,81 +978,46 @@ msgstr ""
 msgid "What this site already does"
 msgstr ""
 
-#: includes/class-get-pro.php:79
-#: includes/class-get-pro.php:90
-#: includes/class-get-pro.php:103
-#: includes/class-get-pro.php:227
+#: includes/class-get-pro.php:64
+#: includes/class-get-pro.php:65
+#: includes/class-get-pro.php:105
 msgid "Visual Edit Pro"
 msgstr ""
 
-#: includes/class-get-pro.php:80
-#: includes/class-get-pro.php:233
-msgid "AI Settings"
-msgstr ""
-
-#: includes/class-get-pro.php:91
-#: includes/class-get-pro.php:238
-msgid "Export Theme"
-msgstr ""
-
-#: includes/class-get-pro.php:104
-msgid "Get Pro"
-msgstr ""
-
-#: includes/class-get-pro.php:147
-msgid "Pro"
-msgstr ""
-
-#: includes/class-get-pro.php:223
+#: includes/class-get-pro.php:101
 msgid "You do not have permission to view this screen."
 msgstr ""
 
-#: includes/class-get-pro.php:229
-msgid "Visual Edit Pro is the paid edition of this plugin. Everything you already use stays exactly as it is; Pro adds the screens below."
+#: includes/class-get-pro.php:107
+msgid "Visual Edit Pro is a separate, paid plugin from the same author. Everything in Visual Edit Lite works without it, and stays exactly as it is if you never install it."
 msgstr ""
 
-#: includes/class-get-pro.php:234
-msgid "The screen where you enter your own provider key, so the assistant can edit pages, sections, the header and footer, menus and site styles for you from a chat. It is part of Visual Edit Pro."
-msgstr ""
-
-#: includes/class-get-pro.php:239
-msgid "Download the whole site as an installable WordPress theme package, in one click, ready to hand over or move to another host. It is part of Visual Edit Pro."
-msgstr ""
-
-#: includes/class-get-pro.php:243
+#: includes/class-get-pro.php:109
 msgid "What Pro adds"
 msgstr ""
 
-#: includes/class-get-pro.php:245
+#: includes/class-get-pro.php:111
 msgid "An assistant that edits pages, sections, the header and footer, menus and site styles from a chat, using your own API key."
 msgstr ""
 
-#: includes/class-get-pro.php:246
+#: includes/class-get-pro.php:112
 msgid "AI image editing and AI video generation, with the same key."
 msgstr ""
 
-#: includes/class-get-pro.php:247
+#: includes/class-get-pro.php:113
 msgid "Cloudflare Turnstile for your forms, as an extra anti-spam layer."
 msgstr ""
 
-#: includes/class-get-pro.php:248
+#: includes/class-get-pro.php:114
 msgid "One-click theme export: the whole site as an installable package."
 msgstr ""
 
-#: includes/class-get-pro.php:249
-msgid "A history panel with 300 restore points per page instead of ten."
+#: includes/class-get-pro.php:117
+msgid "Pro and Lite store content and settings under the same names: install Pro over Lite and nothing has to be migrated."
 msgstr ""
 
-#: includes/class-get-pro.php:250
-msgid "One-click updates, straight from the Plugins screen."
-msgstr ""
-
-#: includes/class-get-pro.php:253
-msgid "Pro and Lite store content, history and settings under the same names: install Pro over Lite and nothing is lost."
-msgstr ""
-
-#: includes/class-get-pro.php:259
-msgid "Buy Visual Edit Pro"
+#: includes/class-get-pro.php:123
+msgid "See Visual Edit Pro"
 msgstr ""
 
 #: includes/class-import-legacy.php:71
@@ -1135,15 +1092,15 @@ msgstr ""
 
 #: includes/class-import-page.php:166
 #: includes/class-parked-page.php:156
-#: includes/class-parked-page.php:404
+#: includes/class-parked-page.php:405
 #: assets/gutenberg.js:66
-#: assets/workspace.js:1739
+#: assets/workspace.js:1738
 msgid "Pages"
 msgstr ""
 
 #: includes/class-import-page.php:167
 #: includes/class-parked-page.php:157
-#: includes/class-parked-page.php:405
+#: includes/class-parked-page.php:406
 msgid "Blog posts"
 msgstr ""
 
@@ -1153,12 +1110,12 @@ msgstr ""
 
 #: includes/class-import-page.php:169
 #: includes/class-parked-page.php:159
-#: includes/class-parked-page.php:407
+#: includes/class-parked-page.php:408
 msgid "Menus"
 msgstr ""
 
 #: includes/class-import-page.php:170
-#: includes/class-parked-page.php:406
+#: includes/class-parked-page.php:407
 msgid "Images"
 msgstr ""
 
@@ -1167,7 +1124,7 @@ msgid "Settings"
 msgstr ""
 
 #: includes/class-import-page.php:172
-#: includes/class-parked-page.php:409
+#: includes/class-parked-page.php:410
 #: assets/gutenberg.js:74
 #: assets/workspace.js:1693
 msgid "Form submissions"
@@ -1251,7 +1208,7 @@ msgstr ""
 msgid "The active theme carries no content bundle."
 msgstr ""
 
-#: includes/class-import-page.php:356
+#: includes/class-import-page.php:359
 msgid "Nothing new to add — this site already has everything in the bundle."
 msgstr ""
 
@@ -1481,7 +1438,8 @@ msgid "no reason given"
 msgstr ""
 
 #: includes/class-media.php:28
-msgid "AI-generated media"
+#: includes/class-rest.php:400
+msgid "Imported image"
 msgstr ""
 
 #: includes/class-media.php:33
@@ -1521,23 +1479,19 @@ msgid "The editor did not return editable content."
 msgstr ""
 
 #: includes/class-native-history.php:101
-msgid "That version is not available for this document."
-msgstr ""
-
-#: includes/class-native-history.php:104
 msgid "That version could not be read."
 msgstr ""
 
-#: includes/class-native-history.php:118
+#: includes/class-native-history.php:115
 #: assets/workspace-history.js:25
 msgid "Invalid styles snapshot."
 msgstr ""
 
-#: includes/class-native-history.php:132
+#: includes/class-native-history.php:129
 msgid "Could not rename that version."
 msgstr ""
 
-#: includes/class-native-history.php:184
+#: includes/class-native-history.php:181
 msgid "Save %s"
 msgstr ""
 
@@ -1624,19 +1578,19 @@ msgstr ""
 msgid "Could not send the confirmation email."
 msgstr ""
 
-#: includes/class-optin.php:463
+#: includes/class-optin.php:474
 msgid "Please confirm your email address"
 msgstr ""
 
-#: includes/class-optin.php:467
+#: includes/class-optin.php:478
 msgid "Thanks for signing up. Please confirm this is your address by opening the link below:\n\n{confirm_url}\n\nIf you didn't ask for this, ignore this email and nothing further will happen."
 msgstr ""
 
-#: includes/class-optin.php:471
+#: includes/class-optin.php:482
 msgid "Here it is"
 msgstr ""
 
-#: includes/class-optin.php:475
+#: includes/class-optin.php:486
 msgid "Thanks for confirming — here's what you signed up for:\n\n{download_url}"
 msgstr ""
 
@@ -1687,7 +1641,7 @@ msgid "Images, and their files"
 msgstr ""
 
 #: includes/class-parked-page.php:160
-#: includes/class-parked-page.php:408
+#: includes/class-parked-page.php:409
 msgid "Categories and tags"
 msgstr ""
 
@@ -1700,12 +1654,12 @@ msgid "Mailing-list subscribers, and their consent records"
 msgstr ""
 
 #: includes/class-parked-page.php:163
-#: includes/class-parked-page.php:411
+#: includes/class-parked-page.php:412
 msgid "Redirects from the original site"
 msgstr ""
 
 #: includes/class-parked-page.php:164
-#: includes/class-parked-page.php:413
+#: includes/class-parked-page.php:414
 msgid "Saved versions"
 msgstr ""
 
@@ -1737,185 +1691,177 @@ msgstr ""
 
 #: includes/class-parked-page.php:249
 #: includes/class-parked-page.php:250
-#: includes/class-parked-page.php:358
+#: includes/class-parked-page.php:359
 msgid "Parked content"
 msgstr ""
 
-#: includes/class-parked-page.php:306
-msgid "You need theme-editing permissions to export content."
+#: includes/class-parked-page.php:309
+msgid "You need administrator permissions to export content."
 msgstr ""
 
-#: includes/class-parked-page.php:344
+#: includes/class-parked-page.php:345
 msgid "You need theme-editing permissions to see this."
 msgstr ""
 
-#: includes/class-parked-page.php:364
+#: includes/class-parked-page.php:365
 msgid "%s and everything it brought have been deleted."
 msgstr ""
 
-#: includes/class-parked-page.php:368
+#: includes/class-parked-page.php:369
 msgid "Nothing is being held for any inactive theme."
 msgstr ""
 
-#: includes/class-parked-page.php:372
+#: includes/class-parked-page.php:373
 msgid "These themes are not active, and the content their imports created is put away rather than deleted — invisible on the site and in the ordinary admin lists, exactly as if the theme had never been installed. Activating a theme again brings all of it back where it was."
 msgstr ""
 
-#: includes/class-parked-page.php:391
+#: includes/class-parked-page.php:392
 msgid "This theme is no longer installed — its folder was removed outside WordPress, so nothing was able to tidy up after it. Its content is still here, listed below. Reinstall the theme to bring it back, or delete the content permanently."
 msgstr ""
 
-#: includes/class-parked-page.php:410
+#: includes/class-parked-page.php:411
 msgid "Mailing-list subscribers"
 msgstr ""
 
-#: includes/class-parked-page.php:412
+#: includes/class-parked-page.php:413
 msgid "Editable pages and parts"
 msgstr ""
 
-#: includes/class-parked-page.php:431
+#: includes/class-parked-page.php:432
 msgid "This theme was already here before the plugin started recording what a site looked like beforehand, so its front-page and SEO settings cannot be put back to what they were before it. Everything else restores normally."
 msgstr ""
 
-#: includes/class-parked-page.php:442
+#: includes/class-parked-page.php:443
 msgid "Activate and restore"
 msgstr ""
 
-#: includes/class-parked-page.php:449
+#: includes/class-parked-page.php:450
 msgid "Export this content"
 msgstr ""
 
-#: includes/class-parked-page.php:452
+#: includes/class-parked-page.php:453
 msgid "Delete permanently…"
 msgstr ""
 
-#: includes/class-responsive.php:167
+#: includes/class-responsive.php:171
 msgid "That is not a block this editor is tracking."
 msgstr ""
 
-#: includes/class-rest.php:344
+#: includes/class-rest.php:340
 msgid "Only an http(s) image address can be imported."
 msgstr ""
 
-#: includes/class-rest.php:347
+#: includes/class-rest.php:343
 msgid "That address cannot be fetched from this server."
 msgstr ""
 
-#: includes/class-rest.php:366
+#: includes/class-rest.php:362
 msgid "That address points inside this server's own network, so it will not be fetched."
 msgstr ""
 
-#: includes/class-rest.php:380
+#: includes/class-rest.php:376
 msgid "That image is too large to import (max 16 MB)."
 msgstr ""
 
-#: includes/class-rest.php:389
+#: includes/class-rest.php:385
 msgid "Only PNG, JPG, WebP or GIF images can be imported."
 msgstr ""
 
-#: includes/class-rest.php:395
+#: includes/class-rest.php:391
 msgid "The downloaded image could not be read."
 msgstr ""
 
-#: includes/class-rest.php:404
-msgid "Imported image"
-msgstr ""
-
-#: includes/class-rest.php:451
+#: includes/class-rest.php:447
 msgid "No menu is assigned to any declared menu location."
 msgstr ""
 
-#: includes/class-rest.php:475
+#: includes/class-rest.php:471
 msgid "Could not find a matching menu item."
 msgstr ""
 
-#: includes/class-rest.php:717
+#: includes/class-rest.php:713
 msgid "This is shared across every page, so it has no title or description of its own."
 msgstr ""
 
-#: includes/class-rest.php:916
+#: includes/class-rest.php:912
 msgid "Could not rename that save."
 msgstr ""
 
-#: includes/class-rest.php:1124
-msgid "Restoring older saves requires an activated licence key. The last ten saves and the Original remain available."
-msgstr ""
-
-#: includes/class-rest.php:1128
+#: includes/class-rest.php:1120
 msgid "That save no longer exists."
 msgstr ""
 
 #: includes/class-seo-settings.php:49
 #: includes/class-seo-settings.php:50
-#: includes/class-seo-settings.php:177
+#: includes/class-seo-settings.php:178
 msgid "SEO &amp; Sharing"
 msgstr ""
 
-#: includes/class-seo-settings.php:179
+#: includes/class-seo-settings.php:180
 msgid "What is true of the whole site. Each page's own title and description live in Visual Edit Lite, under Search appearance."
 msgstr ""
 
-#: includes/class-seo-settings.php:188
+#: includes/class-seo-settings.php:189
 msgid "%s is installed and writes the page titles and descriptions. The settings here still apply: they describe the business itself, which it does not carry."
 msgstr ""
 
-#: includes/class-seo-settings.php:200
+#: includes/class-seo-settings.php:201
 msgid "Business or personal name"
 msgstr ""
 
-#: includes/class-seo-settings.php:206
+#: includes/class-seo-settings.php:207
 msgid "Left empty, the site title is used."
 msgstr ""
 
-#: includes/class-seo-settings.php:210
+#: includes/class-seo-settings.php:211
 msgid "What it is"
 msgstr ""
 
-#: includes/class-seo-settings.php:219
+#: includes/class-seo-settings.php:220
 msgid "Taken from the original design where it said so. Changing it changes how search engines and AI assistants classify the business."
 msgstr ""
 
-#: includes/class-seo-settings.php:227
+#: includes/class-seo-settings.php:228
 msgid "Logo"
 msgstr ""
 
-#: includes/class-seo-settings.php:228
+#: includes/class-seo-settings.php:229
 msgid "Used in structured data, where a square image works best."
 msgstr ""
 
-#: includes/class-seo-settings.php:234
+#: includes/class-seo-settings.php:235
 msgid "Default sharing image"
 msgstr ""
 
-#: includes/class-seo-settings.php:235
+#: includes/class-seo-settings.php:236
 msgid "Shown when a page shared on social media has no image of its own. Without one, those posts render as an empty grey box."
 msgstr ""
 
-#: includes/class-seo-settings.php:239
+#: includes/class-seo-settings.php:240
 msgid "Profiles elsewhere"
 msgstr ""
 
-#: includes/class-seo-settings.php:244
+#: includes/class-seo-settings.php:245
 msgid "One address per line. This is how an AI assistant confirms the site belongs to a real, identifiable business rather than guessing."
 msgstr ""
 
-#: includes/class-seo-settings.php:248
+#: includes/class-seo-settings.php:249
 msgid "Title separator"
 msgstr ""
 
-#: includes/class-seo-settings.php:253
+#: includes/class-seo-settings.php:254
 msgid "Between a page name and the site name, on pages that have no title of their own."
 msgstr ""
 
-#: includes/class-seo-settings.php:261
+#: includes/class-seo-settings.php:262
 msgid "Let AI assistants read this site, and tell them where the plain-text summary is"
 msgstr ""
 
-#: includes/class-seo-settings.php:267
+#: includes/class-seo-settings.php:268
 msgid "Names the known assistant crawlers in robots.txt and points them at %s."
 msgstr ""
 
-#: includes/class-seo-settings.php:298
+#: includes/class-seo-settings.php:299
 msgid "Choose…"
 msgstr ""
 
@@ -1993,11 +1939,11 @@ msgstr[1] ""
 msgid "Nothing has been deleted. A menu you make here belongs to the site and stays through every theme."
 msgstr ""
 
-#: includes/class-tokens.php:680
+#: includes/class-tokens.php:705
 msgid "No article on this side"
 msgstr ""
 
-#: includes/class-tokens.php:746
+#: includes/class-tokens.php:771
 msgid "%d min read"
 msgid_plural "%d min read"
 msgstr[0] ""
@@ -2019,7 +1965,7 @@ msgstr ""
 msgid "Could not initialize the filesystem to extract the ZIP."
 msgstr ""
 
-#: includes/class-zip.php:261
+#: includes/class-zip.php:173
 msgid "Could not create a writable folder at %s. Check that wp-content/uploads is writable by the web server (a leftover folder owned by a different user is a common cause)."
 msgstr ""
 
@@ -2068,27 +2014,35 @@ msgctxt "post status"
 msgid "Parked with its theme"
 msgstr ""
 
-#: visual-edit-lite.php:1687
+#: visual-edit-lite.php:1690
 msgid "Menus are part of this theme."
 msgstr ""
 
-#: visual-edit-lite.php:1688
+#: visual-edit-lite.php:1691
 msgid "This theme keeps its navigation in WordPress's own navigation blocks, so Visual Edit opens it alongside the rest of the theme in Gutenberg."
 msgstr ""
 
-#: visual-edit-lite.php:1690
+#: visual-edit-lite.php:1693
 msgid "Open the Site Editor"
 msgstr ""
 
-#: visual-edit-lite.php:1697
+#: visual-edit-lite.php:1700
 msgid "Visual Edit: menu management is off."
 msgstr ""
 
-#: visual-edit-lite.php:1698
+#: visual-edit-lite.php:1701
 msgid "The active theme does not declare its navigation zones (the clara_ve_theme_contract filter), so the plugin cannot know which markup is a menu — a menu created here would not appear on the site. Themes generated by the converter declare this in inc/visual-edit.php."
 msgstr ""
 
-#: visual-edit-lite.php:2013
+#: visual-edit-lite.php:2010
+msgid "Choose the file"
+msgstr ""
+
+#: visual-edit-lite.php:2011
+msgid "Use this image"
+msgstr ""
+
+#: visual-edit-lite.php:2038
 #: assets/form-blocks.js:170
 #: assets/form-blocks.js:185
 #: assets/workspace.js:778
@@ -2099,19 +2053,19 @@ msgstr ""
 msgid "Form"
 msgstr ""
 
-#: visual-edit-lite.php:2332
+#: visual-edit-lite.php:2385
 msgid "Edit the complete site with Visual Edit Lite"
 msgstr ""
 
-#: visual-edit-lite.php:2333
+#: visual-edit-lite.php:2386
 msgid "Open the front page in the visual editor"
 msgstr ""
 
-#: visual-edit-lite.php:2402
+#: visual-edit-lite.php:2455
 msgid "Advanced (HTML block &amp; %s)"
 msgstr ""
 
-#: visual-edit-lite.php:2403
+#: visual-edit-lite.php:2456
 msgid "Edit HTML block"
 msgstr ""
 
@@ -2264,7 +2218,7 @@ msgid "Edit the complete site"
 msgstr ""
 
 #: assets/gutenberg.js:67
-#: assets/workspace.js:1739
+#: assets/workspace.js:1738
 msgid "Posts"
 msgstr ""
 
@@ -2274,7 +2228,7 @@ msgstr ""
 
 #: assets/gutenberg.js:73
 #: assets/workspace.js:1692
-#: assets/workspace.js:1724
+#: assets/workspace.js:1723
 msgid "SEO & sharing settings"
 msgstr ""
 
@@ -2493,7 +2447,7 @@ msgid "Synced pattern"
 msgstr ""
 
 #: assets/workspace-history.js:57
-#: assets/workspace.js:1739
+#: assets/workspace.js:1738
 msgid "Navigation"
 msgstr ""
 
@@ -2516,7 +2470,7 @@ msgstr ""
 
 #: assets/workspace-history.js:124
 #: assets/workspace.js:351
-#: assets/workspace.js:1750
+#: assets/workspace.js:1749
 msgid "Retry"
 msgstr ""
 
@@ -2687,7 +2641,7 @@ msgstr ""
 
 #: assets/workspace.js:353
 #: assets/workspace.js:1587
-#: assets/workspace.js:1748
+#: assets/workspace.js:1747
 msgid "Search"
 msgstr ""
 
@@ -3447,7 +3401,7 @@ msgid "Open in the WordPress editor"
 msgstr ""
 
 #: assets/workspace.js:1695
-#: assets/workspace.js:1765
+#: assets/workspace.js:1764
 msgid "Back to the dashboard"
 msgstr ""
 
@@ -3498,87 +3452,87 @@ msgstr ""
 msgid "Version restored — Save to keep it"
 msgstr ""
 
-#: assets/workspace.js:1716
+#: assets/workspace.js:1715
 msgid "Saving…"
 msgstr ""
 
-#: assets/workspace.js:1716
+#: assets/workspace.js:1715
 msgid "Save failed — changes kept"
 msgstr ""
 
-#: assets/workspace.js:1716
+#: assets/workspace.js:1715
 msgid "unsaved"
 msgstr ""
 
-#: assets/workspace.js:1716
+#: assets/workspace.js:1715
 msgid "Saved"
 msgstr ""
 
-#: assets/workspace.js:1717
+#: assets/workspace.js:1716
 msgid "Preview"
 msgstr ""
 
-#: assets/workspace.js:1717
+#: assets/workspace.js:1716
 msgid "View site"
 msgstr ""
 
-#: assets/workspace.js:1718
-#: assets/workspace.js:1718
+#: assets/workspace.js:1717
+#: assets/workspace.js:1717
 msgid "More"
 msgstr ""
 
-#: assets/workspace.js:1724
+#: assets/workspace.js:1723
 msgid "This site does not print search titles and descriptions from Visual Edit: the theme provides its own, or the site-wide SEO & sharing settings are not enabled yet. Values saved here are kept."
 msgstr ""
 
-#: assets/workspace.js:1726
+#: assets/workspace.js:1725
 msgid "Click anything on the page to change it."
 msgstr ""
 
-#: assets/workspace.js:1726
+#: assets/workspace.js:1725
 msgid "Got it"
 msgstr ""
 
-#: assets/workspace.js:1739
+#: assets/workspace.js:1738
 msgid "Templates"
 msgstr ""
 
-#: assets/workspace.js:1739
+#: assets/workspace.js:1738
 msgid "Template parts"
 msgstr ""
 
-#: assets/workspace.js:1739
+#: assets/workspace.js:1738
 msgid "Synced patterns"
 msgstr ""
 
-#: assets/workspace.js:1741
+#: assets/workspace.js:1740
 msgid "There are unsaved changes. Leave this document?"
 msgstr ""
 
-#: assets/workspace.js:1747
+#: assets/workspace.js:1746
 msgid "Show"
 msgstr ""
 
-#: assets/workspace.js:1748
+#: assets/workspace.js:1747
 msgid "Search…"
 msgstr ""
 
-#: assets/workspace.js:1750
+#: assets/workspace.js:1749
 msgid "Could not load this content."
 msgstr ""
 
-#: assets/workspace.js:1751
+#: assets/workspace.js:1750
 msgid "No results."
 msgstr ""
 
-#: assets/workspace.js:1759
+#: assets/workspace.js:1758
 msgid "Previous"
 msgstr ""
 
-#: assets/workspace.js:1760
+#: assets/workspace.js:1759
 msgid "Next"
 msgstr ""
 
-#: assets/workspace.js:1764
+#: assets/workspace.js:1763
 msgid "Open the WordPress Site Editor"
 msgstr ""

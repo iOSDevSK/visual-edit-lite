@@ -129,7 +129,7 @@ that needs the converted theme.
 - Manage any set of repeating cards or list items — reorder, edit, add,
   remove — in one step
 - Per-page version history with restore, kept independently for every page —
-  the last ten saves plus the Original, which can always be restored
+  ten saves deep plus the Original, all of it listed and all of it restorable
 
 **Content**
 - Connect a designed HTML form by clicking; the form's own markup is never
@@ -166,10 +166,8 @@ directory. It has no licence key, no trial and no locked buttons: what it does
 not have, it does not contain.
 
 [Visual Edit **Pro**](https://html2wp.dev/visualedit/) adds an AI assistant that edits pages conversationally, AI
-image editing and video generation, Cloudflare Turnstile, one-click theme
-export, and a save history that lists all 300 recorded entries rather
-than the ten most recent plus the Original. Both editions RECORD the same
-300 — the difference is how many the list shows. It is sold separately and is not
+image editing and video generation, Cloudflare Turnstile and one-click theme
+export. None of that code is in this repository. It is sold separately and is not
 required for anything Lite does. Both editions store their data under the same
 names, so either one reads what the other wrote — and they cannot run at the
 same time: with Pro active, Lite switches itself off and says so.
@@ -224,8 +222,8 @@ Builds the package, boots a throwaway WordPress in Docker, installs the
 extracted ZIP under its real slug, installs the official
 [Plugin Check](https://wordpress.org/plugins/plugin-check/) if it is not
 already there, runs it across every category, and asserts the Lite-specific
-behaviour (no licence gate, no Pro classes, no AI routes, history listing ten
-plus the Original). Exits non-zero on any failure; `--keep` leaves the site up
+behaviour (no licence gate, no Pro classes, no AI routes, history keeping ten
+saves plus the Original with every one of them restorable). Exits non-zero on any failure; `--keep` leaves the site up
 on `localhost:8897`. Offline, point it at a local copy:
 `PLUGIN_CHECK_ZIP=/path/to/plugin-check.zip tools/verify.sh`.
 

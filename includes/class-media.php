@@ -25,7 +25,7 @@ class Clara_VE_Media {
 
 		$attachment = array(
 			'post_mime_type' => $mime,
-			'post_title'     => '' !== $title ? $title : __( 'AI-generated media', 'visual-edit-lite' ),
+			'post_title'     => '' !== $title ? $title : __( 'Imported image', 'visual-edit-lite' ),
 			'post_status'    => 'inherit',
 		);
 		$attach_id = wp_insert_attachment( $attachment, $upload['file'] );

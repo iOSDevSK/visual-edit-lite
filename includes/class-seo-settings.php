@@ -55,13 +55,14 @@ class Clara_VE_SEO_Settings {
 	}
 
 	/**
-	 * The media library, for picking the logo and the default share image.
+	 * The media library and the picker script, for choosing the logo and the
+	 * default share image.
 	 *
 	 * @param string $hook
 	 */
 	public static function enqueue( $hook ) {
 		if ( false !== strpos( (string) $hook, self::PAGE ) ) {
-			wp_enqueue_media();
+			clara_ve_enqueue_settings_script();
 		}
 	}
 
@@ -303,32 +304,6 @@ class Clara_VE_SEO_Settings {
 					style="max-width:180px;height:auto;margin-top:8px;<?php echo $value ? '' : 'display:none;'; ?>" alt="" />
 			</td>
 		</tr>
-		<?php
-		// Inline rather than a file: two dozen lines used on one screen, and a
-		// separate asset would be one more thing to enqueue, version and ship.
-		static $printed = false;
-		if ( $printed ) {
-			return;
-		}
-		$printed = true;
-		?>
-		<script>
-		document.addEventListener( 'click', function ( e ) {
-			var btn = e.target.closest ? e.target.closest( '.cve-seo-pick' ) : null;
-			if ( ! btn || ! window.wp || ! window.wp.media ) { return; }
-			e.preventDefault();
-			var input = document.getElementById( btn.dataset.target );
-			var thumb = document.querySelector( '.cve-seo-thumb[data-for="' + btn.dataset.target + '"]' );
-			var frame = wp.media( { library: { type: 'image' }, multiple: false, button: { text: 'Use this image' } } );
-			frame.on( 'select', function () {
-				var picked = frame.state().get( 'selection' ).first();
-				if ( ! picked ) { return; }
-				input.value = picked.get( 'url' );
-				if ( thumb ) { thumb.src = input.value; thumb.style.display = ''; }
-			} );
-			frame.open();
-		} );
-		</script>
 		<?php
 	}
 }

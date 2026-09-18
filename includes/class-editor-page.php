@@ -333,10 +333,6 @@ class Clara_VE_Editor_Page {
 				'googleFonts'     => Clara_VE_Fonts::selected(),
 				'googleFontsCss'  => Clara_VE_Fonts::css_url(),
 				'googleFontsMax'  => Clara_VE_Fonts::MAX_FONTS,
-				// Empty when unlicensed — the AI Settings page is not
-				// registered then, and a link to a page WordPress refuses to
-				// serve reads as a bug, not as an upsell. The editor shows a
-				// licence hint instead of a dead link when this is ''.
 			)
 		);
 	}

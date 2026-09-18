@@ -75,6 +75,13 @@ purity() {
   [ -z "$hits" ] || { echo "$hits" >&2; fail "$label"; }
 }
 purity "licence gate survived"      'clara_ve_is_licensed|UNLICENSED_ENTRIES|licenseKey|licenseSignature'
+# The half of the licence gate the line above never saw. Pro's history keeps
+# 300 rows and lists ten of them to an unregistered install; Lite inherited the
+# listing, the server-side refusal and the message that went with it, under
+# names that carry no "licensed" in them -- and WordPress.org's pre-review
+# found it (guideline 5) when nothing here did. Lite's history is ten deep in
+# STORAGE instead: nothing is withheld, so there is nothing to refuse.
+purity "history restore gate survived" 'may_restore|visible_entries|VISIBLE_ENTRIES|license_required|unlicensed|activated licen[cs]e'
 purity "updater survived"           'updatepulse|UpdatePulse|plugin-update-checker|Puc_v'
 purity "AI code survived"           'Clara_VE_AI_|clara-ve-ai|clara_ve_ai_|ai-chat|ai-image|ai-video|ai-job|openrouter|OpenRouter'
 # Turnstile, in two halves.
@@ -97,6 +104,16 @@ purity "Turnstile survived"         'turnstile' 'includes/class-form-settings\.p
 purity "Turnstile implementation survived" \
   'turnstile_secret|turnstile_ok|cf-turnstile-response|challenges\.cloudflare\.com|OPT_TURNSTILE'
 purity "theme export survived"      'Clara_VE_Export_Page|clara_ve_export_theme'
+# The export SCREEN going was not the export going. The engine behind it — the
+# branch of the bundle writer that copies a theme, stamps its version and checks
+# its screenshot — stayed in Lite for as long as only the class names above
+# were asked about, with a greyed "Export Theme" item in the menu in front of
+# it: a paid feature present in the package and switched off. Lite's bundle
+# writer packages content only.
+purity "theme export engine survived" "function stamp_version|::stamp_version\(|make-screenshot\.mjs|copy_tree\(|'package' *=>"
+# What a person READS. The readme says Lite has no AI writing or image tools,
+# so no string shown to anybody may promise one.
+purity "AI feature named in a user-visible string" 'AI-generated|AI-edited|turned into video'
 
 # The gate that runs the OTHER way: something that must still be HERE.
 #

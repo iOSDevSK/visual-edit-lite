@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.30.3
+Stable tag: 1.31.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,7 +37,7 @@ source, unminified and uncompiled.
 * **Gutenberg workspace on block themes.** Visual Edit hosts the native editor
   and adds a floating inspector with typography, Google Fonts and styling.
   Native controls remain available for blocks, patterns, templates, navigation
-  and Global Styles. See the development acceptance matrix for current limits.
+  and Global Styles.
 * **Repeating content** (FAQ lists, service cards, team members, portfolio
   tiles) managed as a list: reorder, edit, add and remove items together.
 * **Forms** — a designed HTML form is connected by clicking, never rebuilt.
@@ -64,14 +64,16 @@ source, unminified and uncompiled.
 
 = Editing history =
 
-Every Save is a restore point. The history panel lists the last ten saves
-plus the Original — the design exactly as the theme shipped it — so there is
-always a way back, however long ago you started.
+Every Save is a restore point. The plugin keeps the ten most recent saves of
+each page plus the Original — the design exactly as the theme shipped it — so
+there is always a way back, however long ago you started.
 
-The panel lists ten; the table keeps up to three hundred per page. Those rows
-are your own content in your own database, and the plugin never deletes them
-to make a point — they are there for backups, for WP-CLI, and for whatever you
-run next.
+Ten is how deep the history is, not how much of it you are shown: the panel
+lists every save the plugin holds, and any of them can be restored. When an
+eleventh save is made the oldest one is dropped; the Original never is. A page
+whose log is longer than that — restored from a backup, or written by an
+earlier version — is trimmed the same way the next time its history is opened
+or the page is saved. The live page is never touched.
 
 = What this plugin needs =
 
@@ -95,16 +97,22 @@ depend on the theme at all and work anywhere.
   provider API keys) and its own transients. Everything else — submissions,
   subscribers, edit history, page sources — is kept unless "also delete all
   stored data" is enabled under Visual Edit Lite → Form Settings → Uninstall.
+  That option removes the plugin's options, its two database tables and the
+  form submissions. It leaves your pages and their content in place, together
+  with a few marker fields the plugin wrote on them and any files it imported
+  into the Media Library or the uploads folder.
 * **Visual Edit Pro**, the paid edition, shares this plugin's data format and
   its class and option names. The two cannot run at the same time: with Pro
   active, Lite switches itself off and says so rather than crashing the site.
 
 == Installation ==
 
-1. Install and activate the converted theme you were given.
-2. Plugins → Add New → search for "Visual Edit Lite" → Install → Activate.
-3. Follow the theme's setup screen to import the site's content, then edit any
-   page from the Visual Edit menu.
+1. Plugins → Add New → search for "Visual Edit Lite" → Install → Activate.
+2. On a block theme, such as Twenty Twenty-Five, open Visual Edit Lite in the
+   admin menu and pick a page. Nothing else is needed.
+3. On a theme converted from static HTML, activate that theme first, then
+   follow its setup screen to import the site's content and edit any page from
+   the Visual Edit Lite menu.
 
 == Frequently Asked Questions ==
 
@@ -118,15 +126,14 @@ nothing in the plugin to unlock.
 
 An AI assistant that edits pages conversationally, AI image editing and AI
 video generation (all bring-your-own API key), Cloudflare Turnstile as an
-extra anti-spam layer, one-click theme export, and a history panel that lists
-300 restore points per page instead of ten. Pro is sold separately and is not
-required for anything Lite does.
+extra anti-spam layer, and one-click theme export. None of that code is in
+this plugin. Pro is a separate plugin, sold separately, and is not required
+for anything Lite does.
 
 = Will I lose my work if I switch between Lite and Pro? =
 
-No. Both editions store content, history and settings under the same names, so
-either one reads what the other wrote, in both directions and with nothing to
-migrate.
+No. Both editions store content and settings under the same names, so either
+one reads what the other wrote, in both directions and with nothing to migrate.
 
 = Can I use it on a theme I built myself? =
 
@@ -145,25 +152,30 @@ This plugin does not contact any external service on its own. Every service
 below is reached only after you switch it on, and only for the purpose
 described.
 
-**Google Fonts** — used only if you add Google fonts in the editor's font
-picker. Opening the picker requests the public font catalogue from
-`fonts.google.com`; a page that uses a chosen font loads its stylesheet and
-font files from `fonts.googleapis.com`, which means visitors' browsers connect
-to Google and Google receives their IP address and user agent. No fonts are
-requested if you add none.
+**Google Fonts** — used only if you open the Google fonts picker in the
+editor. Opening it makes your server request the public font catalogue from
+`fonts.google.com` (cached for a week), and your own browser loads a preview
+stylesheet from `fonts.googleapis.com`, and its font files from
+`fonts.gstatic.com`, for each family you scroll past. A page that uses a font
+you kept loads that font's stylesheet and files from the same two hosts, which
+means visitors' browsers connect to Google and Google receives their IP
+address and user agent. A site where no Google font was kept requests nothing
+from Google on the front end.
 Terms: https://policies.google.com/terms — Privacy:
 https://policies.google.com/privacy — Google Fonts privacy FAQ:
 https://developers.google.com/fonts/faq/privacy
 
 **Akismet** — used only if the separate Akismet plugin is installed and
 configured and you enable Akismet filtering under Form Settings. Each form
-submission is then sent to Akismet for a spam verdict, including its field
-values, the sender's IP address and user agent.
+submission is then sent to Akismet for a spam verdict: its field values, the
+email address found among them, the sender's IP address, user agent and
+referrer, and your site's address.
 Terms: https://akismet.com/tos/ — Privacy: https://automattic.com/privacy/
 
 **Email delivery providers** — used only if you select one as the mailer and
-enter its API key. The message being sent (recipient, subject, body) is
-transmitted to the provider you chose:
+enter its API key. From then on every email WordPress sends from this site,
+not only form notifications, goes through the provider you chose: recipient,
+sender name and address, reply-to, subject and body.
 Brevo — https://www.brevo.com/legal/termsofuse/ ,
 https://www.brevo.com/legal/privacypolicy/ ;
 SendGrid — https://www.twilio.com/en-us/legal/tos ,
@@ -174,9 +186,12 @@ Mailgun — https://www.mailgun.com/legal/terms/ ,
 https://www.mailgun.com/legal/privacy-policy/
 
 **Brevo (mailing lists)** — used only if you connect Brevo as your mailing-list
-provider. A subscriber's email address, and the list you chose, are sent to
-Brevo when they confirm a double opt-in signup. Same terms and privacy links
-as above.
+provider. Opening a form's list picker in the editor asks Brevo for the names
+of your lists. When a visitor subscribes (after confirming, if double opt-in is
+on) Brevo receives their email address, the list you chose, the other fields
+they filled in on that form as contact attributes, and, if you use Brevo's own
+double opt-in, the template id and redirect address you set. Same terms and
+privacy links as above.
 
 **Your own SMTP server** — used only if you select SMTP as the mailer. The
 message is sent to the host you configured.
@@ -201,7 +216,47 @@ about you or your site. Secrets you enter (SMTP password, provider API keys)
 are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
+== Credits ==
+
+The click-to-edit layer — `assets/bridge.js`, `assets/editor.js`,
+`assets/bridge.css` and `assets/editor.css` — is derived in part from
+Open Design (https://github.com/nexu-io/open-design), Copyright 2026 Open
+Design contributors, licensed under the Apache License, Version 2.0
+(https://www.apache.org/licenses/LICENSE-2.0). Those files were ported from
+TypeScript and modified for WordPress, and each carries this notice. The
+Apache License 2.0 is compatible with version 3 of the GPL, which this
+plugin's "GPLv2 or later" licence allows.
+
 == Changelog ==
+
+= 1.31.0 =
+
+* Changed: Edit history keeps the ten most recent saves of each page plus the
+  Original. Every save the plugin holds is listed and can be restored. A page
+  with a longer log is trimmed to that the next time its history is opened or
+  the page is saved.
+* Changed: Every stylesheet and script the plugin adds now goes through the
+  WordPress enqueue API — the decorative and article styling layers, per-block
+  styles, and the Form Settings and SEO & Sharing screens, whose behaviour
+  moved into assets/admin-settings.js. Structured data is printed with
+  WordPress's own inline script tag function.
+* Changed: The paid plugin is mentioned in one place: a single plain item,
+  Visual Edit Pro, at the end of the Visual Edit Lite menu, opening one screen
+  of text with one link. The two Pro-marked items are gone, and nothing is
+  added to any other admin screen.
+* Removed: The part of the content exporter that could package a theme. Lite
+  exports content bundles only; theme export is not in this plugin.
+* Security: The public "load more" route answers only for a published page
+  without a password, and gives one answer for every refusal. A listing no
+  longer includes password-protected posts.
+* Security: A form field whose name starts with an underscore is ignored, so a
+  visitor cannot write one of the submission's internal meta keys.
+* Security: The legacy static import copies only files of a type WordPress
+  accepts as an upload, from inside the extracted folder. A double opt-in link
+  stops working after fourteen days, and exporting parked content, which can
+  include submissions and subscribers, requires an administrator.
+* Added: A Credits section, and a notice in the four editor files that derive
+  from Open Design (Apache License 2.0).
 
 = 1.30.3 =
 
@@ -215,16 +270,14 @@ the plugin is deleted.
 
 = 1.30.1 =
 
-* Changed: **Get Pro** in the Visual Edit Lite menu now opens the pricing
-  page directly, in a new browser tab. AI Settings and Export Theme, marked
-  Pro, still open the screen that explains what the paid edition adds.
+* Changed: The Get Pro item opened the pricing page in a new browser tab.
+  Replaced in 1.31.0.
 
 = 1.30.0 =
 
-* New: A **Get Pro** screen in the Visual Edit Lite menu. It lists what the
-  paid edition adds, and the two screens it brings — AI Settings and Export
-  Theme — are shown in the menu, marked Pro, opening the same explanation.
-  Nothing is loaded from outside the site and nothing is sent anywhere.
+* New: A screen in the Visual Edit Lite menu that lists what the separate paid
+  plugin adds. Nothing is loaded from outside the site and nothing is sent
+  anywhere. Reduced to a single menu item in 1.31.0.
 * Changed: The plugin is listed as "Visual Edit Lite – Visual Editor for
   Block Themes". The menu, the admin bar and every screen are unchanged.
 
@@ -419,7 +472,6 @@ the plugin is deleted.
 * Recheck block editing mode and bindings when asynchronous media choices return.
 * Added Gutenberg save history, per-document staged restores and native Undo/Redo.
 * Fixed Google Fonts preview stylesheet duplication and removal.
-* Development build: packaged live save/reload acceptance remains outstanding.
 
 = 1.26.0 =
 * Gutenberg block themes now open WordPress's complete native Site and Post
@@ -435,158 +487,20 @@ the plugin is deleted.
   keeps revisions for templates, parts and Global Styles. Autosaves are not
   recorded as explicit saves.
 
-= 1.25.12 =
-This edition is derived from Visual Edit Pro 1.25.12.
-* Maintenance release, keeping the version in step with the edition it is
-  derived from. The three Pro releases since 1.25.9 corrected that edition's
-  licence check and its bundled update channel — machinery Lite does not
-  contain — so nothing in the editor changes here.
+= Earlier versions =
 
-= 1.25.9 =
-This edition is derived from Visual Edit Pro 1.25.9.
-* Changed: a save refused because an unsaved change points at part of the page
-  that is no longer there now says so, and says that Discard clears it.
-
-= 1.25.8 =
-This edition is derived from Visual Edit Pro 1.25.8.
-* Fixed: a duplicated element came back as scenery — no frame, no click —
-  until the page was saved. Duplicating now writes the source first and
-  re-renders the canvas from it, so the copy is editable straight away.
-
-= 1.25.7 =
-This edition is derived from Visual Edit Pro 1.25.7.
-* New: duplicate — any element you can select can be copied, from the icon
-  beside delete in the panel's footer. The copy lands after the original and
-  keeps everything about it except its id.
-
-= 1.25.6 =
-This edition is derived from Visual Edit Pro 1.25.6.
-* Fixed: three controls were folded into sections they have nothing to do with
-  — Text inside RADIUS, and the FAQ and item editors inside ORNAMENT (AFTER).
-  TEXT, QUESTIONS and ITEMS are their own sections now, above the styling.
-
-= 1.25.5 =
-This edition is derived from Visual Edit Pro 1.25.5.
-* Fixed: a button whose label sits beside an arrow or an icon had no editable
-  text at all — no caret and no panel field, because both routes refused an
-  element with children. The words are now written into the element's own text
-  nodes, so the arrow stays exactly where it was.
-
-= 1.25.4 =
-This edition is derived from Visual Edit Pro 1.25.4.
-* New: each corner rounds on its own. Radius was one control for all four and
-  read the browser's shorthand, so on an element whose corners already differed
-  the first nudge squared off the three you were not looking at. Four controls
-  now, in a RADIUS section next to BORDER, with a row that still sets all four
-  at once.
-* Fixed: a radius written as a percentage — how a round avatar is made — was
-  read as a number and written back in pixels. The unit a value carries is the
-  unit it keeps.
-* New: a border can be made transparent, by typing it or by picking Transparent
-  from the palette list. Not the same as turning the line off: no line takes up
-  no space, and the layout moves.
-* Fixed: the panel showed black for a border that was already transparent.
-* New: gradients are chosen, not typed — a GRADIENT section with a live
-  preview, ready-made gradients built from your theme's own palette, and two
-  colours plus a direction to make your own. Custom stays for anything more
-  elaborate. Before, a gradient shared a row with the size controls: a 54-pixel
-  box suggesting "e.g. 24px", and usually nothing to pick instead.
-* New: a gradient background on a raw-HTML theme too — the same GRADIENT
-  section, with ready-made gradients from the theme's own palette. It writes
-  background-image, so the flat colour underneath survives.
-* Fixed: the BORDER Style row read [object Object] for every choice, and the
-  only selectable entry was the value already set — so it could not change
-  anything.
-* Fixed: the editor panel's controls were unstyled in this edition. Deriving
-  Lite from Pro cut the AI panel out of the stylesheet and took the panel's own
-  rules with it — the number boxes, colour swatches, grids and steppers had no
-  styling at all. Only the styling was affected; every control worked.
-
-= 1.25.3 =
-This edition is derived from Visual Edit Pro 1.25.3.
-* Fixed: after switching themes, Appearance → Menus opened on the menu of the
-  theme you had just left, listing its items. The list of menus was right — the
-  screen was simply already sitting on the wrong one, because it reopens
-  whatever you last edited and that pointer is a plain menu id a theme switch
-  does not touch. It now lands on a menu belonging to the theme you are
-  actually using, and sites where this has already happened correct themselves
-  the first time the screen is opened.
-
-= 1.25.2 =
-This edition is derived from Visual Edit Pro 1.25.2.
-* New: the style panel folds — each heading opens and closes, and remembers
-  which you left open.
-* New: padding, margin and border on every element, not only on wrappers.
-* Fixed: panel section headings were unstyled here while Pro styled them.
-* New: the greyed-out words inside a form field can be changed — click the
-  field and the panel offers what it shows before anyone types.
-* New: a form's own words are editable again — its labels, its button and any
-  small print under it. Those are the design's own wording; only the parts
-  WordPress owns stay sealed.
-* Fixed: clicking a box that contains a form, a post list or a menu said the
-  words in it "come from the post" and "change with every article". Only one of
-  those four cases is a post — on a contact form it was simply untrue, and it
-  sent people looking in Posts for text that was never there. Each now says
-  what it is actually holding.
-
-= 1.25.1 =
-This edition is derived from Visual Edit Pro 1.25.1, and brings across
-everything Pro added since the last Lite release — none of it licence-gated,
-so all of it ships here:
-* Block mode: on a block theme, whole sections can be added, copied, moved and
-  removed, and the block supports panel is available.
-* Movement: scroll and hover animation stored as a class, costing nothing on
-  pages that do not use it.
-* Different values on smaller screens — padding and the rest can now differ per
-  breakpoint, and padding can be dragged on the section itself.
-* Copy a page, or remove one, without leaving the editor.
-* Typeface handling reworked: a font of your own is kept, a chosen Google font
-  actually loads, and added typefaces reach the WordPress editor canvas too.
-* Search appearance now works on a block theme.
-* Fixes to the picture panel — a new picture appears without saving first, and
-  three controls that had never been driven now work.
-
-= 1.19.8 =
-* Staggered and carousel lists are collections again. A reveal library's
-  per-card delay (`data-aos-delay`/`duration`) and a carousel's frozen runtime
-  state (`swiper-slide-active/prev/next/duplicate`,
-  `data-swiper-slide-index`) no longer disqualify sibling cards from the
-  "manage as a list" panel — those are animation timing and captured state,
-  not design differences.
-* Listing cards can carry a byline: new `{author}` and `{author_image}`
-  placeholders for `[wp-posts]` templates, matching
-  `[wp-article field="author"]`.
-* Menu labels land on the item's name, never its description. A two-line
-  dropdown item (name plus a descriptive sentence) used to get its description
-  overwritten by the label on every page; the label now targets the run that
-  carries the name.
-* Imported blog posts keep their byline. A content bundle may name each
-  article's author; the import resolves it to an existing user by display name
-  or creates one (role: author) instead of crediting whoever clicked Import.
-* Derived from Visual Edit Pro 1.19.8. There is no Lite 1.19.7 — Lite carries
-  the version number of the Pro release it was derived from, so the two stay
-  comparable at a glance.
-
-= 1.19.6 =
-* First public release. Visual Edit Lite is derived from Visual Edit Pro
-  1.19.6 and shares its version number so the two stay comparable at a
-  glance. Everything the licence gated in Pro — the AI assistant, AI image
-  and video tools, Cloudflare Turnstile, theme export — is absent from this
-  edition rather than hidden, and there is no licence check, no activation
-  call and no bundled updater anywhere in the code.
+The entries for 1.25.12 and earlier are kept on GitHub:
+https://github.com/iOSDevSK/visual-edit-lite/blob/main/docs/changelog-archive.md
 
 == Upgrade Notice ==
+
+= 1.31.0 =
+Edit history now keeps ten saves per page plus the Original, and lists all of
+them. A page with a longer history is trimmed to that when its history is next
+opened or the page is saved. The live page and the Original are not affected.
 
 = 1.27.0 =
 Block themes now edit the way converted themes do: one toolbar, one popup.
 Forms are editable blocks, and where a form sends is signed into the page.
 Important for themes converted from HTML: pages with forms showed a critical
 error and submissions were discarded — both fixed. Nothing to migrate.
-
-= 1.19.8 =
-Staggered and carousel card lists are editable as collections again, listing
-templates can show an author byline, and menu labels stop overwriting item
-descriptions.
-
-= 1.19.6 =
-First public release.

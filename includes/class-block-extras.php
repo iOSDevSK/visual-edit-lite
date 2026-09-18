@@ -3,14 +3,14 @@
 defined( 'ABSPATH' ) || exit;
 
 class Clara_VE_Block_Extras {
+	const STYLE_HANDLE = 'clara-ve-block-extras';
+
 	private static $styles = array();
 	private static $style_batch = 0;
 
 	public static function init() {
 		add_filter( 'register_block_type_args', array( __CLASS__, 'register_attribute' ) );
 		add_filter( 'render_block', array( __CLASS__, 'render' ), 20, 2 );
-		add_action( 'wp_head', array( __CLASS__, 'print_styles' ), 99 );
-		add_action( 'wp_footer', array( __CLASS__, 'print_styles' ), 20 );
 	}
 
 	public static function register_attribute( $args ) {
@@ -214,18 +214,49 @@ class Clara_VE_Block_Extras {
 		if ( ! empty( $extras['form'] ) ) {
 			$css .= self::form_css( '.' . $class, $extras['form'] );
 		}
-		self::$styles[ $class ] = $css;
+		self::enqueue_css( $class, $css );
 		return $updated;
 	}
 
-	public static function print_styles() {
-		if ( self::$styles ) {
-			++self::$style_batch;
-			// WP 6.6 has inline-script helpers, but no inline-style-tag helper.
-			// All declarations above pass the CSS allowlist and content escaping.
-			echo '<style id="' . esc_attr( 'clara-ve-block-extras-' . self::$style_batch ) . '">' . implode( '', self::$styles ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			self::$styles = array();
+	/**
+	 * Hand one block's rules to WordPress as inline CSS on a source-less handle.
+	 *
+	 * The rules are only known once the block renders, and that happens on
+	 * either side of the head: a block theme renders its template before
+	 * wp_head(), a classic theme renders post content after it, and a footer
+	 * part renders later still. Core prints a style enqueued after the head in
+	 * the footer on its own — but inline CSS added to a handle that has ALREADY
+	 * been printed is never printed at all. So the handle is numbered, and a
+	 * block that renders after its batch went out opens the next one.
+	 *
+	 * Every declaration passed the CSS allowlist and content escaping above,
+	 * and every one is !important, so where in the queue a batch lands does not
+	 * decide whether it applies.
+	 *
+	 * @param string $scope Content-addressed class the rules are scoped to.
+	 * @param string $css   Compiled rules for that class.
+	 */
+	private static function enqueue_css( $scope, $css ) {
+		if ( '' === $css ) {
+			return;
 		}
+		if ( 0 === self::$style_batch || wp_style_is( self::handle(), 'done' ) ) {
+			++self::$style_batch;
+			self::$styles = array();
+			wp_register_style( self::handle(), false, array(), CLARA_VE_VERSION );
+			wp_enqueue_style( self::handle() );
+		}
+		// Equal copies share a class, and one rule is enough for all of them.
+		if ( isset( self::$styles[ $scope ] ) ) {
+			return;
+		}
+		self::$styles[ $scope ] = true;
+		wp_add_inline_style( self::handle(), wp_strip_all_tags( $css ) );
+	}
+
+	/** The handle of the batch currently being filled. */
+	private static function handle() {
+		return self::STYLE_HANDLE . '-' . self::$style_batch;
 	}
 }
 

@@ -1,4 +1,11 @@
-/* Visual editor admin screen — canvas + open-design-style floating panel */
+/* Visual editor admin screen — canvas + open-design-style floating panel
+
+   Portions of this file are derived from Open Design
+   (https://github.com/nexu-io/open-design), Copyright 2026 Open Design
+   contributors, licensed under the Apache License, Version 2.0
+   (https://www.apache.org/licenses/LICENSE-2.0). This file has been modified
+   and adapted for WordPress; it is distributed here under GPL-2.0-or-later,
+   which that licence permits at GPL version 3. */
 
 #wpcontent {
 	padding-left: 0;
@@ -1313,8 +1320,8 @@ at the width it will be applied across. A
 	background: rgba( 255, 255, 255, 0.14 ) !important;
 }
 
-/* Async AI job toasts (image edit / video generate) — deliberately fixed to
-   the viewport, not the per-element panel, so a job's "processing"/"done"
+/* Status toasts — deliberately fixed to the viewport, not the per-element
+   panel, so a task's "processing"/"done"
    status stays visible even after the panel that started it has closed or
    the user has selected something else entirely. */
 .cve-toasts {

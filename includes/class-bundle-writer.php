@@ -1,15 +1,12 @@
 <?php
 /**
- * Builds a distributable theme ZIP: the theme directory as WordPress expects
- * it, optionally carrying a clara-content/ bundle of the site's editable
- * content beside it.
+ * Builds a content bundle: a ZIP of what this site holds for one theme — its
+ * pages, menus, media, forms and SEO records — for moving a site to another
+ * host, or for keeping a copy before a theme is deleted.
  *
- * The theme files are copied VERBATIM. Live content is not baked back into
- * patterns/parts, because the option rows — not the theme files — are this
- * plugin's source of truth, and a second divergent copy of the same state is
- * exactly the drift the architecture exists to avoid. A bare theme therefore
- * ships the design as its author wrote it; a bundle adds whatever the site
- * currently holds on top.
+ * It packages content only. The theme's own files are not copied, read or
+ * altered: the target site already has the theme, and the option rows — not
+ * the theme files — are this plugin's source of truth.
  *
  * @package VisualEdit
  */
@@ -19,68 +16,34 @@ defined( 'ABSPATH' ) || exit;
 class Clara_VE_Bundle_Writer {
 
 	/**
-	 * Development and tooling files that are part of the repository but never
-	 * part of a shipped theme. Dotfiles are excluded separately, by rule, in
-	 * Clara_VE_Zip::copy_tree().
-	 */
-	const SKIP = array(
-		'node_modules',
-		'vendor',
-		'src',
-		'composer.json',
-		'composer.lock',
-		'package.json',
-		'package-lock.json',
-		'vite.config.js',
-		'postcss.config.js',
-		'phpcs.xml',
-		'phpcs.xml.dist',
-		Clara_VE_Bundle_Format::DIR,
-	);
-
-	/**
 	 * Build the ZIP.
 	 *
 	 * @param array $args {
-	 *     @type string $package              'theme' (default) or 'content' — the
-	 *                                       bundle on its own, for an install
-	 *                                       that already has the theme.
-	 *     @type string $mode                 'none' (theme only), 'sample' or 'site'.
+	 *     @type string $theme                Directory name of the theme whose
+	 *                                        content is packaged. Defaults to
+	 *                                        the active theme.
 	 *     @type string $media                'referenced' or 'none'.
-	 *     @type string $version              Version to stamp into style.css/readme.txt/manifest.
-	 *     @type array  $exclude_keys         Page keys to leave out of the bundle.
-	 *     @type int    $post_limit           Max posts in 'sample' mode (0 = all).
+	 *     @type string $version              Version to write into the manifest.
 	 *     @type bool   $include_private_data Whether to also carry form
 	 *                                        submissions and subscriber
 	 *                                        emails. Off unless the caller
 	 *                                        explicitly opts in — this is
 	 *                                        visitor personal data, not site
 	 *                                        design, and it never travels by
-	 *                                        default in any mode.
+	 *                                        default.
 	 * }
 	 * @return array{path:string,filename:string,report:array}|WP_Error
 	 */
 	public static function build( array $args ) {
-		$mode                 = isset( $args['mode'] ) ? $args['mode'] : 'sample';
 		$media_mode           = isset( $args['media'] ) ? $args['media'] : 'referenced';
-		$exclude_keys         = isset( $args['exclude_keys'] ) ? array_map( 'sanitize_key', (array) $args['exclude_keys'] ) : array();
-		$post_limit           = isset( $args['post_limit'] ) ? (int) $args['post_limit'] : 0;
 		$include_private_data = ! empty( $args['include_private_data'] );
 
-		// 'theme' packages the design and, optionally, a bundle inside it.
-		// 'content' packages the bundle alone, for a site that already has the
-		// theme installed — moving a site to a new host, or handing the same
-		// design a different set of pages, neither of which should have to
-		// re-ship a theme the target already has.
-		$package = ( isset( $args['package'] ) && 'content' === $args['package'] ) ? 'content' : 'theme';
-
-		// Which theme is being packaged. Defaults to the active one, which is
-		// every ordinary export — but a theme has to be DEACTIVATED before
-		// WordPress will let it be deleted, so the one moment an owner most
-		// needs a backup is the one moment the theme they want is not active.
-		// Reading get_template_directory() then hands them a package of
-		// whatever theme happens to be active instead, under the right name,
-		// and nothing reveals the substitution until they try to restore it.
+		// Which theme's content is being packaged. Defaults to the active one —
+		// but a theme has to be DEACTIVATED before WordPress will let it be
+		// deleted, so the one moment an owner most needs a backup is the one
+		// moment the theme they want is not active. Reading the active theme
+		// then hands them a package of somebody else's content under the right
+		// name, and nothing reveals the substitution until they try to restore.
 		$slug      = sanitize_key( isset( $args['theme'] ) && '' !== $args['theme'] ? $args['theme'] : get_stylesheet() );
 		$theme     = wp_get_theme( $slug );
 		$theme_dir = untrailingslashit( $theme->get_stylesheet_directory() );
@@ -98,57 +61,26 @@ class Clara_VE_Bundle_Writer {
 			? preg_replace( '/[^0-9A-Za-z.\-]/', '', (string) $args['version'] )
 			: (string) $theme->get( 'Version' );
 
-		// A content package with nothing in it is not a smaller export, it is an
-		// empty file — refused here rather than downloaded and puzzled over.
-		if ( 'content' === $package && 'none' === $mode ) {
-			return new WP_Error(
-				'clara_ve_content_none',
-				__( 'A content-only export needs content in it. Choose a different option.', 'visual-edit-lite' )
-			);
-		}
-
-		// A theme with no screenshot renders as a grey placeholder tile in
-		// Appearance → Themes and in the installer. That is a broken
-		// deliverable, and it is silent — better to refuse than to ship it.
-		// Irrelevant to a content package, which contains no theme to show.
-		if ( 'theme' === $package
-			&& ! file_exists( $theme_dir . '/screenshot.png' )
-			&& ! file_exists( $theme_dir . '/screenshot.jpg' ) ) {
-			return new WP_Error(
-				'clara_ve_no_screenshot',
-				__( 'This theme has no screenshot.png, so WordPress would show it as a blank tile. Generate one first: node tools/make-screenshot.mjs', 'visual-edit-lite' )
-			);
-		}
-
 		$staging = Clara_VE_Zip::scratch_dir( 'clara-ve-export-tmp' );
 		if ( is_wp_error( $staging ) ) {
 			return $staging;
 		}
-		// Kept under the theme's slug either way, so the ZIP says which theme its
-		// content belongs to — and so the reader finds clara-content one level
-		// down, exactly where a theme ZIP already puts it.
+		// Kept under the theme's slug, so the ZIP says which theme its content
+		// belongs to — and so the reader finds clara-content one level down.
 		$root = $staging . '/' . $slug;
 
-		$report = array();
-		if ( 'theme' === $package ) {
-			$report['theme_files'] = Clara_VE_Zip::copy_tree( $theme_dir, $root, self::SKIP );
-			self::stamp_version( $theme_dir, $root, $version );
-		} elseif ( ! wp_mkdir_p( $root ) ) {
+		if ( ! wp_mkdir_p( $root ) ) {
 			Clara_VE_Zip::rrmdir( $staging );
 			return new WP_Error( 'clara_ve_staging', __( 'Could not prepare a temporary directory for the export.', 'visual-edit-lite' ) );
 		}
 
-		if ( 'none' !== $mode ) {
-			$bundle = self::write_bundle( $root, $mode, $media_mode, $exclude_keys, $post_limit, $slug, $theme, $version, $include_private_data );
-			if ( is_wp_error( $bundle ) ) {
-				Clara_VE_Zip::rrmdir( $staging );
-				return $bundle;
-			}
-			$report = array_merge( $report, $bundle );
+		$report = self::write_bundle( $root, 'site', $media_mode, array(), 0, $slug, $theme, $version, $include_private_data );
+		if ( is_wp_error( $report ) ) {
+			Clara_VE_Zip::rrmdir( $staging );
+			return $report;
 		}
 
-		$suffix   = 'content' === $package ? '-content' : ( 'none' === $mode ? '' : '-' . $mode );
-		$filename = $slug . '-' . $version . $suffix . '.zip';
+		$filename = $slug . '-' . $version . '-content.zip';
 		$zip_path = $staging . '/' . $filename;
 
 		$zipped = Clara_VE_Zip::zip_directory( $root, $zip_path );
@@ -169,32 +101,7 @@ class Clara_VE_Bundle_Writer {
 	}
 
 	/**
-	 * Rewrite the version in the staged copies of style.css and readme.txt so
-	 * a shipped ZIP cannot contradict itself. The originals in the repository
-	 * are untouched.
-	 *
-	 * @param string $theme_dir
-	 * @param string $root
-	 * @param string $version
-	 * @return void
-	 */
-	private static function stamp_version( $theme_dir, $root, $version ) {
-		$style = $root . '/style.css';
-		if ( file_exists( $style ) ) {
-			$css = (string) file_get_contents( $style ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			$css = preg_replace( '/^(\s*Version:\s*).*$/mi', '${1}' . $version, $css, 1 );
-			file_put_contents( $style, $css ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-		}
-		$readme = $root . '/readme.txt';
-		if ( file_exists( $readme ) ) {
-			$txt = (string) file_get_contents( $readme ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			$txt = preg_replace( '/^(\s*Stable tag:\s*).*$/mi', '${1}' . $version, $txt, 1 );
-			file_put_contents( $readme, $txt ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-		}
-	}
-
-	/**
-	 * Write clara-content/ inside the staged theme.
+	 * Write clara-content/ inside the staging folder.
 	 *
 	 * @param string   $root
 	 * @param string   $mode

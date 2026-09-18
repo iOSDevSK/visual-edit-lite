@@ -7,6 +7,14 @@ $check = static function ( $ok, $message ) {
 		throw new RuntimeException( $message );
 	}
 };
+// Print what is queued the way WordPress prints it, so the assertions below
+// read the page rather than the class's private state. A printed handle is
+// "done", which is what makes the next render open a new batch.
+$print_styles = static function () {
+	ob_start();
+	wp_styles()->do_items();
+	return ob_get_clean();
+};
 $extras = array(
 	'responsive' => array( 'mobile' => array( 'typography.fontSize' => '18px', 'display' => 'none' ) ),
 	'ornaments' => array( 'before' => array( 'content' => '“', 'color' => '#ffffff' ), 'after' => array( 'content' => '”', 'font-size' => '24px' ) ),
@@ -27,16 +35,12 @@ $check( $first !== $second, 'Editing a duplicate must give it a different select
 $check( $source === Clara_VE_Block_Extras::render( $source, array() ), 'Blocks without extras must remain byte-identical.' );
 $block['attrs']['claraVe']['ornaments']['before']['hidden'] = true;
 $promoted = Clara_VE_Block_Extras::render( $source, $block );
-ob_start();
-Clara_VE_Block_Extras::print_styles();
-$css = ob_get_clean();
+$css = $print_styles();
 $check( false !== strpos( $css, 'content:"" !important;display:none !important;' ), 'Promoted ornaments must not render twice.' );
-$check( false !== strpos( $css, 'clara-ve-block-extras-1' ), 'Head style batch has its own ID.' );
+$check( false !== strpos( $css, 'clara-ve-block-extras-1' ), 'The first batch is printed under its own handle.' );
 Clara_VE_Block_Extras::render( $source, $block );
-ob_start();
-Clara_VE_Block_Extras::print_styles();
-$css = ob_get_clean();
-$check( false !== strpos( $css, 'clara-ve-block-extras-2' ), 'Footer style batch must not reuse the head ID.' );
+$css = $print_styles();
+$check( false !== strpos( $css, 'clara-ve-block-extras-2' ), 'A block rendered after its batch was printed opens the next one, or its rules would never reach the page.' );
 $registered = WP_Block_Type_Registry::get_instance()->get_registered( 'core/paragraph' );
 $check( isset( $registered->attributes['claraVe'] ), 'The server must register the extension attribute before client block registration.' );
 
@@ -70,9 +74,7 @@ $styled = Clara_VE_Block_Extras::render( '<style>.x{}</style><div class="f"></di
 $check( 0 === strpos( $styled, '<div class="cve-r-' ), 'Output starting with a style tag is wrapped rather than classing the style tag.' );
 $bare = Clara_VE_Block_Extras::render( '[contact-form-7 id="1"]', array( 'blockName' => 'contact-form-7/contact-form-selector', 'attrs' => array( 'claraVe' => array( 'form' => $form ) ) ) );
 $check( 0 === strpos( $bare, '<div class="cve-r-' ), 'A block that renders a bare shortcode is wrapped.' );
-ob_start();
-Clara_VE_Block_Extras::print_styles();
-$form_css = ob_get_clean();
+$form_css = $print_styles();
 $check( false !== strpos( $form_css, ':is(label, legend){color:#b03a2e !important;}' ) && false !== strpos( $form_css, 'background-color:var(--wp--preset--color--accent) !important;' ), 'Form rules reach the page stylesheet with presets expanded.' );
 $refused = Clara_VE_Block_Extras::render( '<p>[x]</p>', array( 'blockName' => 'core/shortcode', 'attrs' => array( 'claraVe' => array( 'form' => array( 'label' => array( 'color' => 'red;}body{display:none' ), 'field' => array( 'position' => 'fixed' ) ) ) ) ) );
 $check( '<p>[x]</p>' === $refused, 'Unsafe or unknown form values leave the block untouched.' );

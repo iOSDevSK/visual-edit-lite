@@ -338,7 +338,10 @@ class Clara_VE_Import_Page {
 		$plan_id = isset( $_POST['plan_id'] ) ? sanitize_key( wp_unslash( $_POST['plan_id'] ) ) : '';
 		check_admin_referer( 'clara_ve_import_apply_' . $plan_id );
 
-		set_time_limit( 0 );
+		// An import writes every page, menu and media file of a site in one
+		// request, which outlasts the default limit on shared hosting. Reached
+		// only by an administrator, after the capability and nonce checks above.
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- see above.
 		$result = Clara_VE_Import_Plan::apply( $plan_id );
 
 		$scrap = get_transient( 'clara_ve_import_scrap_' . $plan_id );

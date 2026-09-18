@@ -49,11 +49,9 @@ class Clara_VE_GEO {
 	/**
 	 * Answer-engine crawlers, as a snapshot shipped with this release.
 	 *
-	 * A list, not a lookup: what makes it worth maintaining is that it changes —
-	 * new agents appear every few months — which is why keeping it current is
-	 * the paid tier's job and shipping a usable snapshot is this one's. A site
-	 * whose subscription lapses keeps whatever it last synced; a site that never
-	 * subscribes still gets this.
+	 * A list, not a lookup: new agents appear every few months, so this is kept
+	 * current the way the rest of the plugin is — by a plugin update. Nothing
+	 * fetches it from anywhere, and the rules work offline.
 	 */
 	const AI_CRAWLERS = array(
 		'GPTBot',
@@ -638,10 +636,10 @@ class Clara_VE_GEO {
 		if ( ! $json ) {
 			return;
 		}
-		printf(
-			"<script type=\"application/ld+json\">%s</script>\n",
-			str_replace( '</', '<\/', $json ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		);
+		// JSON-LD is data, not a script to enqueue, so it goes out through core's
+		// own tag printer. The slash escape keeps a literal "</script" inside a
+		// string value from ending the tag.
+		wp_print_inline_script_tag( str_replace( '</', '<\/', $json ), array( 'type' => 'application/ld+json' ) );
 	}
 
 	/**
@@ -806,7 +804,8 @@ class Clara_VE_GEO {
 		}
 		header( 'Content-Type: text/plain; charset=utf-8' );
 		header( 'X-Robots-Tag: noindex' );
-		echo self::llms_txt(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plain text, assembled below
+		header( 'X-Content-Type-Options: nosniff' );
+		echo self::llms_txt(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- served as text/plain (the Content-Type header above), not HTML; every fragment is sanitize_text_field()'d or wp_strip_all_tags()'d in llms_txt(), and esc_html() would write HTML entities into a non-HTML document.
 		exit;
 	}
 
