@@ -9,6 +9,7 @@
 ![WordPress 6.6 – 7.1](https://img.shields.io/badge/WordPress-6.6%20%E2%80%93%207.1-21759b)
 ![PHP 7.4+](https://img.shields.io/badge/PHP-7.4%2B-777bb4)
 [![License GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
+[![Try it live](https://img.shields.io/badge/try%20it%20live-WordPress%20Playground-3858e9)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/iOSDevSK/visual-edit-lite/main/.github/playground/blueprint.json)
 <!-- Once the directory listing is live, add: -->
 <!-- [![WordPress.org](https://img.shields.io/wordpress/plugin/v/visual-edit-lite)](https://wordpress.org/plugins/visual-edit-lite/) -->
 <!-- ![Active installs](https://img.shields.io/wordpress/plugin/installs/visual-edit-lite) -->
@@ -41,6 +42,9 @@ free edition of [Visual Edit Pro](https://html2wp.dev/visualedit/).
 
 ## Install
 
+- **Try it first** — [open it in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/iOSDevSK/visual-edit-lite/main/.github/playground/blueprint.json):
+  a throwaway WordPress in your browser with the plugin installed, active and
+  opened in the editor. Nothing to install, nothing is kept.
 - **From WordPress.org** — Plugins → Add New → search for "Visual Edit Lite"
   → Install Now → Activate. *(Submitted to the directory; the listing is
   pending review.)*

@@ -40,6 +40,14 @@ DEFINED="$(grep -m1 "define( 'CLARA_VE_VERSION'" "$MAIN" | sed "s/.*'\([0-9.]*\)
 [ "$DEFINED" = "$VERSION" ] || fail "header $VERSION vs CLARA_VE_VERSION $DEFINED"
 STABLE="$(grep -m1 '^Stable tag:' "$SRC/readme.txt" | sed 's/.*: //' | tr -d '[:space:]')"
 [ "$STABLE" = "$VERSION" ] || fail "header $VERSION vs readme Stable tag $STABLE"
+# The "Try it live" link in the README never changes; what it installs is named
+# in this file. A version bump that forgets it leaves the demo on the previous
+# release, and nothing else would notice. (Dot-directory: never packed.)
+BLUEPRINT="$SRC/.github/playground/blueprint.json"
+if [ -f "$BLUEPRINT" ]; then
+  grep -q "/releases/download/$VERSION/$SLUG-$VERSION.zip\"" "$BLUEPRINT" \
+    || fail "header $VERSION vs the Playground blueprint — update the ZIP URL in .github/playground/blueprint.json"
+fi
 
 # ------------------------------------------------------------ completeness ---
 while IFS= read -r rel; do
