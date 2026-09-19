@@ -58,7 +58,10 @@ ok "main at ${HEAD_SHA:0:7}"
 
 step "Build"
 ZIP="$SRC/$SLUG-$VERSION.zip"
-tools/build-plugin.sh "$ZIP" >/dev/null || die "build refused"
+# The GitHub release carries the github channel: the same package plus the Git
+# Updater headers, so a site installed from here can update. The WordPress.org
+# submission is the default build and never sees them.
+VE_CHANNEL=github tools/build-plugin.sh "$ZIP" >/dev/null || die "build refused"
 ok "$(basename "$ZIP")"
 
 step "Tag"
@@ -95,7 +98,7 @@ DL="$(mktemp -d)"; PUB="$(mktemp -d)"; FRESH="$(mktemp -d)"
 gh release download "$VERSION" -R "$REPO" -p '*.zip' -O "$DL/pub.zip" --clobber >/dev/null \
   || die "the published asset could not be downloaded back"
 ( cd "$PUB" && unzip -q "$DL/pub.zip" ) || die "the published asset is not a readable ZIP"
-tools/build-plugin.sh "$DL/fresh.zip" >/dev/null || die "rebuild failed"
+VE_CHANNEL=github tools/build-plugin.sh "$DL/fresh.zip" >/dev/null || die "rebuild failed"
 ( cd "$FRESH" && unzip -q "$DL/fresh.zip" )
 diff -r "$PUB" "$FRESH" >/dev/null || die "the published asset does NOT match this commit"
 PUBVER="$(grep -m1 '^ \* Version:' "$PUB/$SLUG/$SLUG.php" | sed 's/.*: //' | tr -d '[:space:]')"

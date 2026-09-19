@@ -3,6 +3,16 @@
 # build one that is not actually Lite, or that WordPress.org would bounce.
 #
 #   tools/build-plugin.sh [output.zip]
+#   VE_CHANNEL=github tools/build-plugin.sh [output.zip]
+#
+# Two channels, one source. The default build is the WordPress.org package and
+# is exactly what the directory's reviewers see. VE_CHANNEL=github packs the
+# same files plus three Git Updater headers in the PACKAGED main file, so an
+# install from a GitHub release can update itself (through the Git Updater
+# plugin) while the plugin waits for, or lives beside, its directory listing.
+# The headers are never in the source tree: nothing a reviewer reads changes.
+# They carry no `Update URI`, so once the directory serves this slug WordPress
+# offers its build too, and installing it moves the site to that channel.
 #
 # The gates below are the whole point. Lite is DERIVED from Visual Edit Pro by
 # deleting the licence-gated half, and a derivation is only trustworthy if
@@ -210,12 +220,30 @@ if find "$STAGE/$SLUG" -name '*.md' -print -quit | grep -q .; then
   fail "a Markdown file ended up inside the package — only readme.txt ships"
 fi
 
+# ---------------------------------------------------------------- channel ---
+CHANNEL="${VE_CHANNEL:-wporg}"
+case "$CHANNEL" in
+  wporg) ;;
+  github)
+    STAGED_MAIN="$STAGE/$SLUG/$SLUG.php"
+    grep -q '^ \* Domain Path: /languages$' "$STAGED_MAIN" || fail "cannot place the Git Updater headers: no Domain Path line"
+    awk '{ print } /^ \* Domain Path: \/languages$/ {
+           print " * GitHub Plugin URI: iOSDevSK/visual-edit-lite"
+           print " * Primary Branch: main"
+           print " * Release Asset: true" }' "$STAGED_MAIN" > "$STAGED_MAIN.tmp" && mv "$STAGED_MAIN.tmp" "$STAGED_MAIN"
+    [ "$(grep -c '^ \* GitHub Plugin URI: ' "$STAGED_MAIN")" = "1" ] || fail "Git Updater headers were not placed exactly once"
+    grep -q 'Update URI' "$STAGED_MAIN" && fail "the github channel must not carry an Update URI either"
+    php -l "$STAGED_MAIN" >/dev/null || fail "the packaged main file no longer parses"
+    ;;
+  *) fail "unknown VE_CHANNEL '$CHANNEL' (wporg or github)";;
+esac
+
 mkdir -p "$(dirname "$OUT")"
 rm -f "$OUT"
 # -X strips extended attributes / resource forks (the __MACOSX source).
 ( cd "$STAGE" && zip -q -r -X "$OUT" "$SLUG" )
 
-echo "built $OUT (v$VERSION, $(du -h "$OUT" | cut -f1 | tr -d ' '))"
+echo "built $OUT (v$VERSION, $CHANNEL channel, $(du -h "$OUT" | cut -f1 | tr -d ' '))"
 unzip -l "$OUT" | grep -cE '\.php$|\.js$|\.css$' | xargs echo "  files (php/js/css):"
 if unzip -l "$OUT" | grep -qE '__MACOSX|\.DS_Store'; then
   fail "junk in the archive — build is dirty"
