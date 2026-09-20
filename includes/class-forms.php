@@ -347,6 +347,77 @@ class Clara_VE_Forms {
 
 
 	/**
+	 * What a form this plugin renders may consist of.
+	 *
+	 * wp_kses_post() knows a post's vocabulary, and a post has no <input> and no
+	 * <select>: run over a form it leaves the labels and removes the fields. So
+	 * the block's render callback is bounded by this instead — everything a post
+	 * may hold, plus form controls with the attributes a designed form really
+	 * carries, plus the plain SVG shapes an icon inside a button is made of.
+	 * No event handlers, no <script>, no <iframe>: none of those is a form.
+	 *
+	 * @return array Allowed HTML, in the shape wp_kses() takes.
+	 */
+	public static function allowed_form_html() {
+		static $allowed = null;
+		if ( null !== $allowed ) {
+			return $allowed;
+		}
+		$allowed = wp_kses_allowed_html( 'post' );
+		$common  = array(
+			'class'            => true,
+			'id'               => true,
+			'name'             => true,
+			'style'            => true,
+			'title'            => true,
+			'hidden'           => true,
+			'disabled'         => true,
+			'readonly'         => true,
+			'required'         => true,
+			'tabindex'         => true,
+			'role'             => true,
+			'aria-label'       => true,
+			'aria-labelledby'  => true,
+			'aria-describedby' => true,
+			'aria-required'    => true,
+			'aria-invalid'     => true,
+			'aria-hidden'      => true,
+			'aria-live'        => true,
+			'data-*'           => true,
+		);
+		$tags    = array(
+			'form'     => array( 'action' => true, 'method' => true, 'novalidate' => true, 'autocomplete' => true, 'enctype' => true, 'accept-charset' => true, 'target' => true ),
+			'input'    => array( 'type' => true, 'value' => true, 'placeholder' => true, 'checked' => true, 'size' => true, 'maxlength' => true, 'minlength' => true, 'min' => true, 'max' => true, 'step' => true, 'pattern' => true, 'autocomplete' => true, 'inputmode' => true, 'multiple' => true, 'accept' => true, 'list' => true ),
+			'select'   => array( 'multiple' => true, 'size' => true, 'autocomplete' => true ),
+			'option'   => array( 'value' => true, 'selected' => true, 'label' => true ),
+			'optgroup' => array( 'label' => true ),
+			'datalist' => array(),
+			'textarea' => array( 'rows' => true, 'cols' => true, 'placeholder' => true, 'maxlength' => true, 'minlength' => true, 'autocomplete' => true, 'wrap' => true ),
+			'button'   => array( 'type' => true, 'value' => true ),
+			'label'    => array( 'for' => true ),
+			'fieldset' => array(),
+			'legend'   => array(),
+			'output'   => array( 'for' => true ),
+		);
+		foreach ( $tags as $tag => $attributes ) {
+			$allowed[ $tag ] = array_merge( isset( $allowed[ $tag ] ) ? $allowed[ $tag ] : array(), $common, $attributes );
+		}
+		// An arrow or a tick inside a submit button. Shapes and presentation
+		// only — nothing here can load a resource or run anything.
+		$paint = array( 'class' => true, 'fill' => true, 'fill-rule' => true, 'clip-rule' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'opacity' => true, 'transform' => true );
+		$allowed['svg']      = array_merge( $paint, array( 'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true, 'role' => true, 'aria-hidden' => true, 'aria-label' => true, 'focusable' => true, 'style' => true ) );
+		$allowed['g']        = $paint;
+		$allowed['path']     = array_merge( $paint, array( 'd' => true ) );
+		$allowed['circle']   = array_merge( $paint, array( 'cx' => true, 'cy' => true, 'r' => true ) );
+		$allowed['ellipse']  = array_merge( $paint, array( 'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true ) );
+		$allowed['rect']     = array_merge( $paint, array( 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true ) );
+		$allowed['line']     = array_merge( $paint, array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ) );
+		$allowed['polyline'] = array_merge( $paint, array( 'points' => true ) );
+		$allowed['polygon']  = array_merge( $paint, array( 'points' => true ) );
+		return $allowed;
+	}
+
+	/**
 	 * Proof that this submission came from a form this site rendered.
 	 *
 	 * This deliberately does NOT use wp_create_nonce(), and the reason is a

@@ -277,11 +277,11 @@ class Clara_VE_Front_Nav {
 			) as $pair ) {
 				list( $from, $to ) = $pair;
 				if ( false !== strpos( $open, 'class="' . $from . '"' ) ) {
-					$open = str_replace( 'class="' . $from . '"', 'class="' . ( $is_current ? $zone['active'] : $zone['rest'] ) . '"', $open );
+					$open = str_replace( 'class="' . $from . '"', 'class="' . esc_attr( $is_current ? $zone['active'] : $zone['rest'] ) . '"', $open );
 					break;
 				}
 				if ( false !== strpos( $open, "class='" . $from . "'" ) ) {
-					$open = str_replace( "class='" . $from . "'", "class='" . ( $is_current ? $zone['active'] : $zone['rest'] ) . "'", $open );
+					$open = str_replace( "class='" . $from . "'", "class='" . esc_attr( $is_current ? $zone['active'] : $zone['rest'] ) . "'", $open );
 					break;
 				}
 			}

@@ -178,6 +178,31 @@ class Clara_VE_Block_Extras {
 		return ! $html->next_tag() || in_array( $html->get_tag(), array( 'STYLE', 'SCRIPT', 'LINK', 'NOSCRIPT', 'TEMPLATE', 'META' ), true );
 	}
 
+	/**
+	 * Give a block the class its rules are scoped to.
+	 *
+	 * On escaping, because this is a render_block filter and its return value
+	 * is printed: two different things pass through here, and they are treated
+	 * differently on purpose.
+	 *
+	 * What this method GENERATES is one class name. It is built from a hash,
+	 * and it reaches the markup either through WP_HTML_Tag_Processor, which
+	 * escapes attribute values itself, or through esc_attr() in the wrapper.
+	 *
+	 * What it PASSES THROUGH is $content: the HTML WordPress has already
+	 * rendered for this block, byte for byte what core would print if this
+	 * filter were not registered — the same contract core's own layout and
+	 * elements supports work under on this hook. It is not escaped again,
+	 * because there is no function that could do it: wp_kses_post() removes
+	 * the <form>, <input>, <svg> and <iframe> that form, embed and Custom HTML
+	 * blocks legitimately render, and would break the page this filter is only
+	 * meant to decorate. Who may put such markup in a post is decided where it
+	 * is SAVED — core strips it for anybody without unfiltered_html.
+	 *
+	 * @param string $content The block's rendered HTML, from WordPress.
+	 * @param array  $block   The parsed block.
+	 * @return string
+	 */
 	public static function render( $content, $block ) {
 		$extras = self::clean( $block['attrs']['claraVe'] ?? null );
 		if ( ! $extras || '' === trim( $content ) || ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
@@ -187,6 +212,7 @@ class Clara_VE_Block_Extras {
 		// equal extras share a rule; editing either copy produces a new class.
 		$class = 'cve-r-' . substr( md5( wp_json_encode( $extras ) ), 0, 16 );
 		if ( ! empty( $extras['form'] ) && self::form_needs_wrapper( $content, (string) ( $block['blockName'] ?? '' ) ) ) {
+			// $content is core's rendered block, passed through — see above.
 			$updated = '<div class="' . esc_attr( $class ) . '">' . $content . '</div>';
 		} else {
 			$html = new WP_HTML_Tag_Processor( $content );

@@ -277,32 +277,11 @@ class Clara_VE_Native_Gutenberg {
 		if ( $post ) {
 			wp_reset_postdata();
 		}
-		return rest_ensure_response( array( 'html' => wp_kses( $html, self::preview_allowed_html() ) ) );
+		return rest_ensure_response( array( 'html' => wp_kses( $html, Clara_VE_Forms::allowed_form_html() ) ) );
 	}
 
 	private static function first_shortcode_tag( $text ) {
 		return preg_match( '~\[([a-zA-Z0-9_-]+)~', $text, $match ) ? $match[1] : '';
-	}
-
-	private static function preview_allowed_html() {
-		$allowed = wp_kses_allowed_html( 'post' );
-		$common  = array( 'class' => true, 'id' => true, 'name' => true, 'style' => true, 'title' => true, 'disabled' => true, 'required' => true, 'aria-label' => true, 'aria-describedby' => true, 'aria-required' => true, 'data-*' => true );
-		$tags    = array(
-			'form'     => array( 'action' => true, 'method' => true, 'novalidate' => true ),
-			'input'    => array( 'type' => true, 'value' => true, 'placeholder' => true, 'checked' => true, 'size' => true, 'maxlength' => true, 'min' => true, 'max' => true, 'step' => true, 'autocomplete' => true ),
-			'select'   => array( 'multiple' => true, 'size' => true ),
-			'option'   => array( 'value' => true, 'selected' => true ),
-			'optgroup' => array( 'label' => true ),
-			'textarea' => array( 'rows' => true, 'cols' => true, 'placeholder' => true, 'maxlength' => true ),
-			'button'   => array( 'type' => true, 'value' => true ),
-			'label'    => array( 'for' => true ),
-			'fieldset' => array(),
-			'legend'   => array(),
-		);
-		foreach ( $tags as $tag => $attributes ) {
-			$allowed[ $tag ] = array_merge( isset( $allowed[ $tag ] ) ? $allowed[ $tag ] : array(), $common, $attributes );
-		}
-		return $allowed;
 	}
 
 	/**

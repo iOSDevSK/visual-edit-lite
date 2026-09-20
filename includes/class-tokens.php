@@ -834,7 +834,7 @@ class Clara_VE_Tokens {
 		// block — so there is one field and one check, not two of each.
 		$hidden .= Clara_VE_Forms::delivery_field( $form_id, $to, $type, $list );
 		// Honeypot: real visitors never see or fill this field.
-		$hidden .= '<input type="text" name="cve_hp" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">';
+		$hidden .= '<input type="text" name="cve_hp" value="" class="cve-hp" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">';
 		// Signed render time, for the time-trap in Clara_VE_Forms::handle_submit().
 		$hidden .= Clara_VE_Forms::timestamp_field();
 

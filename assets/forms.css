@@ -38,3 +38,15 @@
 .cve-form-message[data-cve-error] {
 	opacity: 1;
 }
+
+/* The honeypot: a text field no person should ever see or reach. It carries the
+   same rules inline, so it is hidden with or without this stylesheet; the class
+   is here because a style filter decides for itself which inline declarations
+   it lets through, and a visible honeypot is a field real people fill in. */
+.cve-hp {
+	position: absolute !important;
+	left: -9999px !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+}

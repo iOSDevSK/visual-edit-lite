@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Visual Edit Lite 1.31.0\n"
+"Project-Id-Version: Visual Edit Lite 1.31.1\n"
 "Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,17 +70,17 @@ msgstr ""
 #: includes/class-block-patch.php:82
 #: includes/class-block-patch.php:141
 #: includes/class-block-patch.php:571
-#: includes/class-page-actions.php:61
-#: includes/class-page-actions.php:146
-#: includes/class-rest.php:934
+#: includes/class-page-actions.php:75
+#: includes/class-page-actions.php:163
+#: includes/class-rest.php:937
 msgid "That page no longer exists."
 msgstr ""
 
 #: includes/class-block-patch.php:87
 #: includes/class-block-patch.php:146
 #: includes/class-responsive.php:166
-#: includes/class-rest.php:984
-#: includes/class-rest.php:1015
+#: includes/class-rest.php:1057
+#: includes/class-rest.php:1088
 msgid "This page is not edited as blocks."
 msgstr ""
 
@@ -750,15 +750,15 @@ msgstr ""
 msgid "%1$s — %2$s"
 msgstr ""
 
-#: includes/class-forms.php:534
+#: includes/class-forms.php:605
 msgid "New form submission: %s"
 msgstr ""
 
-#: includes/class-forms.php:572
+#: includes/class-forms.php:643
 msgid "Thanks — we got your message (%s)"
 msgstr ""
 
-#: includes/class-forms.php:575
+#: includes/class-forms.php:646
 msgid "Thanks for getting in touch — your message reached %s and someone will read it shortly.\n\nThis is an automatic confirmation; there's no need to reply to it."
 msgstr ""
 
@@ -1438,7 +1438,7 @@ msgid "no reason given"
 msgstr ""
 
 #: includes/class-media.php:28
-#: includes/class-rest.php:400
+#: includes/class-rest.php:403
 msgid "Imported image"
 msgstr ""
 
@@ -1594,23 +1594,23 @@ msgstr ""
 msgid "Thanks for confirming — here's what you signed up for:\n\n{download_url}"
 msgstr ""
 
-#: includes/class-page-actions.php:64
+#: includes/class-page-actions.php:81
 msgid "You are not allowed to copy this page."
 msgstr ""
 
-#: includes/class-page-actions.php:70
+#: includes/class-page-actions.php:87
 msgid "%s (copy)"
 msgstr ""
 
-#: includes/class-page-actions.php:149
+#: includes/class-page-actions.php:166
 msgid "You are not allowed to remove this page."
 msgstr ""
 
-#: includes/class-page-actions.php:158
+#: includes/class-page-actions.php:175
 msgid "This is the site's front page. Choose a different front page under Settings → Reading first, or the home page would be left empty."
 msgstr ""
 
-#: includes/class-page-actions.php:165
+#: includes/class-page-actions.php:182
 msgid "WordPress would not move that page to the trash."
 msgstr ""
 
@@ -1747,47 +1747,47 @@ msgstr ""
 msgid "That is not a block this editor is tracking."
 msgstr ""
 
-#: includes/class-rest.php:340
+#: includes/class-rest.php:343
 msgid "Only an http(s) image address can be imported."
 msgstr ""
 
-#: includes/class-rest.php:343
+#: includes/class-rest.php:346
 msgid "That address cannot be fetched from this server."
 msgstr ""
 
-#: includes/class-rest.php:362
+#: includes/class-rest.php:365
 msgid "That address points inside this server's own network, so it will not be fetched."
 msgstr ""
 
-#: includes/class-rest.php:376
+#: includes/class-rest.php:379
 msgid "That image is too large to import (max 16 MB)."
 msgstr ""
 
-#: includes/class-rest.php:385
+#: includes/class-rest.php:388
 msgid "Only PNG, JPG, WebP or GIF images can be imported."
 msgstr ""
 
-#: includes/class-rest.php:391
+#: includes/class-rest.php:394
 msgid "The downloaded image could not be read."
 msgstr ""
 
-#: includes/class-rest.php:447
+#: includes/class-rest.php:450
 msgid "No menu is assigned to any declared menu location."
 msgstr ""
 
-#: includes/class-rest.php:471
+#: includes/class-rest.php:474
 msgid "Could not find a matching menu item."
 msgstr ""
 
-#: includes/class-rest.php:713
+#: includes/class-rest.php:716
 msgid "This is shared across every page, so it has no title or description of its own."
 msgstr ""
 
-#: includes/class-rest.php:912
+#: includes/class-rest.php:915
 msgid "Could not rename that save."
 msgstr ""
 
-#: includes/class-rest.php:1120
+#: includes/class-rest.php:1193
 msgid "That save no longer exists."
 msgstr ""
 

@@ -235,6 +235,62 @@ $check( 'and is still there', 'publish' === get_post_status( $front ) );
 update_option( 'show_on_front', $was_show );
 update_option( 'page_on_front', $was_front );
 
+// ------------------------------------------- the right to do what is asked
+
+// A permission has to match what the request DOES, not what it reads. Copying
+// a page reads one and CREATES another; removing one DELETES it; importing an
+// image ADDS an attachment. Each of those is its own capability in WordPress,
+// and "may edit this page" covers none of them. An administrator has them all,
+// which is exactly why nothing here noticed they were never asked: so each is
+// taken away in turn, from an administrator, and the door has to close.
+$deny  = array();
+$strip = static function ( $allcaps ) use ( &$deny ) {
+	foreach ( $deny as $cap ) {
+		$allcaps[ $cap ] = false;
+	}
+	return $allcaps;
+};
+add_filter( 'user_has_cap', $strip, 99 );
+
+$request = static function ( $params ) {
+	$r = new WP_REST_Request( 'POST', '/clara-ve/v1/x' );
+	foreach ( $params as $k => $v ) {
+		$r->set_param( $k, $v );
+	}
+	return $r;
+};
+$page_type = get_post_type_object( 'page' );
+
+$check( 'an administrator may copy a page', true === Clara_VE_REST::can_duplicate_page( $request( array( 'post' => $origin ) ) ) );
+$deny = array( $page_type->cap->create_posts );
+$check( 'without the right to create pages, the copy route refuses', true !== Clara_VE_REST::can_duplicate_page( $request( array( 'post' => $origin ) ) ) );
+$refused = Clara_VE_Page_Actions::duplicate( $origin, 'Should not exist', 'clara-ve-should-not-exist' );
+$check( 'and so does the method that would insert the post', is_wp_error( $refused ) && 'clara_ve_forbidden' === $refused->get_error_code() );
+$check( 'nothing was created on the way to refusing', null === get_page_by_path( 'clara-ve-should-not-exist', OBJECT, 'page' ) );
+
+$deny = array();
+$check( 'an administrator may remove a page', true === Clara_VE_REST::can_trash_page( $request( array( 'post' => $origin ) ) ) );
+$deny = array( $page_type->cap->delete_posts, $page_type->cap->delete_published_posts, $page_type->cap->delete_others_posts, $page_type->cap->delete_private_posts );
+$check( 'without the right to delete it, the remove route refuses', true !== Clara_VE_REST::can_trash_page( $request( array( 'post' => $origin ) ) ) );
+
+$deny = array();
+$check( 'an administrator may import an image', true === Clara_VE_REST::can_import_image() );
+$deny = array( 'upload_files' );
+$check( 'without upload_files, the import-image route refuses', false === Clara_VE_REST::can_import_image() );
+
+// A page is addressed one of two ways: a converted page by the key in its meta,
+// a block page by a key derived from its ID. Whichever this one has.
+$deny      = array();
+$write_key = (string) get_post_meta( $origin, CLARA_VE_PAGE_KEY_META, true );
+$write_key = '' !== $write_key ? $write_key : Clara_VE_Source_Store::block_key( get_post( $origin ) );
+$check( 'the page under test has a key to be addressed by', '' !== $write_key );
+$check( 'an administrator may write to a page by its key', true === Clara_VE_REST::can_edit_key( $request( array( 'key' => $write_key ) ) ) );
+$deny = array( $page_type->cap->edit_posts, $page_type->cap->edit_others_posts, $page_type->cap->edit_published_posts, $page_type->cap->edit_private_posts );
+$check( 'without the right to edit that page, a write addressed by its key refuses', true !== Clara_VE_REST::can_edit_key( $request( array( 'key' => $write_key ) ) ) );
+
+$deny = array();
+remove_filter( 'user_has_cap', $strip, 99 );
+
 // ------------------------------------------------------------------- cleanup
 
 foreach ( $made as $id ) {

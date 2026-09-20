@@ -34,6 +34,25 @@ $check( false === strpos( $html, 'data-demo' ), 'a theme demo marker is removed'
 $check( false !== strpos( $html, 'data-cve-thanks="Got it &quot;quoted&quot;"' ), 'the form message is carried, escaped' );
 $check( false !== strpos( $html, 'name="redirect" value="' . esc_attr( home_url( '/thanks/' ) ) . '"' ), 'a path redirect becomes a same-site address' );
 $check( false !== strpos( $html, '<label for="c-name">Name</label>' ), 'the saved fields are untouched' );
+
+// The callback's return is printed by WordPress, so it is bounded by an
+// allowlist at the point of return. What that must NOT do is change a form:
+// every field the block saved, and every hidden one the plugin adds, has to
+// come out the other side — a stripped honeypot is a spam filter switched off,
+// and a stripped <input> is a form nobody can fill in.
+$allowed = Clara_VE_Forms::allowed_form_html();
+$check( $html === wp_kses( $html, $allowed ), 'the rendered form is already inside the allowlist (filtering it twice changes nothing)' );
+$hp = preg_match( '~<input[^>]*name="cve_hp"[^>]*>~', $html, $hp_tag ) ? $hp_tag[0] : '';
+$check( false !== strpos( $hp, 'class="cve-hp"' ) && false !== strpos( $hp, 'tabindex="-1"' ) && false !== strpos( $hp, 'autocomplete="off"' ) && false !== strpos( $hp, 'aria-hidden="true"' ), 'the honeypot keeps the attributes that keep people out of it (got: ' . $hp . ')' );
+foreach ( array( 'clara_ve_nonce', 'form_id', 'to', 'redirect', 'form_type', 'list_id', 'cve_delivery', 'cve_ts' ) as $hidden_name ) {
+	$check( 1 === preg_match( '~<input type="hidden" name="' . $hidden_name . '"~', $html ), "the hidden field $hidden_name survives the allowlist" );
+}
+$saved_controls = preg_match_all( '~<(input|select|textarea|button|option|label)\b~', $saved );
+$out_controls   = preg_match_all( '~<(input|select|textarea|button|option|label)\b~', $html );
+$check( $out_controls === $saved_controls + 9, "every saved control is still there, plus the nine the plugin adds (saved $saved_controls, rendered $out_controls)" );
+$hostile = Clara_VE_Form_Blocks::render_form( array( 'formId' => 'x' ), '<form><input name="a" onfocus="alert(1)"><script>alert(2)</script><iframe src="https://elsewhere.invalid"></iframe><button type="submit">Go<svg viewBox="0 0 8 8" onload="alert(3)"><path d="M0 0h8"/></svg></button></form>' );
+$check( false === stripos( $hostile, 'onfocus' ) && false === stripos( $hostile, 'onload' ) && false === stripos( $hostile, '<script' ) && false === stripos( $hostile, '<iframe' ), 'event handlers, scripts and frames do not come out of the callback' );
+$check( false !== strpos( $hostile, '<path d="M0 0h8"' ) && false !== strpos( $hostile, 'name="a"' ), 'while the field and the icon in the button do' );
 $foreign = Clara_VE_Form_Blocks::render_form( array( 'redirect' => 'https://elsewhere.invalid/x' ), $saved );
 $check( false !== strpos( $foreign, 'name="redirect" value=""' ), 'a redirect to another site is dropped' );
 $check( '<p>No form</p>' === Clara_VE_Form_Blocks::render_form( array(), '<p>No form</p>' ), 'markup without a form is returned as is' );

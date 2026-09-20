@@ -43,6 +43,20 @@ class Clara_VE_Page_Actions {
 	);
 
 	/**
+	 * May the current user bring a new page into existence?
+	 *
+	 * The capability is read from the post type — `create_posts`, which for
+	 * pages maps to `edit_pages` unless a site has remapped it — rather than
+	 * written out, the way WP_REST_Posts_Controller asks before it inserts.
+	 *
+	 * @return bool
+	 */
+	public static function can_create_pages() {
+		$type = get_post_type_object( 'page' );
+		return $type && current_user_can( $type->cap->create_posts );
+	}
+
+	/**
 	 * Copy a page, with everything that belongs to it.
 	 *
 	 * The copy is always a DRAFT. A published copy would be live at its own
@@ -60,7 +74,10 @@ class Clara_VE_Page_Actions {
 		if ( ! $post || 'page' !== $post->post_type ) {
 			return new WP_Error( 'clara_ve_no_page', __( 'That page no longer exists.', 'visual-edit-lite' ), array( 'status' => 404 ) );
 		}
-		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
+		// Two rights, not one: editing the page being copied, and creating the
+		// page the copy becomes. Asked here as well as in the REST permission
+		// callback, because this method is the thing that inserts the post.
+		if ( ! current_user_can( 'edit_post', $post->ID ) || ! self::can_create_pages() ) {
 			return new WP_Error( 'clara_ve_forbidden', __( 'You are not allowed to copy this page.', 'visual-edit-lite' ), array( 'status' => 403 ) );
 		}
 

@@ -1227,6 +1227,14 @@ class Clara_VE_Source_Store {
 			return;
 		}
 
+		// From here on this CREATES a post. Core gives template parts their own
+		// create capability (edit_theme_options unless a site remaps it), and it
+		// is read from the type, as core's own controller reads it.
+		$part_type = get_post_type_object( 'wp_template_part' );
+		if ( ! $part_type || ! current_user_can( $part_type->cap->create_posts ) ) {
+			return;
+		}
+
 		$post_id = wp_insert_post(
 			array(
 				'post_type'    => 'wp_template_part',

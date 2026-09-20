@@ -40,7 +40,7 @@ class Clara_VE_REST {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( __CLASS__, 'save_source' ),
-					'permission_callback' => 'clara_ve_user_can_edit',
+					'permission_callback' => array( __CLASS__, 'can_edit_key' ),
 					'args'                => array(
 						'key'    => $key_arg,
 						'source' => array(
@@ -71,7 +71,7 @@ class Clara_VE_REST {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( __CLASS__, 'save_seo' ),
-					'permission_callback' => 'clara_ve_user_can_edit',
+					'permission_callback' => array( __CLASS__, 'can_edit_key' ),
 					'args'                => array(
 						'key'         => $key_arg,
 						'title'       => array( 'type' => 'string' ),
@@ -84,15 +84,17 @@ class Clara_VE_REST {
 		);
 
 		// Copying and removing a page, from the editor rather than the Pages
-		// list. Both are per-post writes, so both ask can_edit_target_post()
-		// rather than "may this person use the editor at all".
+		// list. Each asks for what it DOES, on top of "may edit this page":
+		// copying creates a page (create_posts), removing bins one (delete_post).
 		register_rest_route(
 			'clara-ve/v1',
 			'/pages/duplicate',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'duplicate_page' ),
-				'permission_callback' => array( __CLASS__, 'can_edit_target_post' ),
+				// Reading the source page is one permission; bringing a NEW page
+				// into existence is another. Both are asked.
+				'permission_callback' => array( __CLASS__, 'can_duplicate_page' ),
 				'args'                => array(
 					'post'  => array(
 						'type'     => 'integer',
@@ -110,7 +112,7 @@ class Clara_VE_REST {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'trash_page' ),
-				'permission_callback' => array( __CLASS__, 'can_edit_target_post' ),
+				'permission_callback' => array( __CLASS__, 'can_trash_page' ),
 				'args'                => array(
 					'post' => array(
 						'type'     => 'integer',
@@ -253,7 +255,7 @@ class Clara_VE_REST {
 			array(
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => array( __CLASS__, 'rename_history' ),
-				'permission_callback' => 'clara_ve_user_can_edit',
+				'permission_callback' => array( __CLASS__, 'can_edit_key' ),
 				'args'                => array(
 					'key'     => $key_arg,
 					'message' => array(
@@ -270,7 +272,7 @@ class Clara_VE_REST {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'restore_history' ),
-				'permission_callback' => 'clara_ve_user_can_edit',
+				'permission_callback' => array( __CLASS__, 'can_edit_key' ),
 				'args'                => array( 'key' => $key_arg ),
 			)
 		);
@@ -299,7 +301,8 @@ class Clara_VE_REST {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'import_image' ),
-				'permission_callback' => 'clara_ve_user_can_edit',
+				// It ends as a new attachment in the Media Library.
+				'permission_callback' => array( __CLASS__, 'can_import_image' ),
 				'args'                => array(
 					'src' => array( 'type' => 'string', 'required' => true ),
 					'alt' => array( 'type' => 'string', 'required' => false ),
@@ -934,6 +937,76 @@ class Clara_VE_REST {
 			return new WP_Error( 'clara_ve_no_post', __( 'That page no longer exists.', 'visual-edit-lite' ), array( 'status' => 404 ) );
 		}
 		return current_user_can( 'edit_post', $post_id );
+	}
+
+	/**
+	 * Copying a page: may edit the one being copied AND may create pages.
+	 *
+	 * The second half is the post type's own `create_posts` capability, read
+	 * from the type rather than spelled out, which is how core's posts
+	 * controller asks the same question before it inserts anything.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return bool|WP_Error
+	 */
+	public static function can_duplicate_page( WP_REST_Request $request ) {
+		$can = self::can_edit_target_post( $request );
+		if ( true !== $can ) {
+			return $can;
+		}
+		return Clara_VE_Page_Actions::can_create_pages();
+	}
+
+	/**
+	 * Removing a page: may edit it AND may delete it. Two different rights in
+	 * WordPress — an Author may edit a page somebody shared with them and
+	 * still not be allowed to bin it.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return bool|WP_Error
+	 */
+	public static function can_trash_page( WP_REST_Request $request ) {
+		$can = self::can_edit_target_post( $request );
+		if ( true !== $can ) {
+			return $can;
+		}
+		return current_user_can( 'delete_post', (int) $request->get_param( 'post' ) );
+	}
+
+	/**
+	 * Importing a remote image: may use the editor AND may add to the Media
+	 * Library, because a new attachment is what the request leaves behind.
+	 *
+	 * @return bool
+	 */
+	public static function can_import_image() {
+		return clara_ve_user_can_edit() && current_user_can( 'upload_files' );
+	}
+
+	/**
+	 * Writing to whatever a `key` names.
+	 *
+	 * clara_ve_user_can_edit() asks whether somebody may use this editor at
+	 * all. A key can also name one particular page — a block page directly, a
+	 * converted page through its meta — and a write to that page is a write to
+	 * that post, so it is asked about that post as well. Keys with no post
+	 * behind them (the front page's stored source, the header, the footer) are
+	 * theme-level, and the first check has already covered those.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return bool
+	 */
+	public static function can_edit_key( WP_REST_Request $request ) {
+		if ( ! clara_ve_user_can_edit() ) {
+			return false;
+		}
+		$key     = sanitize_key( (string) $request->get_param( 'key' ) );
+		$post_id = '' === $key ? 0 : Clara_VE_Source_Store::block_key_post_id( $key );
+		if ( ! $post_id && '' !== $key ) {
+			$page    = Clara_VE_Source_Store::find_page_by_key( $key );
+			$post_id = $page ? (int) $page->ID : 0;
+		}
+		return $post_id ? current_user_can( 'edit_post', $post_id ) : true;
 	}
 
 	/**

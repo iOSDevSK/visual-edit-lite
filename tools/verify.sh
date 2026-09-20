@@ -345,6 +345,27 @@ docker cp "$SRC/tests/regression-patterns.php" "$WP:/tmp/regression-patterns.php
 if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVER["HTTP_HOST"] = "localhost"; require "/var/www/html/wp-load.php"; wp_set_current_user( 1 ); require "/tmp/regression-patterns.php";' > "$PATTERNS_OUT" 2>&1; then pass "$(tail -1 "$PATTERNS_OUT")"
 else sed -n '/FAIL/p' "$PATTERNS_OUT" | head -5; bad "saved sections regression"; fi
 
+# ------------------------------------------------- 5b4b. rights and returns ---
+# The two things the directory's second review found, and the reason neither
+# was found here first: both tests existed and neither was in this gate.
+#
+# A permission has to match what a request DOES — copying a page creates one,
+# removing one deletes it, importing an image adds an attachment — and an
+# administrator has every capability, so a route that never asks still works.
+# regression-page-actions.php takes each capability away from an administrator
+# and expects the door to close.
+#
+# A callback whose return value WordPress prints is an output. The block-extras
+# test holds the render_block filter to what it generates; form-blocks-wp.php,
+# above, holds the form block's return to its allowlist.
+for T in regression-page-actions regression-block-extras; do
+  step "$T"
+  T_OUT=$(mktemp)
+  docker cp "$SRC/tests/$T.php" "$WP:/tmp/$T.php" >/dev/null
+  if docker exec -u www-data "$WP" php -r 'define("WP_USE_THEMES", false); $_SERVER["HTTP_HOST"] = "localhost"; require "/var/www/html/wp-load.php"; wp_set_current_user( 1 ); require "/tmp/'"$T"'.php";' > "$T_OUT" 2>&1 && grep -q '^PASS' "$T_OUT"; then pass "$(grep '^PASS' "$T_OUT" | tail -1)"
+  else grep -E 'FAIL|Fatal|Exception' "$T_OUT" | head -8; bad "$T regression"; fi
+done
+
 # ---------------------------------------------------------------- 5b5. Get Pro ---
 # The upsell: one plain item at the end of the menu, one page behind it, nothing
 # on any other admin screen, and none of it on a site that already has Pro.

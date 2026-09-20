@@ -142,7 +142,7 @@ class Clara_VE_Form_Blocks {
 	 */
 	public static function render_form( $attributes, $content ) {
 		if ( false === stripos( $content, '<form' ) || ! class_exists( 'Clara_VE_Tokens' ) ) {
-			return $content;
+			return wp_kses( $content, Clara_VE_Forms::allowed_form_html() );
 		}
 		// A demo marker (a theme script fakes a successful send for it) must not survive
 		// on a form that really sends.
@@ -188,7 +188,7 @@ class Clara_VE_Form_Blocks {
 
 		// connect_form() signs the three delivery values into the markup for
 		// every form this plugin connects; handle_submit() verifies them.
-		return Clara_VE_Tokens::connect_form(
+		$html = Clara_VE_Tokens::connect_form(
 			array(
 				'id'       => $form_id,
 				'to'       => $recipient,
@@ -199,6 +199,12 @@ class Clara_VE_Form_Blocks {
 			$content,
 			rest_url( 'clara-ve/v1' . self::SUBMIT_ROUTE )
 		);
+
+		// The last thing before WordPress prints it. Every value added above is
+		// escaped where it is built; this bounds the whole string, the saved
+		// markup included, by what a form may consist of. wp_kses_post() cannot
+		// do it — a post has no <input> — so the allowlist is the form's own.
+		return wp_kses( $html, Clara_VE_Forms::allowed_form_html() );
 	}
 
 	public static function register_routes() {

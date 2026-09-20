@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.31.0
+Stable tag: 1.31.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -228,6 +228,20 @@ Apache License 2.0 is compatible with version 3 of the GPL, which this
 plugin's "GPLv2 or later" licence allows.
 
 == Changelog ==
+
+= 1.31.1 =
+
+* Security: Each editor route asks for the right to do what it does, on top of
+  the right to edit the page: copying a page asks for the right to create
+  pages, removing one for the right to delete it, importing an image for the
+  right to upload files, and a save, a restore or a search-appearance change
+  addressed to one page asks about that page.
+* Security: The form block's output is filtered through an allowlist of what a
+  form may consist of at the moment it is returned, so nothing else can come
+  out of it. The honeypot field is hidden by a stylesheet rule as well as its
+  own inline one.
+* Changed: Navigation class names supplied by a theme are escaped as attribute
+  values when they are written into a menu.
 
 = 1.31.0 =
 
