@@ -355,10 +355,14 @@ else sed -n '/FAIL/p' "$PATTERNS_OUT" | head -5; bad "saved sections regression"
 # regression-page-actions.php takes each capability away from an administrator
 # and expects the door to close.
 #
+# A secret is the one value a sanitize callback must NOT tidy: a trimmed or
+# tag-stripped password saves fine and never authenticates (the third review's
+# finding). regression-secrets.php puts every such character through it.
+#
 # A callback whose return value WordPress prints is an output. The block-extras
 # test holds the render_block filter to what it generates; form-blocks-wp.php,
 # above, holds the form block's return to its allowlist.
-for T in regression-page-actions regression-block-extras; do
+for T in regression-page-actions regression-block-extras regression-secrets; do
   step "$T"
   T_OUT=$(mktemp)
   docker cp "$SRC/tests/$T.php" "$WP:/tmp/$T.php" >/dev/null

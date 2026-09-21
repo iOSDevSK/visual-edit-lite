@@ -3,7 +3,7 @@
  * Plugin Name: Visual Edit Lite – Visual Editor for Block Themes
  * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
  * Description: Visual editing for raw-HTML sites and complete native Gutenberg editing for block themes, with responsive controls, movement, forms, SEO and AI-readiness.
- * Version: 1.31.1
+ * Version: 1.31.2
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Filip Dvoran
@@ -57,7 +57,7 @@ if ( clara_ve_lite_pro_active() ) {
 	return;
 }
 
-define( 'CLARA_VE_VERSION', '1.31.1' );
+define( 'CLARA_VE_VERSION', '1.31.2' );
 // Signals schema-1 generated themes that this plugin delegates every public
 // rendering concern to them. Themes generated before that contract ignore the
 // signal and continue to receive the complete legacy runtime below.

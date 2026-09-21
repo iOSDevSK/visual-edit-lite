@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.31.1
+Stable tag: 1.31.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -228,6 +228,14 @@ Apache License 2.0 is compatible with version 3 of the GPL, which this
 plugin's "GPLv2 or later" licence allows.
 
 == Changelog ==
+
+= 1.31.2 =
+
+* Fixed: The SMTP password is stored exactly as it is typed. It was trimmed
+  before being encrypted, so a password that begins or ends with a space saved
+  without complaint and then failed to authenticate. Secrets are never put
+  through a text sanitizer: they are encrypted, and never printed back. A
+  pasted API key still loses the stray space or newline a paste leaves on it.
 
 = 1.31.1 =
 

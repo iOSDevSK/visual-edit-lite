@@ -12,7 +12,7 @@
 			"step": "installPlugin",
 			"pluginData": {
 				"resource": "url",
-				"url": "https://github.com/iOSDevSK/visual-edit-lite/releases/download/1.31.1/visual-edit-lite-1.31.1.zip"
+				"url": "https://github.com/iOSDevSK/visual-edit-lite/releases/download/1.31.2/visual-edit-lite-1.31.2.zip"
 			},
 			"options": { "activate": true }
 		}

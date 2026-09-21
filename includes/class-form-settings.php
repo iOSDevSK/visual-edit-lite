@@ -245,8 +245,25 @@ class Clara_VE_Form_Settings {
 
 	// Encrypt-or-keep for each secret (register_setting hands the callback only
 	// the value, so each secret needs its own tiny wrapper naming its option).
-	private static function keep_or_encrypt( $option, $raw ) {
-		$raw = trim( (string) $raw );
+	//
+	// A secret is never put through a TEXT sanitizer. sanitize_text_field() strips
+	// tags, collapses whitespace and removes percent-encoded octets, and every one
+	// of those is a character somebody's password may legitimately contain — the
+	// result would be a password that saves without complaint and never
+	// authenticates. What keeps a secret safe here is that it is encrypted before
+	// it is stored and never printed back: the field is rendered empty, and the
+	// only place the plain value goes is the mail transport.
+	//
+	// $is_pasted_key says which of two kinds of secret this is. An API key is
+	// pasted out of a provider's dashboard and routinely arrives with a space or
+	// a newline stuck to it; no provider issues a key containing one, so trimming
+	// repairs the paste. A PASSWORD is whatever its owner chose, a leading or
+	// trailing space is part of it, and it is kept exactly as it was typed.
+	private static function keep_or_encrypt( $option, $raw, $is_pasted_key = true ) {
+		$raw = (string) $raw;
+		if ( $is_pasted_key ) {
+			$raw = trim( $raw );
+		}
 		if ( '' === $raw ) {
 			return (string) get_option( $option, '' );
 		}
@@ -265,7 +282,7 @@ class Clara_VE_Form_Settings {
 		}
 		return self::encrypt( $raw );
 	}
-	public static function sanitize_smtp_pass( $raw ) { return self::keep_or_encrypt( self::OPT_SMTP_PASS, $raw ); }
+	public static function sanitize_smtp_pass( $raw ) { return self::keep_or_encrypt( self::OPT_SMTP_PASS, $raw, false ); }
 	public static function sanitize_api_brevo( $raw ) { return self::keep_or_encrypt( self::OPT_API_BREVO, $raw ); }
 	public static function sanitize_api_sendgrid( $raw ) { return self::keep_or_encrypt( self::OPT_API_SENDGRID, $raw ); }
 	public static function sanitize_api_postmark( $raw ) { return self::keep_or_encrypt( self::OPT_API_POSTMARK, $raw ); }
