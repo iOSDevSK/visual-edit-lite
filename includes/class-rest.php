@@ -954,7 +954,9 @@ class Clara_VE_REST {
 		if ( true !== $can ) {
 			return $can;
 		}
-		return Clara_VE_Page_Actions::can_create_pages();
+		// The copy is of the same type as the original, so that type's create
+		// capability is the one that matters.
+		return Clara_VE_Page_Actions::can_create( (string) get_post_type( (int) $request->get_param( 'post' ) ) );
 	}
 
 	/**

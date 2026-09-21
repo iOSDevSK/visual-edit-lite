@@ -160,8 +160,8 @@ html.wp-toolbar:has(> body.cve-workspace-runtime), html.wp-toolbar:has(> body.cv
 .cve-w-gradient-advanced summary { cursor: pointer; color: #c5c5cb; margin-bottom: 12px; }
 .cve-w-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #2f2f35; flex-shrink: 0; }
 .cve-w-flex { flex: 1; }
-.cve-w-toolbar .cve-w-primary, .cve-w-popup .cve-w-primary, .cve-w-dock .cve-w-primary { background: #4263eb; border-color: #4263eb; color: #fff; }
-.cve-w-toolbar .cve-w-primary:hover, .cve-w-popup .cve-w-primary:hover { background: #3651d4; }
+.cve-w-toolbar .cve-w-primary, .cve-w-popup .cve-w-primary, .cve-w-dock .cve-w-primary, .cve-w-dialog .cve-w-primary { background: #4263eb; border-color: #4263eb; color: #fff; }
+.cve-w-toolbar .cve-w-primary:hover, .cve-w-popup .cve-w-primary:hover, .cve-w-dialog .cve-w-primary:hover:not(:disabled) { background: #3651d4; }
 
 /* Element label, like the HTML editor's selection */
 .cve-w-badge { position: fixed; z-index: 99970; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 8px; border: 0; border-radius: 6px 6px 6px 0; background: #2563eb; color: #fff; font: 600 11px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; cursor: pointer; box-shadow: 0 2px 6px rgb(0 0 0 / 25%); }

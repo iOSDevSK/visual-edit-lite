@@ -1687,6 +1687,8 @@
 			{ key: 'inserter', label: __( 'All blocks', 'visual-edit-lite' ), onClick: function () { nativeAction( 'setIsInserterOpened', true, registry ); } },
 			config.canManageFonts && { key: 'fonts', label: __( 'Google Fonts', 'visual-edit-lite' ), onClick: function () { fontOpen[1]( true ); } },
 			window.ClaraVENative && ( status.postType === 'post' || status.postType === 'page' ) && { key: 'seo', label: __( 'Search appearance', 'visual-edit-lite' ), onClick: function () { panel[1]( 'seo' ); } },
+			canPageAction( status ) && { key: 'duplicate', label: status.postType === 'post' ? __( 'Duplicate this post', 'visual-edit-lite' ) : __( 'Duplicate this page', 'visual-edit-lite' ), onClick: function () { panel[1]( 'duplicate' ); } },
+			canPageAction( status ) && ( config.protectedPages || [] ).map( Number ).indexOf( status.postId ) < 0 && { key: 'trash', label: status.postType === 'post' ? __( 'Move this post to the trash', 'visual-edit-lite' ) : __( 'Move this page to the trash', 'visual-edit-lite' ), onClick: function () { panel[1]( 'trash' ); } },
 			canSetDesignLock( registry ) && { key: 'lock', label: status.unlocked ? __( 'Lock pattern design', 'visual-edit-lite' ) : __( 'Unlock pattern design', 'visual-edit-lite' ), onClick: function () { setDesignLock( registry, ! status.unlocked ); } },
 			{ key: 'native', label: native[0] ? __( 'Hide WordPress controls', 'visual-edit-lite' ) : __( 'Show WordPress controls', 'visual-edit-lite' ), onClick: toggleNative },
 			{ key: 'seo-settings', label: __( 'SEO & sharing settings', 'visual-edit-lite' ), href: config.seoUrl },
@@ -1722,8 +1724,65 @@
 				// wp_localize_script turns false into '' — test for the key's presence, then its truthiness.
 				config.publicSeo !== undefined && ! config.publicSeo && h( 'p', { className: 'cve-w-mode-note' }, __( 'This site does not print search titles and descriptions from Visual Edit: the theme provides its own, or the site-wide SEO & sharing settings are not enabled yet. Values saved here are kept.', 'visual-edit-lite' ), ' ', h( 'a', { href: config.seoSettingsUrl || config.seoUrl, target: '_blank', rel: 'noopener' }, __( 'SEO & sharing settings', 'visual-edit-lite' ) ) ),
 				h( window.ClaraVENative.SeoPanel, { postId: status.postId } ) ),
+			panel[0] === 'duplicate' && h( c.Modal, { title: status.postType === 'post' ? __( 'Duplicate this post', 'visual-edit-lite' ) : __( 'Duplicate this page', 'visual-edit-lite' ), className: 'cve-w-dialog', onRequestClose: function () { panel[1]( '' ); } },
+				h( DuplicateDocument, { postId: status.postId, postType: status.postType, title: documentTitle, dirty: status.dirty > 0, onClose: function () { panel[1]( '' ); } } ) ),
+			panel[0] === 'trash' && h( c.Modal, { title: status.postType === 'post' ? __( 'Move this post to the trash', 'visual-edit-lite' ) : __( 'Move this page to the trash', 'visual-edit-lite' ), className: 'cve-w-dialog', onRequestClose: function () { panel[1]( '' ); } },
+				h( TrashDocument, { postId: status.postId, title: documentTitle, onClose: function () { panel[1]( '' ); } } ) ),
 			hint[0] && h( 'div', { className: 'cve-w-hint', role: 'status' }, h( 'span', null, __( 'Click anything on the page to change it.', 'visual-edit-lite' ) ), button( __( 'Got it', 'visual-edit-lite' ), dismissHint ) ),
 			fontOpen[0] && h( FontPicker, { onClose: function () { fontOpen[1]( false ); } } ), h( NativeFontSettings ), h( FontsPreview ), h( ExtrasPreview ), h( CanvasOverlay ), h( NativeDark ), h( SelectionBadge ) ) );
+	}
+	// Copying and removing the open document. Both are the same two REST routes
+	// the raw-HTML editor's toolbar uses; a block theme simply never had a way to
+	// reach them. Offered for the two kinds of content a person writes — a
+	// template or a navigation menu has its own lifecycle in the Site Editor.
+	function canPageAction( status ) {
+		return !! config.canPageActions && !! status.postId && ( status.postType === 'page' || status.postType === 'post' );
+	}
+	// The workspace is a frame inside wp-admin, so moving to another document
+	// is a navigation of the WINDOW: the host opens whichever post it is given.
+	function openInWorkspace( postId ) {
+		var url = new URL( config.workspaceUrl, window.location.href );
+		if ( postId ) { url.searchParams.set( 'post', postId ); }
+		window.top.location.assign( url.toString() );
+	}
+	function DuplicateDocument( props ) {
+		var title = useState( ( props.title || '' ) + ' ' + __( '(copy)', 'visual-edit-lite' ) );
+		var slug = useState( '' ); var busy = useState( false ); var error = useState( '' ); var done = useState( null );
+		function run() {
+			busy[1]( true ); error[1]( '' );
+			wp.apiFetch( { path: '/clara-ve/v1/pages/duplicate', method: 'POST', data: { post: props.postId, title: title[0], slug: slug[0] } } )
+				.then( function ( result ) { done[1]( result ); } )
+				.catch( function ( failure ) { error[1]( failure && failure.message ? failure.message : __( 'The copy could not be made.', 'visual-edit-lite' ) ); } )
+				.then( function () { busy[1]( false ); } );
+		}
+		if ( done[0] ) {
+			// Said out loud rather than left to be discovered: a page in the trash
+			// still holds its address, so WordPress hands the copy the next one.
+			return h( Fragment, null,
+				h( c.Notice, { status: 'success', isDismissible: false }, done[0].slug_changed ? __( 'Copied as a draft. That address was taken, so the copy is at:', 'visual-edit-lite' ) + ' /' + done[0].slug + '/' : __( 'Copied as a draft.', 'visual-edit-lite' ) ),
+				h( 'div', { className: 'cve-w-actions' }, button( __( 'Open the copy', 'visual-edit-lite' ), function () { openInWorkspace( done[0].id ); }, { className: 'cve-w-primary' } ), button( __( 'Stay here', 'visual-edit-lite' ), props.onClose ) ) );
+		}
+		return h( Fragment, null,
+			props.dirty && h( 'p', { className: 'cve-w-mode-note' }, __( 'The copy is made from the last saved version. Save first if your latest changes should be in it.', 'visual-edit-lite' ) ),
+			h( Field, { label: __( 'Title', 'visual-edit-lite' ), value: title[0], placeholder: __( 'Title of the copy', 'visual-edit-lite' ), autoFocus: true, onChange: title[1] } ),
+			h( Field, { label: __( 'Address (slug)', 'visual-edit-lite' ), value: slug[0], placeholder: __( 'From the title', 'visual-edit-lite' ), onChange: slug[1] } ),
+			error[0] && h( c.Notice, { status: 'error', isDismissible: false }, error[0] ),
+			h( 'div', { className: 'cve-w-actions' }, button( busy[0] ? __( 'Copying…', 'visual-edit-lite' ) : __( 'Duplicate', 'visual-edit-lite' ), run, { className: 'cve-w-primary', disabled: busy[0] || ! title[0].trim() } ), button( __( 'Cancel', 'visual-edit-lite' ), props.onClose, { disabled: busy[0] } ) ) );
+	}
+	function TrashDocument( props ) {
+		var busy = useState( false ); var error = useState( '' );
+		function run() {
+			busy[1]( true ); error[1]( '' );
+			wp.apiFetch( { path: '/clara-ve/v1/pages/trash', method: 'POST', data: { post: props.postId } } )
+				// The document that was open is in the trash now; the workspace
+				// goes back to its starting page rather than sit on a binned one.
+				.then( function () { openInWorkspace( 0 ); } )
+				.catch( function ( failure ) { busy[1]( false ); error[1]( failure && failure.message ? failure.message : __( 'It could not be moved to the trash.', 'visual-edit-lite' ) ); } );
+		}
+		return h( Fragment, null,
+			h( 'p', { className: 'cve-w-mode-note' }, h( 'strong', null, props.title || __( 'This document', 'visual-edit-lite' ) ), ' ', __( 'will be moved to the trash. WordPress keeps it there, so it can be restored from the Pages or Posts list.', 'visual-edit-lite' ) ),
+			error[0] && h( c.Notice, { status: 'error', isDismissible: false }, error[0] ),
+			h( 'div', { className: 'cve-w-actions' }, button( busy[0] ? __( 'Moving…', 'visual-edit-lite' ) : __( 'Move to trash', 'visual-edit-lite' ), run, { className: 'cve-w-primary', disabled: busy[0] } ), button( __( 'Cancel', 'visual-edit-lite' ), props.onClose, { disabled: busy[0] } ) ) );
 	}
 	function SiteBrowser( props ) {
 		var registry = wp.data.useRegistry();
