@@ -239,6 +239,14 @@ plugin's "GPLv2 or later" licence allows.
 * Changed: Duplicating works for posts as well as pages, and asks for the right
   to create whichever of the two is being copied.
 
+= 1.31.2 =
+
+* Fixed: The SMTP password is stored exactly as it is typed. It was trimmed
+  before being encrypted, so a password that begins or ends with a space saved
+  without complaint and then failed to authenticate. Secrets are never put
+  through a text sanitizer: they are encrypted, and never printed back. A
+  pasted API key still loses the stray space or newline a paste leaves on it.
+
 = 1.31.1 =
 
 * Security: Each editor route asks for the right to do what it does, on top of

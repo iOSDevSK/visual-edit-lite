@@ -388,346 +388,346 @@ msgstr ""
 
 #: includes/class-form-settings.php:143
 #: includes/class-form-settings.php:144
-#: includes/class-form-settings.php:299
+#: includes/class-form-settings.php:316
 #: assets/workspace.js:810
 #: assets/workspace.js:846
 msgid "Form Settings"
 msgstr ""
 
-#: includes/class-form-settings.php:293
+#: includes/class-form-settings.php:310
 msgid "You need administrator permissions to manage form settings."
 msgstr ""
 
-#: includes/class-form-settings.php:301
+#: includes/class-form-settings.php:318
 msgid "Where contact-form submissions are sent, how they are protected from spam, and how email leaves the site. These apply to every [wp-form] on the site; a form can still override the recipient with its own to=\"\" attribute."
 msgstr ""
 
-#: includes/class-form-settings.php:308
+#: includes/class-form-settings.php:325
 msgid "Send submissions to"
 msgstr ""
 
-#: includes/class-form-settings.php:311
+#: includes/class-form-settings.php:328
 msgid "Leave blank to use the site admin email."
 msgstr ""
 
-#: includes/class-form-settings.php:315
+#: includes/class-form-settings.php:332
 msgid "From name"
 msgstr ""
 
-#: includes/class-form-settings.php:319
+#: includes/class-form-settings.php:336
 msgid "From address"
 msgstr ""
 
-#: includes/class-form-settings.php:322
+#: includes/class-form-settings.php:339
 msgid "Must be an address on this site's own domain — sending \"from\" a visitor's Gmail fails spam checks. The visitor's own address is set as Reply-To so you can reply directly."
 msgstr ""
 
-#: includes/class-form-settings.php:326
+#: includes/class-form-settings.php:343
 msgid "Minimum fill time (seconds)"
 msgstr ""
 
-#: includes/class-form-settings.php:329
+#: includes/class-form-settings.php:346
 msgid "Submissions sent faster than this after the page loads are treated as bots and rejected. 0 disables the check. 3 is a good default."
 msgstr ""
 
-#: includes/class-form-settings.php:333
+#: includes/class-form-settings.php:350
 msgid "Akismet spam filtering"
 msgstr ""
 
-#: includes/class-form-settings.php:335
+#: includes/class-form-settings.php:352
 msgid "Check submissions against Akismet"
 msgstr ""
 
-#: includes/class-form-settings.php:336
+#: includes/class-form-settings.php:353
 msgid "Akismet is installed and configured — recommended."
 msgstr ""
 
-#: includes/class-form-settings.php:336
+#: includes/class-form-settings.php:353
 msgid "Install and configure the free Akismet plugin to enable this."
 msgstr ""
 
-#: includes/class-form-settings.php:342
+#: includes/class-form-settings.php:359
 msgid "Email delivery"
 msgstr ""
 
-#: includes/class-form-settings.php:343
+#: includes/class-form-settings.php:360
 msgid "Pick how the site sends email. WordPress's default server mail very often lands in spam — connect a real provider for reliable delivery, no extra plugin needed. The API options send over HTTPS, so they work even on hosts that block outbound SMTP ports. For best results also add SPF/DKIM DNS records for your domain at your provider."
 msgstr ""
 
-#: includes/class-form-settings.php:346
+#: includes/class-form-settings.php:363
 msgid "Mailer"
 msgstr ""
 
-#: includes/class-form-settings.php:349
+#: includes/class-form-settings.php:366
 msgid "Default (WordPress server mail)"
 msgstr ""
 
-#: includes/class-form-settings.php:350
+#: includes/class-form-settings.php:367
 msgid "Other SMTP"
 msgstr ""
 
-#: includes/class-form-settings.php:351
+#: includes/class-form-settings.php:368
 msgid "Brevo (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:352
+#: includes/class-form-settings.php:369
 msgid "SendGrid (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:353
+#: includes/class-form-settings.php:370
 msgid "Postmark (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:354
+#: includes/class-form-settings.php:371
 msgid "Mailgun (API)"
 msgstr ""
 
-#: includes/class-form-settings.php:361
+#: includes/class-form-settings.php:378
 msgid "WordPress sends mail directly from the web server. Fine for a quick test, but it commonly lands in spam or is dropped in production — pick a real provider above."
 msgstr ""
 
-#: includes/class-form-settings.php:367
+#: includes/class-form-settings.php:384
 msgid "SMTP host"
 msgstr ""
 
-#: includes/class-form-settings.php:371
+#: includes/class-form-settings.php:388
 msgid "Port"
 msgstr ""
 
-#: includes/class-form-settings.php:374
+#: includes/class-form-settings.php:391
 msgid "587 for TLS (most common), 465 for SSL, 25 for none."
 msgstr ""
 
-#: includes/class-form-settings.php:378
+#: includes/class-form-settings.php:395
 msgid "Encryption"
 msgstr ""
 
-#: includes/class-form-settings.php:382
+#: includes/class-form-settings.php:399
 msgid "TLS (recommended)"
 msgstr ""
 
-#: includes/class-form-settings.php:384
+#: includes/class-form-settings.php:401
 #: assets/gutenberg.js:319
 #: assets/gutenberg.js:333
 msgid "None"
 msgstr ""
 
-#: includes/class-form-settings.php:389
+#: includes/class-form-settings.php:406
 msgid "Authentication"
 msgstr ""
 
-#: includes/class-form-settings.php:390
+#: includes/class-form-settings.php:407
 msgid "This server requires a username and password"
 msgstr ""
 
-#: includes/class-form-settings.php:393
+#: includes/class-form-settings.php:410
 msgid "Username"
 msgstr ""
 
-#: includes/class-form-settings.php:397
+#: includes/class-form-settings.php:414
 msgid "Password"
 msgstr ""
 
-#: includes/class-form-settings.php:400
+#: includes/class-form-settings.php:417
 msgid "Stored encrypted. Leave blank to keep the saved password."
 msgstr ""
 
-#: includes/class-form-settings.php:409
+#: includes/class-form-settings.php:426
 msgid "Brevo API key"
 msgstr ""
 
-#: includes/class-form-settings.php:412
+#: includes/class-form-settings.php:429
 msgid "Brevo → SMTP & API → API Keys (v3). Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:421
+#: includes/class-form-settings.php:438
 msgid "SendGrid API key"
 msgstr ""
 
-#: includes/class-form-settings.php:424
+#: includes/class-form-settings.php:441
 msgid "SendGrid → Settings → API Keys (Mail Send permission). Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:433
+#: includes/class-form-settings.php:450
 msgid "Postmark server token"
 msgstr ""
 
-#: includes/class-form-settings.php:436
+#: includes/class-form-settings.php:453
 msgid "Postmark → your Server → API Tokens. Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:445
+#: includes/class-form-settings.php:462
 msgid "Mailgun API key"
 msgstr ""
 
-#: includes/class-form-settings.php:448
+#: includes/class-form-settings.php:465
 msgid "Mailgun → Send → API keys. Stored encrypted; leave blank to keep."
 msgstr ""
 
-#: includes/class-form-settings.php:452
+#: includes/class-form-settings.php:469
 msgid "Mailgun domain"
 msgstr ""
 
-#: includes/class-form-settings.php:456
+#: includes/class-form-settings.php:473
 msgid "Region"
 msgstr ""
 
-#: includes/class-form-settings.php:468
+#: includes/class-form-settings.php:485
 #: assets/form-blocks.js:186
 #: assets/workspace.js:799
 #: assets/workspace.js:836
 msgid "Mailing list"
 msgstr ""
 
-#: includes/class-form-settings.php:470
+#: includes/class-form-settings.php:487
 msgid "Where a form set to \"Mailing list\" sends its subscribers. This is separate from the mailer above — the mailer is how email leaves this site, a mailing list is where contacts live and where the welcome email and the download come from. Most transports have no lists at all, so the two are chosen independently."
 msgstr ""
 
-#: includes/class-form-settings.php:474
+#: includes/class-form-settings.php:491
 msgid "Provider"
 msgstr ""
 
-#: includes/class-form-settings.php:484
+#: includes/class-form-settings.php:501
 msgid "Add the Brevo API key above — the list uses the same key as the mailer."
 msgstr ""
 
-#: includes/class-form-settings.php:486
+#: includes/class-form-settings.php:503
 msgid "Brevo reuses the API key you already entered above; there is nothing else to paste."
 msgstr ""
 
-#: includes/class-form-settings.php:493
+#: includes/class-form-settings.php:510
 msgid "Double opt-in"
 msgstr ""
 
-#: includes/class-form-settings.php:496
+#: includes/class-form-settings.php:513
 msgid "Off — subscribe immediately"
 msgstr ""
 
-#: includes/class-form-settings.php:497
+#: includes/class-form-settings.php:514
 msgid "On, handled here — works with any mailer"
 msgstr ""
 
-#: includes/class-form-settings.php:498
+#: includes/class-form-settings.php:515
 msgid "On, handled by the provider"
 msgstr ""
 
-#: includes/class-form-settings.php:501
+#: includes/class-form-settings.php:518
 msgid "Handled here: the address is held, a confirmation email goes out through your normal mailer, and only a click subscribes it and sends the download. Works on plain SMTP, Gmail, SendGrid — anything. The consent record (time, IP, wording) stays in this site. Handled by the provider: Brevo does the same thing with its own template, set below."
 msgstr ""
 
-#: includes/class-form-settings.php:506
+#: includes/class-form-settings.php:523
 msgid "Confirmation email"
 msgstr ""
 
-#: includes/class-form-settings.php:510
+#: includes/class-form-settings.php:527
 msgid "Must contain {confirm_url} — that is the link. {site} is your From name."
 msgstr ""
 
-#: includes/class-form-settings.php:514
+#: includes/class-form-settings.php:531
 msgid "Delivery email"
 msgstr ""
 
-#: includes/class-form-settings.php:518
+#: includes/class-form-settings.php:535
 msgid "Sent after they confirm, never before. {download_url} is the file below."
 msgstr ""
 
-#: includes/class-form-settings.php:522
+#: includes/class-form-settings.php:539
 msgid "The file they get"
 msgstr ""
 
-#: includes/class-form-settings.php:525
+#: includes/class-form-settings.php:542
 #: assets/seo-panel.js:104
 msgid "Choose from Media Library"
 msgstr ""
 
-#: includes/class-form-settings.php:526
+#: includes/class-form-settings.php:543
 msgid "Upload the PDF to Media and pick it here. Leave blank if the confirmation email is all you send."
 msgstr ""
 
-#: includes/class-form-settings.php:530
+#: includes/class-form-settings.php:547
 msgid "Provider template id"
 msgstr ""
 
-#: includes/class-form-settings.php:533
+#: includes/class-form-settings.php:550
 msgid "The id of a double opt-in template at your provider. Only used when the provider handles it."
 msgstr ""
 
-#: includes/class-form-settings.php:537
+#: includes/class-form-settings.php:554
 msgid "After confirming, go to"
 msgstr ""
 
-#: includes/class-form-settings.php:540
+#: includes/class-form-settings.php:557
 msgid "Where the confirmation link lands. Only used when a double opt-in template is set."
 msgstr ""
 
-#: includes/class-form-settings.php:544
+#: includes/class-form-settings.php:561
 msgid "Consent line"
 msgstr ""
 
-#: includes/class-form-settings.php:546
+#: includes/class-form-settings.php:563
 msgid "Show a consent note under every connected form"
 msgstr ""
 
-#: includes/class-form-settings.php:549
+#: includes/class-form-settings.php:566
 msgid "Off by default — turn it on if you collect addresses under GDPR and want the note visible at the point of consent. Link to your privacy policy inside the text with normal HTML: <a href=\"/privacy/\">Privacy Policy</a>."
 msgstr ""
 
-#: includes/class-form-settings.php:556
+#: includes/class-form-settings.php:573
 msgid "Uninstall"
 msgstr ""
 
-#: includes/class-form-settings.php:559
+#: includes/class-form-settings.php:576
 msgid "On plugin deletion"
 msgstr ""
 
-#: includes/class-form-settings.php:561
+#: includes/class-form-settings.php:578
 msgid "Also delete all stored data — form submissions, subscribers, edit history and edited page sources"
 msgstr ""
 
-#: includes/class-form-settings.php:563
+#: includes/class-form-settings.php:580
 msgid "Off: deleting the plugin keeps your data in the database, so reinstalling picks up where you left off. On: deleting the plugin removes everything it ever stored. Saved passwords and API keys are removed on deletion either way."
 msgstr ""
 
-#: includes/class-form-settings.php:573
+#: includes/class-form-settings.php:590
 msgid "Send a test email"
 msgstr ""
 
-#: includes/class-form-settings.php:577
+#: includes/class-form-settings.php:594
 msgid "Test email sent. Check the inbox (and spam folder)."
 msgstr ""
 
-#: includes/class-form-settings.php:578
+#: includes/class-form-settings.php:595
 msgid "Sending failed — check the mailer credentials above (save first)."
 msgstr ""
 
-#: includes/class-form-settings.php:584
+#: includes/class-form-settings.php:601
 msgid "Sends a test message to %s using the mailer selected above (save first)."
 msgstr ""
 
-#: includes/class-form-settings.php:590
+#: includes/class-form-settings.php:607
 msgid "Send test email"
 msgstr ""
 
-#: includes/class-form-settings.php:608
+#: includes/class-form-settings.php:625
 msgid "•••••••• (saved — leave blank to keep)"
 msgstr ""
 
-#: includes/class-form-settings.php:713
+#: includes/class-form-settings.php:730
 msgid "By submitting this form you agree to us storing and using the details above to reply to you."
 msgstr ""
 
-#: includes/class-form-settings.php:787
+#: includes/class-form-settings.php:804
 #: includes/class-optin.php:92
 #: includes/class-optin.php:193
 #: includes/class-optin.php:220
 msgid "You need administrator permissions."
 msgstr ""
 
-#: includes/class-form-settings.php:796
+#: includes/class-form-settings.php:813
 msgid "Visual Edit — test email"
 msgstr ""
 
-#: includes/class-form-settings.php:797
+#: includes/class-form-settings.php:814
 msgid "This is a test email. If you received it, your email delivery settings are working."
 msgstr ""
 
