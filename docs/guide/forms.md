@@ -24,6 +24,7 @@ it is just an unconnected HTML form.
 | **Nothing (not connected)** | The default. Submitting does nothing |
 | **Contact form** | Store the submission and email you |
 | **Mailing list** | Add the address to a mailing list |
+| **Contact Form 7** | Hand the submission to a Contact Form 7 form. Offered only while Contact Form 7 is active |
 
 4. Fill in the rest, and **Save**.
 
@@ -50,6 +51,36 @@ it is just an unconnected HTML form.
   name and subscriber count. Never a numeric ID typed by hand.
 
 See [Mailing lists](mailing-lists.md).
+
+### Contact Form 7 settings
+
+Your form keeps its design, and Contact Form 7 does the processing behind it:
+its validation, its spam checks (Akismet, the disallowed list, reCAPTCHA v3),
+its mail — with the recipient, subject and body you set in Contact Form 7 —
+and, with Flamingo installed, its record of the message. Visual Edit stores
+nothing of its own for such a form and sends no mail of its own.
+
+- **Form** — which Contact Form 7 form processes the submissions. Create it in
+  Contact Form 7 first, with fields for what your form collects.
+- **Sends as** — one line per field of your form, saying which Contact Form 7
+  field it fills. Matched automatically when you pick the form: the same name
+  (ignoring case, punctuation and Contact Form 7's `your-` prefix), then the
+  only field of the same kind (email, message, phone…), then the same label,
+  then a name that contains the other. Change any line, or set it to
+  **Don't send**.
+- A field the Contact Form 7 form **requires** that none of yours fills is
+  named under the list. Until one does, Contact Form 7 refuses every
+  submission.
+
+What the visitor sees: Contact Form 7's reason under the field it is about
+("Please enter an email address."), in the design's own error style when the
+design has one, and Contact Form 7's own message after a successful send.
+The design's own validation, if it has any, still runs first.
+
+If Contact Form 7 is deactivated, or the form you picked is deleted, the form
+behaves as not connected: it sends nothing, and a line under it — visible only
+to you when logged in — says which of the two happened. Pick another form, or
+reactivate the plugin, and it works again.
 
 ## Adding or changing fields
 

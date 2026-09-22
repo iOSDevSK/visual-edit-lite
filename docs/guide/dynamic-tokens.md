@@ -101,10 +101,10 @@ from the browser's request. Restyle the card and page two follows.
 | Attribute | Meaning |
 |---|---|
 | `id` | Groups submissions. Generated automatically when connected by clicking |
-| `type` | `contact` or `list` |
+| `type` | `contact`, `list` or `cf7` (Contact Form 7) |
 | `to` | Recipient for this form; falls back to the site-wide setting |
 | `redirect` | Where to go after submitting |
-| `list` | Mailing list ID, for `type="list"` |
+| `list` | Mailing list ID, for `type="list"`. For `type="cf7"`: the Contact Form 7 form's ID and which of its fields each of yours fills — `12\|name=your-name,email=your-email,phone=` (empty after `=` is "not sent") |
 
 The form's own markup is untouched. Hidden fields are injected for security
 and routing, the `action` is rewritten, and that is all.
@@ -115,6 +115,9 @@ the way back. A form whose recipient or list was retyped in the browser is
 still accepted — it simply goes to the address in Form Settings instead, the
 same as an old page cached before you changed the form. A converted theme that
 renders and delivers its own forms is unaffected; it never carried this field.
+The one exception is `type="cf7"`: Visual Edit adds the signature to such a
+form before the theme renders it, so a converted theme's form reaches Contact
+Form 7 too.
 
 **Field naming**: any field with a `name` is captured. A group of checkboxes
 or a `<select multiple>` needs a shared name ending in `[]` —

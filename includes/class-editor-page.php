@@ -328,6 +328,10 @@ class Clara_VE_Editor_Page {
 				// key names a canvas such a theme does not have.
 				'initialKey'      => isset( $_GET['key'] ) ? sanitize_key( wp_unslash( $_GET['key'] ) ) : self::default_key(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'formRecipient'   => Clara_VE_Form_Settings::recipient( '' ),
+				// Form plugins a form can be handed to: every one known, by
+				// name, and the ones running now (see class-form-handlers.php).
+				'handlerNames'    => Clara_VE_Form_Handlers::KINDS,
+				'formHandlers'    => wp_list_pluck( Clara_VE_Form_Handlers::offered(), 'value' ),
 				// Google fonts the owner has kept, so the picker can offer them
 				// immediately (see includes/class-fonts.php).
 				'googleFonts'     => Clara_VE_Fonts::selected(),

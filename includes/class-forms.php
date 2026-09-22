@@ -198,6 +198,13 @@ class Clara_VE_Forms {
 			$type      = 'contact';
 			$list      = '';
 		}
+		// Signed over to another form plugin (Contact Form 7): that plugin
+		// validates, filters, mails and keeps the record, and its verdict is
+		// the answer. Only after every check above, so a connected form is
+		// held to the same honeypot, origin, time-trap and rate limit as ours.
+		if ( isset( Clara_VE_Form_Handlers::KINDS[ $type ] ) ) {
+			return self::hand_over( $type, $list, $params, $redirect, $ip ? $rate_key : '' );
+		}
 		$params['to']        = $recipient;
 		$params['form_type'] = 'list' === $type ? 'list' : 'contact';
 		$params['list_id']   = $list;
@@ -705,14 +712,49 @@ class Clara_VE_Forms {
 		return is_array( $response ) && isset( $response[1] ) && 'true' === trim( (string) $response[1] );
 	}
 
-	private static function respond( $redirect ) {
+	/**
+	 * The answer for a submission handed to another form plugin (see
+	 * Clara_VE_Form_Handlers::submit): its success message, or its refusal
+	 * with the reason for each of our fields under `data.errors`.
+	 *
+	 * @param string $kind
+	 * @param string $list     Signed handler configuration.
+	 * @param array  $params
+	 * @param string $redirect
+	 * @param string $rate_key
+	 * @return WP_REST_Response|WP_Error
+	 */
+	private static function hand_over( $kind, $list, $params, $redirect, $rate_key ) {
+		$verdict = Clara_VE_Form_Handlers::submit( $kind, $list, $params, $rate_key );
+		if ( 'sent' === $verdict['status'] ) {
+			return self::respond( $redirect, $verdict['message'] );
+		}
+		$answers = array(
+			'invalid' => array( 'clara_ve_form_invalid', 400, __( 'Please check the fields marked below.', 'visual-edit-lite' ) ),
+			'closed'  => array( 'clara_ve_form_closed', 503, '' ),
+			'spam'    => array( 'clara_ve_form_refused', 400, __( 'Your message could not be sent. Please try again later.', 'visual-edit-lite' ) ),
+		);
+		$answer  = isset( $answers[ $verdict['status'] ] ) ? $answers[ $verdict['status'] ] : array( 'clara_ve_form_failed', 500, __( 'Something went wrong — please try again.', 'visual-edit-lite' ) );
+		return new WP_Error(
+			$answer[0],
+			'' !== $verdict['message'] ? $verdict['message'] : $answer[2],
+			array(
+				'status' => $answer[1],
+				'errors' => (object) $verdict['errors'],
+			)
+		);
+	}
+
+	private static function respond( $redirect, $message = '' ) {
 		// A fetch submit gets the answer as data and stays put; a plain form
 		// POST — no JavaScript, or the script failed to load — gets the
 		// redirect it has always got. The endpoint has to serve both, because
 		// the no-JS path is the one that must never break: it is the form
 		// working with nothing but HTML.
 		if ( self::wants_json() ) {
-			return new WP_REST_Response( array( 'ok' => true, 'redirect' => $redirect ), 200 );
+			// A message only when a form plugin gave one: the answer for
+			// every other form stays exactly what it was.
+			return new WP_REST_Response( '' !== $message ? array( 'ok' => true, 'redirect' => $redirect, 'message' => $message ) : array( 'ok' => true, 'redirect' => $redirect ), 200 );
 		}
 		if ( $redirect ) {
 			wp_safe_redirect( $redirect );

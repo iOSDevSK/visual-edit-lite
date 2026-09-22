@@ -1668,6 +1668,63 @@
 		return atts;
 	}
 
+	/**
+	 * The named fields of the form at this path, as a form plugin's mapping
+	 * reads them: the name the server keys a submission by (sanitize_key, a
+	 * group's "[]" left off), the kind of field, and what it is labelled. Read
+	 * from the stored source, like the token.
+	 */
+	function formFieldsAt( id ) {
+		var doc = new DOMParser().parseFromString( '<body>' + source + '</body>', 'text/html' );
+		var form = findByPath( doc, id );
+		if ( ! form ) {
+			return [];
+		}
+		var seen = {};
+		var out = [];
+		Array.prototype.forEach.call( form.querySelectorAll( 'input, textarea, select' ), function ( control ) {
+			var kind = 'INPUT' === control.tagName ? ( control.getAttribute( 'type' ) || 'text' ).toLowerCase() : control.tagName.toLowerCase();
+			var name = String( control.getAttribute( 'name' ) || '' ).replace( /\[\]$/, '' ).toLowerCase().replace( /[^a-z0-9_\-]/g, '' );
+			if ( ! name || seen[ name ] || 'cve_hp' === name || /^(hidden|submit|button|reset|image|file)$/.test( kind ) ) {
+				return;
+			}
+			seen[ name ] = true;
+			var label = null;
+			if ( control.id ) {
+				label = form.querySelector( 'label[for="' + control.id.replace( /"/g, '' ) + '"]' );
+			}
+			label = label || control.closest( 'label' );
+			var text = ( label ? label.textContent : '' ) || control.getAttribute( 'aria-label' ) || control.getAttribute( 'placeholder' ) || '';
+			out.push( {
+				name: name,
+				type: /^(email|tel|url|number|checkbox|radio|date|textarea|select)$/.test( kind ) ? kind : 'text',
+				label: text.replace( /\s+/g, ' ' ).trim(),
+			} );
+		} );
+		return out;
+	}
+
+	// A form handed to another plugin keeps that plugin's form and the field
+	// mapping in the token's `list` attribute: "12|name=your-name,phone=".
+	// See includes/class-form-handlers.php for why `list`.
+	function handlerConfig( list ) {
+		var parts = String( list || '' ).split( '|' );
+		var map = {};
+		( parts[ 1 ] || '' ).split( ',' ).forEach( function ( pair ) {
+			var kv = pair.split( '=' );
+			if ( kv[ 0 ] ) {
+				map[ kv[ 0 ] ] = kv[ 1 ] || '';
+			}
+		} );
+		return { form: parts[ 0 ].replace( /[^0-9]/g, '' ), map: map };
+	}
+
+	function handlerList( form, map ) {
+		return form + '|' + Object.keys( map ).map( function ( mine ) {
+			return mine + '=' + map[ mine ];
+		} ).join( ',' );
+	}
+
 	function formTokenString( atts ) {
 		var out = '[wp-form';
 		Object.keys( atts ).forEach( function ( k ) {
@@ -1846,9 +1903,170 @@
 			return row;
 		};
 
+		// Another form plugin processes the submissions: which of its forms,
+		// and which of its fields each of ours fills. The matching is done by
+		// the server (Clara_VE_Form_Handlers::map_fields) and written into the
+		// token resolved, so what the page sends is what this panel shows.
+		var handlerKinds = config.handlerNames || {};
+		var handlerActive = config.formHandlers || [];
+		var handlerRows = function () {
+			var name = handlerKinds[ type ] || type;
+			if ( handlerActive.indexOf( type ) < 0 ) {
+				formNote.textContent = name + ' is not active — until it is, this form is not connected and sends nothing. Activate the plugin, or pick something else for the form to do.';
+				return;
+			}
+			formNote.textContent = 'Submissions are handed to ' + name + ': its validation, spam checks, mail and storage run on them, and its answer shows on the page. The design stays as it is.';
+			var stored = handlerConfig( atts.list );
+			var row = el( 'div', 'cve-field' );
+			row.appendChild( el( 'span', 'cve-field-label', 'Form' ) );
+			var select = document.createElement( 'select' );
+			select.className = 'cve-select';
+			var loading = document.createElement( 'option' );
+			loading.textContent = 'Loading…';
+			select.appendChild( loading );
+			row.appendChild( select );
+			fields.appendChild( row );
+			var mapping = el( 'div', 'cve-form-map' );
+			fields.appendChild( mapping );
+			var warning = el( 'p', 'cve-note', '' );
+			fields.appendChild( warning );
+			fields.appendChild( redirectRow() );
+
+			var ours = formFieldsAt( formPath );
+			var theirs = [];
+			var map = {};
+
+			var warn = function () {
+				var filled = {};
+				Object.keys( map ).forEach( function ( mine ) {
+					filled[ map[ mine ] ] = true;
+				} );
+				var missing = theirs.filter( function ( f ) {
+					return f.required && ! filled[ f.name ];
+				} ).map( function ( f ) {
+					return f.label || f.name;
+				} );
+				warning.textContent = missing.length
+					? 'Required in the ' + name + ' form but filled by none of these fields: ' + missing.join( ', ' ) + '. Every submission will be refused until one is.'
+					: '';
+			};
+
+			var drawMap = function () {
+				mapping.innerHTML = '';
+				ours.forEach( function ( field ) {
+					var line = el( 'div', 'cve-field' );
+					line.appendChild( el( 'span', 'cve-field-label', field.label || field.name ) );
+					var pick = document.createElement( 'select' );
+					pick.className = 'cve-select';
+					[ [ '', 'Don\'t send' ] ].concat( theirs.map( function ( f ) {
+						return [ f.name, 'Sends as ' + f.name + ( f.required ? ' (required)' : '' ) ];
+					} ) ).forEach( function ( pair ) {
+						var o = document.createElement( 'option' );
+						o.value = pair[ 0 ];
+						o.textContent = pair[ 1 ];
+						pick.appendChild( o );
+					} );
+					pick.value = map[ field.name ] || '';
+					pick.addEventListener( 'change', function () {
+						map[ field.name ] = pick.value;
+						atts.list = handlerList( select.value, map );
+						warn();
+						write();
+					} );
+					line.appendChild( pick );
+					mapping.appendChild( line );
+				} );
+				if ( ! ours.length ) {
+					mapping.appendChild( el( 'p', 'cve-note', 'This form has no named fields to send.' ) );
+				}
+			};
+
+			var match = function ( form, chosen ) {
+				mapping.textContent = 'Matching fields…';
+				warning.textContent = '';
+				return window.wp
+					.apiFetch( { path: '/clara-ve/v1/form-handlers', method: 'POST', data: { handler: type, form: form, fields: ours, fieldMap: chosen } } )
+					.then( function ( data ) {
+						if ( data.missing ) {
+							mapping.innerHTML = '';
+							warning.textContent = 'The ' + name + ' form this was connected to no longer exists — pick another.';
+							return;
+						}
+						theirs = data.fields || [];
+						// Resolved: every field either names the plugin field it
+						// fills or is not sent. An explicit "Don't send" survives
+						// as "name=", so it is not re-matched next time.
+						map = {};
+						ours.forEach( function ( field ) {
+							var hit = data.mapping && data.mapping.map ? data.mapping.map[ field.name ] : '';
+							if ( hit || Object.prototype.hasOwnProperty.call( chosen, field.name ) ) {
+								map[ field.name ] = hit || '';
+							}
+						} );
+						var next = handlerList( form, map );
+						if ( next !== atts.list ) {
+							atts.list = next;
+							write();
+						}
+						drawMap();
+						warn();
+					} )
+					.catch( function ( err ) {
+						mapping.innerHTML = '';
+						warning.textContent = 'Could not match the fields: ' + ( ( err && err.message ) || 'error' );
+					} );
+			};
+
+			window.wp
+				.apiFetch( { path: '/clara-ve/v1/form-handlers' } )
+				.then( function ( data ) {
+					select.innerHTML = '';
+					var forms = ( data.forms && data.forms[ type ] ) || [];
+					if ( ! forms.length ) {
+						formNote.textContent = name + ' has no forms yet. Create one there — with the fields this form collects — then pick it here.';
+						select.disabled = true;
+						return;
+					}
+					var placeholder = document.createElement( 'option' );
+					placeholder.value = '';
+					placeholder.textContent = 'Pick a form…';
+					select.appendChild( placeholder );
+					forms.forEach( function ( f ) {
+						var o = document.createElement( 'option' );
+						o.value = f.id;
+						o.textContent = f.title || '#' + f.id;
+						select.appendChild( o );
+					} );
+					var known = forms.some( function ( f ) {
+						return f.id === stored.form;
+					} );
+					if ( stored.form && ! known ) {
+						warning.textContent = 'The ' + name + ' form this was connected to no longer exists — pick another.';
+						return;
+					}
+					select.value = stored.form;
+					if ( stored.form ) {
+						match( stored.form, stored.map );
+					}
+				} )
+				.catch( function ( err ) {
+					select.innerHTML = '';
+					formNote.textContent = 'Could not load the ' + name + ' forms: ' + ( ( err && err.message ) || 'error' );
+				} );
+
+			select.addEventListener( 'change', function () {
+				if ( ! select.value ) {
+					return;
+				}
+				match( select.value, {} );
+			} );
+		};
+
 		var render = function () {
 				fields.innerHTML = '';
-				if ( 'contact' === type ) {
+				if ( handlerKinds[ type ] ) {
+					handlerRows();
+				} else if ( 'contact' === type ) {
 					formNote.textContent = 'Submissions are stored under Form Submissions and emailed to you. The sender gets a confirmation.';
 					// This box is a per-form OVERRIDE, not the address itself.
 					// Empty means "use the site-wide one from Form Settings" —
@@ -1875,11 +2093,22 @@
 			typeRow.appendChild( el( 'span', 'cve-field-label', 'Does' ) );
 			var typeSelect = document.createElement( 'select' );
 			typeSelect.className = 'cve-select';
-			[
+			var typeOptions = [
 				[ 'none', 'Nothing (not connected)' ],
 				[ 'contact', 'Contact form' ],
 				[ 'list', 'Mailing list' ],
-			].forEach( function ( pair ) {
+			];
+			// A form plugin is offered while it runs. One this form is already
+			// connected to stays listed when it stops, so the panel still says
+			// what the form was set to do.
+			Object.keys( handlerKinds ).forEach( function ( kind ) {
+				if ( handlerActive.indexOf( kind ) >= 0 ) {
+					typeOptions.push( [ kind, handlerKinds[ kind ] ] );
+				} else if ( kind === type ) {
+					typeOptions.push( [ kind, handlerKinds[ kind ] + ' (not active)' ] );
+				}
+			} );
+			typeOptions.forEach( function ( pair ) {
 				var o = document.createElement( 'option' );
 				o.value = pair[ 0 ];
 				o.textContent = pair[ 1 ];
@@ -1887,6 +2116,11 @@
 			} );
 			typeSelect.value = type;
 			typeSelect.addEventListener( 'change', function () {
+				// A plugin form and its mapping mean nothing to a mailing list,
+				// and a list id nothing to a plugin.
+				if ( handlerKinds[ type ] || handlerKinds[ typeSelect.value ] ) {
+					atts.list = '';
+				}
 				type = typeSelect.value;
 				render();
 				write();
