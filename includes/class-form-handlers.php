@@ -5,9 +5,10 @@
  * A [wp-form] keeps the source design; the owner picks in the Visual Edit
  * popup what a submission does. Besides this plugin's own contact form and
  * mailing list, it can be handed to a form plugin that is already running on
- * the site — Contact Form 7 — so that plugin's validation, spam checks, mail
- * and storage (Flamingo) run on it, exactly as if its own form had been sent.
- * The design stays ours; the plugin form is the processing behind it.
+ * the site — Contact Form 7 or Fluent Forms — so that plugin's validation,
+ * spam checks and captcha, mail and storage (Flamingo, Fluent's entries) run
+ * on it, exactly as if its own form had been sent. The design stays ours; the
+ * plugin form is the processing behind it.
  *
  * Where the choice lives. The token carries it: type="cf7", and in `list` the
  * plugin form's id plus which plugin field each of our fields fills —
@@ -22,10 +23,12 @@
  * same rules the html2wp Gutenberg target uses for its form block.
  *
  * On a converted theme that runs its own public runtime (html2wp-runtime),
- * the THEME renders the token and does not sign it; prepare_block() signs a
- * connected token before the theme sees it, so the theme's forwarded request
- * verifies here. A plugin or plugin form that is gone makes the form behave as
- * not connected, with the owner told which — never a 404, never a fatal.
+ * the THEME renders the token. A theme built before it learnt to sign
+ * delivery does not; prepare_block() signs a connected token before the theme
+ * sees it — and adds nothing to a form that already carries a signature — so
+ * the theme's forwarded request verifies here either way. A plugin or plugin
+ * form that is gone makes the form behave as not connected, with the owner
+ * told which — never a 404, never a fatal.
  *
  * @package VisualEdit
  */
@@ -35,7 +38,16 @@ defined( 'ABSPATH' ) || exit;
 class Clara_VE_Form_Handlers {
 
 	/** Token `type` values that hand a submission to another plugin, and the plugin's name. */
-	const KINDS = array( 'cf7' => 'Contact Form 7' );
+	const KINDS = array(
+		'cf7'        => 'Contact Form 7',
+		'fluentform' => 'Fluent Forms',
+	);
+
+	/** The request field a page's captcha token travels in (see captcha()). */
+	const CAPTCHA_FIELD = 'cve_captcha';
+
+	/** The query argument a plain (no-JavaScript) post comes back with. */
+	const RESULT_ARG = 'cve_result';
 
 	public static function init() {
 		// Before the token is hydrated (priority 10) — by this plugin or by a
@@ -56,7 +68,24 @@ class Clara_VE_Form_Handlers {
 		if ( 'cf7' === $kind ) {
 			return class_exists( 'WPCF7_ContactForm' );
 		}
+		if ( 'fluentform' === $kind ) {
+			return class_exists( 'FluentForm\\App\\Models\\Form' ) && class_exists( 'FluentForm\\App\\Services\\Form\\SubmissionHandlerService' );
+		}
 		return false;
+	}
+
+	/**
+	 * A Fluent Forms form, or null.
+	 *
+	 * @param string|int $id
+	 * @return object|null
+	 */
+	private static function fluent_form( $id ) {
+		if ( ! self::available( 'fluentform' ) || (int) $id < 1 ) {
+			return null;
+		}
+		$form = \FluentForm\App\Models\Form::find( (int) $id );
+		return $form ? $form : null;
 	}
 
 	/**
@@ -140,6 +169,11 @@ class Clara_VE_Form_Handlers {
 				$out[] = array( 'id' => (string) $form->id(), 'title' => (string) $form->title() );
 			}
 		}
+		if ( 'fluentform' === $kind && self::available( 'fluentform' ) ) {
+			foreach ( \FluentForm\App\Models\Form::select( array( 'id', 'title' ) )->where( 'status', 'published' )->orderBy( 'id', 'ASC' )->limit( 100 )->get() as $form ) {
+				$out[] = array( 'id' => (string) $form->id, 'title' => (string) $form->title );
+			}
+		}
 		return $out;
 	}
 
@@ -153,6 +187,9 @@ class Clara_VE_Form_Handlers {
 	public static function form_exists( $kind, $id ) {
 		if ( 'cf7' === $kind && self::available( 'cf7' ) ) {
 			return (bool) WPCF7_ContactForm::get_instance( (int) $id );
+		}
+		if ( 'fluentform' === $kind ) {
+			return (bool) self::fluent_form( $id );
 		}
 		return false;
 	}
@@ -173,20 +210,130 @@ class Clara_VE_Form_Handlers {
 			if ( ! $form ) {
 				return array();
 			}
+			// CF7 tags carry no label; its templates put one before the tag
+			// inside <label> ("<label> Your name [text* your-name] </label>").
+			$template = method_exists( $form, 'prop' ) ? (string) $form->prop( 'form' ) : '';
 			foreach ( (array) $form->scan_form_tags() as $tag ) {
 				$type = (string) ( isset( $tag->basetype ) ? $tag->basetype : '' );
-				if ( '' === (string) $tag->name || in_array( $type, array( 'submit', 'hidden', 'quiz', 'recaptcha', 'response' ), true ) ) {
+				if ( '' === (string) $tag->name || in_array( $type, array( 'submit', 'hidden', 'quiz', 'recaptcha', 'response' ), true ) || preg_match( '/-response$/', (string) $tag->name ) ) {
 					continue;
 				}
+				$label    = preg_match( '/<label[^>]*>\s*([^<\[]*?)\s*(?:<br\s*\/?>\s*)?\[[a-z_]+\*?\s+' . preg_quote( (string) $tag->name, '/' ) . '(?=[\s\]])/i', $template, $m ) && '' !== trim( $m[1] ) ? trim( $m[1] ) : (string) $tag->name;
 				$fields[] = array(
 					'name'     => (string) $tag->name,
-					'label'    => (string) $tag->name,
+					'label'    => $label,
 					'type'     => 'acceptance' === $type ? 'checkbox' : $type,
 					'required' => method_exists( $tag, 'is_required' ) && $tag->is_required(),
 				);
 			}
 		}
+		if ( 'fluentform' === $kind && ( $form = self::fluent_form( $id ) ) ) { // phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.Found
+			$inputs = \FluentForm\App\Modules\Form\FormFieldsParser::getInputs( $form, array( 'element', 'label', 'rules' ) );
+			$fields = self::fluent_fields( is_array( $inputs ) ? $inputs : array() );
+		}
 		return $fields;
+	}
+
+	/**
+	 * Fluent Forms inputs (FormFieldsParser::getInputs: name => element,
+	 * label, rules) as a field list. A Name field ("names", with sub-inputs
+	 * "names[first_name]"…) is offered once, as itself: one value of ours
+	 * fills it, split at the first space. Captcha, layout and hidden elements
+	 * are not fields a visitor of this form fills.
+	 *
+	 * @param array $inputs
+	 * @return array
+	 */
+	private static function fluent_fields( $inputs ) {
+		$types  = array(
+			'input_email'         => 'email',
+			'textarea'            => 'textarea',
+			'phone'               => 'tel',
+			'input_url'           => 'url',
+			'input_number'        => 'number',
+			'select'              => 'select',
+			'input_radio'         => 'radio',
+			'input_checkbox'      => 'checkbox',
+			'terms_and_condition' => 'checkbox',
+			'gdpr_agreement'      => 'checkbox',
+		);
+		$skip   = array( 'recaptcha', 'hcaptcha', 'input_hidden', 'custom_html', 'section_break', 'container', 'input_file', 'input_image', 'input_password', 'shortcode' );
+		$fields = array();
+		foreach ( $inputs as $name => $input ) {
+			$name    = (string) $name;
+			$element = isset( $input['element'] ) ? (string) $input['element'] : '';
+			// A captcha's answer ("…-response") is not a field a visitor fills.
+			if ( '' === $name || in_array( $element, $skip, true ) || false !== strpos( $name, '[' ) || preg_match( '/-response$/', $name ) ) {
+				continue;
+			}
+			$required = ! empty( $input['rules']['required']['value'] );
+			$label    = trim( isset( $input['label'] ) ? (string) $input['label'] : '' );
+			if ( 'input_name' === $element ) {
+				foreach ( $inputs as $sub => $sub_input ) {
+					if ( 0 === strpos( (string) $sub, $name . '[' ) && ! empty( $sub_input['rules']['required']['value'] ) ) {
+						$required = true;
+					}
+				}
+				$label = '' !== $label ? $label : 'Name';
+			}
+			$fields[] = array(
+				'name'     => $name,
+				'label'    => '' !== $label ? $label : $name,
+				'type'     => 'input_name' === $element ? 'name' : ( isset( $types[ $element ] ) ? $types[ $element ] : 'text' ),
+				'required' => $required,
+			);
+		}
+		return $fields;
+	}
+
+	/**
+	 * The captcha the plugin checks this form's submissions with, or null.
+	 *
+	 * Put on the form (public site key only) so assets/form-handler.js can
+	 * load the provider and send a token with the submission (CAPTCHA_FIELD);
+	 * forward() puts it where the plugin reads it, and the plugin verifies it
+	 * with its own secret, as for its own forms. The same answers as the
+	 * html2wp Gutenberg target's h2wp_gb_handler_captcha().
+	 *
+	 * @param string $kind
+	 * @param string $form_id
+	 * @return array{provider:string,siteKey:string,field:string,action?:string}|null
+	 *   provider 'recaptcha-v3'|'recaptcha-v2'|'recaptcha-v2-invisible'|'hcaptcha'.
+	 *
+	 * Lite answers reCAPTCHA and hCaptcha only. A plugin form protected by
+	 * another challenge gets no token from this page, and its plugin refuses
+	 * the submission with its own message.
+	 */
+	public static function captcha( $kind, $form_id ) {
+		if ( 'cf7' === $kind && self::available( 'cf7' ) ) {
+			// CF7 checks it on every form while its integration is set up.
+			if ( class_exists( 'WPCF7_RECAPTCHA' ) && ( $service = WPCF7_RECAPTCHA::get_instance() ) && $service->is_active() && $service->get_sitekey() ) { // phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.Found
+				return array( 'provider' => 'recaptcha-v3', 'siteKey' => (string) $service->get_sitekey(), 'field' => '_wpcf7_recaptcha_response', 'action' => 'contactform' );
+			}
+			return null;
+		}
+		if ( 'fluentform' === $kind && ( $form = self::fluent_form( $form_id ) ) ) { // phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.Found
+			// A form checks the captcha it contains, or the one the global
+			// "autoload captcha" setting adds to every form — which Fluent
+			// applies only once that provider's keys were verified.
+			$global   = get_option( '_fluentform_global_form_settings' );
+			$auto     = is_array( $global ) && ! empty( $global['misc']['autoload_captcha'] ) && isset( $global['misc']['captcha_type'] ) ? (string) $global['misc']['captcha_type'] : '';
+			$verified = array( 'recaptcha' => '_fluentform_reCaptcha_keys_status', 'hcaptcha' => '_fluentform_hCaptcha_keys_status' );
+			$has      = static function ( $element ) use ( $form, $auto, $verified ) {
+				return ( $auto === $element && isset( $verified[ $element ] ) && get_option( $verified[ $element ], false ) ) || \FluentForm\App\Modules\Form\FormFieldsParser::hasElement( $form, $element );
+			};
+			if ( $has( 'recaptcha' ) ) {
+				$keys     = (array) get_option( '_fluentform_reCaptcha_details' );
+				$version  = isset( $keys['api_version'] ) ? (string) $keys['api_version'] : 'v2_visible';
+				$provider = 'v3_invisible' === $version ? 'recaptcha-v3' : ( 'v2_invisible' === $version ? 'recaptcha-v2-invisible' : 'recaptcha-v2' );
+				return ! empty( $keys['siteKey'] ) ? array( 'provider' => $provider, 'siteKey' => (string) $keys['siteKey'], 'field' => 'g-recaptcha-response', 'action' => 'submit' ) : null;
+			}
+			if ( $has( 'hcaptcha' ) ) {
+				$keys = (array) get_option( '_fluentform_hCaptcha_details' );
+				return ! empty( $keys['siteKey'] ) ? array( 'provider' => 'hcaptcha', 'siteKey' => (string) $keys['siteKey'], 'field' => 'h-captcha-response' ) : null;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -311,15 +458,32 @@ class Clara_VE_Form_Handlers {
 	 * @param string $kind
 	 * @param string $form_id Plugin form id.
 	 * @param array  $values  Plugin field name => string|string[].
-	 * @param array  $extra   Request values the plugin reads besides fields (a captcha token).
-	 * @return array{status:string,errors:array<string,string>,message:string}
-	 *   status 'sent'|'invalid'|'spam'|'error'; errors keyed by PLUGIN field name.
+	 * @param string $captcha The page's captcha token, '' when none — put where
+	 *                        the plugin reads it (see captcha()).
+	 * @return array{status:string,errors:array<string,string>,message:string,redirect?:string}
+	 *   status 'sent'|'invalid'|'spam'|'error'; errors keyed by PLUGIN field
+	 *   name; redirect where the plugin's own confirmation sends the visitor.
 	 */
-	public static function forward( $kind, $form_id, $values, $extra = array() ) {
-		if ( 'cf7' === $kind && self::available( 'cf7' ) ) {
-			return self::forward_cf7( $form_id, $values, $extra );
+	public static function forward( $kind, $form_id, $values, $captcha = '' ) {
+		$spec = self::captcha( $kind, $form_id );
+		if ( $spec && '' !== $captcha ) {
+			$values[ $spec['field'] ] = $captcha;
 		}
-		return array( 'status' => 'error', 'errors' => array(), 'message' => '' );
+		if ( 'cf7' === $kind && self::available( 'cf7' ) ) {
+			$verdict = self::forward_cf7( $form_id, $values );
+		} elseif ( 'fluentform' === $kind && self::available( 'fluentform' ) ) {
+			$verdict = self::forward_fluentform( $form_id, $values );
+		} else {
+			return array( 'status' => 'error', 'errors' => array(), 'message' => '' );
+		}
+		// A failed captcha is not a field the visitor can correct (Fluent
+		// reports it as a validation error): it is a refusal.
+		if ( $spec && isset( $verdict['errors'][ $spec['field'] ] ) ) {
+			$verdict['message'] = trim( $verdict['message'] . ' ' . $verdict['errors'][ $spec['field'] ] );
+			unset( $verdict['errors'][ $spec['field'] ] );
+			$verdict['status'] = 'spam';
+		}
+		return $verdict;
 	}
 
 	/**
@@ -327,9 +491,9 @@ class Clara_VE_Form_Handlers {
 	 * feedback endpoint receives one: the fields under their tag names plus
 	 * the form's id and a unit tag. submit() then runs CF7's validation, its
 	 * spam checks (the request is the visitor's own, so are its user agent and
-	 * IP; Akismet and the disallowed list apply; a reCAPTCHA v3 token the page
-	 * obtained arrives as _wpcf7_recaptcha_response), mail, and Flamingo when
-	 * active. $_POST is restored afterwards.
+	 * IP; Akismet and the disallowed list apply; reCAPTCHA v3 with the token
+	 * the page obtained), mail, and Flamingo when active.
+	 * $_POST is restored afterwards.
 	 *
 	 * CF7 checks its own nonce only for a logged-in submitter. This route is
 	 * reached anonymously — core drops a cookie without X-WP-Nonce to user 0 —
@@ -339,17 +503,15 @@ class Clara_VE_Form_Handlers {
 	 *
 	 * @param string $form_id
 	 * @param array  $values
-	 * @param array  $extra
 	 * @return array{status:string,errors:array<string,string>,message:string}
 	 */
-	private static function forward_cf7( $form_id, $values, $extra ) {
+	private static function forward_cf7( $form_id, $values ) {
 		$form = WPCF7_ContactForm::get_instance( (int) $form_id );
 		if ( ! $form ) {
 			return array( 'status' => 'error', 'errors' => array(), 'message' => '' );
 		}
 		$saved = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- restored below; the plugin reads the submission from here.
 		$_POST = array_merge(
-			(array) $extra,
 			(array) $values,
 			array(
 				'_wpcf7'                => (string) $form->id(),
@@ -380,6 +542,79 @@ class Clara_VE_Form_Handlers {
 	}
 
 	/**
+	 * Fluent Forms submits through its own SubmissionHandlerService — the
+	 * service its AJAX endpoint uses — which validates (rules, captcha, its
+	 * own too-many-requests guard), checks spam (Akismet/CleanTalk), stores
+	 * the entry, sends the form's notifications and answers with the form's
+	 * confirmation. Validation failures arrive as its ValidationException
+	 * (`errors` keyed by input name, one message per rule). A Name field takes
+	 * our single value split at the first space; a checkbox group a list.
+	 *
+	 * @param string $form_id
+	 * @param array  $values
+	 * @return array{status:string,errors:array<string,string>,message:string,redirect?:string}
+	 */
+	private static function forward_fluentform( $form_id, $values ) {
+		$form = self::fluent_form( $form_id );
+		if ( ! $form ) {
+			return array( 'status' => 'error', 'errors' => array(), 'message' => '' );
+		}
+		$inputs = \FluentForm\App\Modules\Form\FormFieldsParser::getInputs( $form, array( 'element' ) );
+		$data   = array();
+		foreach ( $values as $name => $value ) {
+			$element = isset( $inputs[ $name ]['element'] ) ? (string) $inputs[ $name ]['element'] : '';
+			if ( 'input_name' === $element ) {
+				$parts         = preg_split( '/\s+/', trim( is_array( $value ) ? implode( ' ', $value ) : (string) $value ), 2 );
+				$data[ $name ] = array( 'first_name' => isset( $parts[0] ) ? $parts[0] : '', 'last_name' => isset( $parts[1] ) ? $parts[1] : '' );
+			} elseif ( 'input_checkbox' === $element ) {
+				$data[ $name ] = is_array( $value ) ? $value : ( '' === $value ? array() : array( (string) $value ) );
+			} elseif ( in_array( $element, array( 'terms_and_condition', 'gdpr_agreement' ), true ) ) {
+				if ( '' !== $value && array() !== $value ) {
+					$data[ $name ] = 'on';
+				}
+			} else {
+				$data[ $name ] = is_array( $value ) ? implode( ', ', $value ) : $value;
+			}
+		}
+		// Its nonce check is off by default. When a site turns it on, this
+		// request has already passed this plugin's own origin check.
+		$data[ '_fluentform_' . (int) $form_id . '_fluentformnonce' ] = wp_create_nonce( 'fluentform-submit-form' );
+		try {
+			$result = ( new \FluentForm\App\Services\Form\SubmissionHandlerService() )->handleSubmission( $data, (int) $form_id );
+		} catch ( Throwable $e ) {
+			if ( ! method_exists( $e, 'errors' ) ) {
+				return array( 'status' => 'error', 'errors' => array(), 'message' => '' );
+			}
+			$errors = array();
+			$loose  = array();
+			$all    = (array) $e->errors();
+			foreach ( (array) ( isset( $all['errors'] ) ? $all['errors'] : $all ) as $name => $messages ) {
+				$text = trim( wp_strip_all_tags( (string) ( is_array( $messages ) ? reset( $messages ) : $messages ) ) );
+				if ( '' === $text ) {
+					continue;
+				}
+				// A sub-input's error ("names[first_name]") belongs to its field.
+				$base = preg_replace( '/\[.*$/', '', (string) $name );
+				if ( isset( $values[ $base ] ) ) {
+					$errors[ $base ] = isset( $errors[ $base ] ) ? $errors[ $base ] : $text;
+				} else {
+					$loose[ $base ] = $text;
+				}
+			}
+			// Kept under the plugin's name so forward() can recognise its
+			// captcha; submit() moves the rest into the message.
+			return array( 'status' => $errors || $loose || in_array( (int) $e->getCode(), array( 422, 423 ), true ) ? 'invalid' : 'error', 'errors' => array_merge( $loose, $errors ), 'message' => '' );
+		}
+		$answer = isset( $result['result'] ) && is_array( $result['result'] ) ? $result['result'] : array();
+		return array(
+			'status'   => 'sent',
+			'errors'   => array(),
+			'message'  => trim( wp_strip_all_tags( (string) ( isset( $answer['message'] ) ? $answer['message'] : '' ) ) ),
+			'redirect' => esc_url_raw( (string) ( isset( $answer['redirectUrl'] ) ? $answer['redirectUrl'] : '' ) ),
+		);
+	}
+
+	/**
 	 * A submission whose signed delivery names a handler, after
 	 * Clara_VE_Forms::handle_submit() has run its own checks (honeypot,
 	 * origin, time-trap, rate limit). Nothing is stored under Form
@@ -389,13 +624,14 @@ class Clara_VE_Form_Handlers {
 	 * @param string $list     The signed `list` value (see parse()).
 	 * @param array  $params   The request, as received.
 	 * @param string $rate_key The rate-limit entry this request set, or ''.
-	 * @return array{status:string,errors:array<string,string>,message:string}
-	 *   errors keyed by OUR field name.
+	 * @return array{status:string,errors:array<string,string>,message:string,redirect:string,values:array}
+	 *   errors keyed by OUR field name; redirect the plugin's own confirmation
+	 *   target; values what the visitor sent, under our names.
 	 */
 	public static function submit( $kind, $list, $params, $rate_key ) {
 		$config = self::parse( $list );
 		if ( '' !== self::missing( $kind, $config['form'] ) ) {
-			return array( 'status' => 'closed', 'errors' => array(), 'message' => __( 'This form isn’t accepting messages right now. Please reach out another way.', 'visual-edit-lite' ) );
+			return array( 'status' => 'closed', 'errors' => array(), 'message' => __( 'This form isn’t accepting messages right now. Please reach out another way.', 'visual-edit-lite' ), 'redirect' => '', 'values' => array() );
 		}
 
 		// Our fields under the names Clara_VE_Forms stores them by: the same
@@ -419,12 +655,9 @@ class Clara_VE_Form_Handlers {
 				$values[ $theirs ] = $ours[ $mine ];
 			}
 		}
-		$extra = array();
-		if ( isset( $params['_wpcf7_recaptcha_response'] ) && is_string( $params['_wpcf7_recaptcha_response'] ) ) {
-			$extra['_wpcf7_recaptcha_response'] = sanitize_text_field( $params['_wpcf7_recaptcha_response'] );
-		}
+		$captcha = isset( $params[ self::CAPTCHA_FIELD ] ) && is_string( $params[ self::CAPTCHA_FIELD ] ) ? sanitize_text_field( $params[ self::CAPTCHA_FIELD ] ) : '';
 
-		$verdict = self::forward( $kind, $config['form'], $values, $extra );
+		$verdict = self::forward( $kind, $config['form'], $values, $captcha );
 
 		// Errors come back under the plugin's names; the page knows ours.
 		$back   = array();
@@ -451,7 +684,13 @@ class Clara_VE_Form_Handlers {
 		if ( 'invalid' === $verdict['status'] && '' !== $rate_key ) {
 			delete_transient( $rate_key );
 		}
-		return array( 'status' => $verdict['status'], 'errors' => $errors, 'message' => $message );
+		return array(
+			'status'   => $verdict['status'],
+			'errors'   => $errors,
+			'message'  => $message,
+			'redirect' => isset( $verdict['redirect'] ) ? (string) $verdict['redirect'] : '',
+			'values'   => array_intersect_key( $ours, $config['map'] ),
+		);
 	}
 
 	/**
@@ -459,8 +698,9 @@ class Clara_VE_Form_Handlers {
 	 * to a handler gets what its renderer does not give it.
 	 *
 	 * - Connected and reachable: the script that sends it (field errors,
-	 *   captcha token); on a theme that renders the token itself, also the
-	 *   delivery signature the theme does not emit.
+	 *   captcha token), the captcha the plugin checks, a plain post's verdict
+	 *   when it came back with one, and — on a theme that renders the token
+	 *   itself and did not sign it — the delivery signature.
 	 * - Its plugin or plugin form gone: the token is taken off, so the form
 	 *   is simply not connected — the theme's and this plugin's own handling
 	 *   of an unconnected form applies — and someone who can edit the page is
@@ -509,8 +749,10 @@ class Clara_VE_Form_Handlers {
 			return $m[0];
 		}
 		$list    = (string) ( isset( $atts['list'] ) ? $atts['list'] : '' );
-		$missing = self::missing( $kind, self::parse( $list )['form'] );
+		$config  = self::parse( $list );
+		$missing = self::missing( $kind, $config['form'] );
 		$preview = function_exists( 'clara_ve_is_edit_preview' ) && clara_ve_is_edit_preview();
+		$form_id = sanitize_key( isset( $atts['id'] ) ? $atts['id'] : 'form' );
 
 		if ( '' !== $missing ) {
 			$note = current_user_can( 'edit_pages' )
@@ -518,22 +760,175 @@ class Clara_VE_Form_Handlers {
 				: '';
 			return $preview ? str_replace( '[/wp-form]', $note . '[/wp-form]', $m[0] ) : $m[2] . $note;
 		}
-
-		if ( ! $preview ) {
-			self::enqueue();
-		}
-		if ( ! function_exists( 'clara_ve_theme_owns_public_runtime' ) || ! clara_ve_theme_owns_public_runtime() ) {
-			// Clara_VE_Tokens::render_form() signs it, as it signs every token.
+		if ( $preview ) {
 			return $m[0];
 		}
-		// Signed over exactly what Clara_VE_Tokens::render_form() would sign
-		// and what the theme puts in its hidden fields, normalised the way
-		// handle_submit() reads them back.
-		$form_id   = sanitize_key( isset( $atts['id'] ) ? $atts['id'] : 'form' );
-		$to        = trim( (string) ( isset( $atts['to'] ) ? $atts['to'] : '' ) );
-		$signature = Clara_VE_Forms::delivery_field( $form_id, $to, $kind, $list );
-		$inner     = preg_replace( '/(<form\b[^>]*>)/i', '$1' . $signature, $m[2], 1 );
-		return '[wp-form' . $m[1] . ']' . ( null === $inner ? $m[2] : $inner ) . '[/wp-form]';
+
+		self::enqueue();
+		$inner = $m[2];
+
+		// A designed form rarely says method="post" — its app never
+		// submitted it — and without one the browser's own submit (no
+		// JavaScript) is a GET the submit endpoint does not answer.
+		if ( preg_match( '/<form\b[^>]*>/i', $inner, $open ) && ! preg_match( '/\smethod\s*=/i', $open[0] ) ) {
+			$inner = preg_replace( '/<form\b/i', '<form method="post"', $inner, 1 );
+		}
+
+		// The plugin's captcha, for the script to answer (public key only).
+		$spec = self::captcha( $kind, $config['form'] );
+		if ( $spec ) {
+			$inner = preg_replace( '/<form\b/i', '<form data-cve-captcha="' . esc_attr( wp_json_encode( $spec ) ) . '"', $inner, 1 );
+		}
+
+		// A plain post of this form came back with its verdict.
+		$result = self::result_for( $form_id );
+		if ( $result ) {
+			$shown = self::show_result( $inner, $result );
+			if ( $shown['replace'] ) {
+				// The design's thank-you takes the form's place: nothing
+				// left to connect.
+				return $shown['html'];
+			}
+			$inner = $shown['html'];
+		}
+
+		// Signed over exactly what Clara_VE_Tokens::render_form() signs and
+		// what a converted theme puts in its hidden fields, normalised the way
+		// handle_submit() reads them back. Only where the THEME renders the
+		// token (this plugin's renderer signs it itself), and only when the
+		// markup does not already carry a signature, so there is never a
+		// second one.
+		if ( function_exists( 'clara_ve_theme_owns_public_runtime' ) && clara_ve_theme_owns_public_runtime() && false === strpos( $inner, 'name="' . Clara_VE_Forms::DELIVERY_FIELD . '"' ) ) {
+			$to     = trim( (string) ( isset( $atts['to'] ) ? $atts['to'] : '' ) );
+			$signed = preg_replace( '/(<form\b[^>]*>)/i', '$1' . Clara_VE_Forms::delivery_field( $form_id, $to, $kind, $list ), $inner, 1 );
+			$inner  = null === $signed ? $inner : $signed;
+		}
+		return '[wp-form' . $m[1] . ']' . $inner . '[/wp-form]';
+	}
+
+	/**
+	 * Where a plain (no-JavaScript) post goes back to: its page, with a key
+	 * to the verdict kept for ten minutes. The key is random and known only
+	 * to whoever submitted, since what the visitor typed is kept with it so
+	 * the form can be filled in again.
+	 *
+	 * @param string $back    The page the post came from.
+	 * @param string $form_id
+	 * @param array  $verdict submit()'s answer.
+	 * @return string
+	 */
+	public static function result_url( $back, $form_id, $verdict ) {
+		$key = strtolower( wp_generate_password( 20, false, false ) );
+		set_transient(
+			'clara_ve_form_result_' . $key,
+			array(
+				'form'    => (string) $form_id,
+				'status'  => (string) $verdict['status'],
+				'errors'  => (array) $verdict['errors'],
+				'message' => (string) $verdict['message'],
+				'values'  => 'sent' === $verdict['status'] ? array() : (array) $verdict['values'],
+			),
+			10 * MINUTE_IN_SECONDS
+		);
+		return add_query_arg( self::RESULT_ARG, $key, remove_query_arg( array( self::RESULT_ARG, 'cve_sent' ), $back ) );
+	}
+
+	/**
+	 * The verdict a plain post of this form came back with, or null.
+	 *
+	 * @param string $form_id
+	 * @return array|null
+	 */
+	private static function result_for( $form_id ) {
+		$key = isset( $_GET[ self::RESULT_ARG ] ) ? preg_replace( '/[^a-z0-9]/', '', strtolower( (string) wp_unslash( $_GET[ self::RESULT_ARG ] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( '' === $key ) {
+			return null;
+		}
+		$result = get_transient( 'clara_ve_form_result_' . $key );
+		return is_array( $result ) && isset( $result['form'] ) && $result['form'] === $form_id ? $result : null;
+	}
+
+	/**
+	 * The form's markup with a verdict shown in it, the way the script shows
+	 * one: a thank-you after the form (the design's recorded one first), or
+	 * each reason under its field in the design's own error style, the
+	 * summary after the form, and what the visitor typed filled back in.
+	 *
+	 * @param string $inner  The form markup inside the token.
+	 * @param array  $result result_for().
+	 * @return array{html:string,replace:bool} replace: the design's recorded
+	 *   success takes the form's place, and html is that alone.
+	 */
+	private static function show_result( $inner, $result ) {
+		if ( ! preg_match( '/<form\b[^>]*>/i', $inner, $open ) ) {
+			return array( 'html' => $inner, 'replace' => false );
+		}
+		$attr = static function ( $name ) use ( $open ) {
+			return preg_match( '/\s' . preg_quote( $name, '/' ) . '\s*=\s*"([^"]*)"/i', $open[0], $v ) ? html_entity_decode( $v[1], ENT_QUOTES ) : '';
+		};
+		$close = strripos( $inner, '</form>' );
+		$after = false === $close ? strlen( $inner ) : $close + 7;
+
+		if ( 'sent' === $result['status'] ) {
+			$recorded = json_decode( $attr( 'data-spa-success' ), true );
+			if ( is_array( $recorded ) && ! empty( $recorded['html'] ) ) {
+				$html = wp_kses_post( (string) $recorded['html'] );
+				if ( isset( $recorded['kind'] ) && 'replace' === $recorded['kind'] ) {
+					return array( 'html' => $html, 'replace' => true );
+				}
+				return array( 'html' => substr( $inner, 0, $after ) . $html . substr( $inner, $after ), 'replace' => false );
+			}
+			$text = '' !== $attr( 'data-cve-thanks' ) ? $attr( 'data-cve-thanks' ) : ( '' !== $result['message'] ? $result['message'] : __( 'Thanks — check your inbox.', 'visual-edit-lite' ) );
+			return array( 'html' => substr( $inner, 0, $after ) . '<p class="cve-form-message" data-cve-handler-note="" role="status">' . esc_html( $text ) . '</p>' . substr( $inner, $after ), 'replace' => false );
+		}
+
+		// The design's own error look, when it recorded one.
+		$class = 'cve-form-message';
+		if ( preg_match( '/<[a-z0-9]+\b[^>]*\bdata-spa-invalid\b[^>]*>/i', $inner, $look ) && preg_match( '/\sclass\s*=\s*"([^"]*)"/i', $look[0], $c ) ) {
+			$class = html_entity_decode( $c[1], ENT_QUOTES );
+		}
+		$line = static function ( $text ) use ( $class ) {
+			return '<p class="' . esc_attr( $class ) . '" data-cve-handler-note="" data-cve-error="1" role="alert">' . esc_html( $text ) . '</p>';
+		};
+
+		$errors = (array) $result['errors'];
+		$values = (array) $result['values'];
+		$placed = array();
+		$form   = substr( $inner, 0, $after );
+		// One pass per control: fill it back in, then put its reason after it.
+		$form = preg_replace_callback(
+			'/<(input)\b([^>]*)>|<(textarea|select)\b([^>]*)>(.*?)<\/\3>/is',
+			static function ( $c ) use ( $errors, $values, $line, &$placed ) {
+				$tag   = '' !== $c[1] ? 'input' : strtolower( $c[3] );
+				$attrs = '' !== $c[1] ? $c[2] : $c[4];
+				if ( ! preg_match( '/\sname\s*=\s*"([^"]*)"/i', $attrs, $n ) ) {
+					return $c[0];
+				}
+				$name = sanitize_key( preg_replace( '/\[\]$/', '', html_entity_decode( $n[1], ENT_QUOTES ) ) );
+				$out  = $c[0];
+				if ( isset( $values[ $name ] ) && is_scalar( $values[ $name ] ) ) {
+					$value = (string) $values[ $name ];
+					if ( 'input' === $tag ) {
+						$type = preg_match( '/\stype\s*=\s*"([^"]*)"/i', $attrs, $t ) ? strtolower( $t[1] ) : 'text';
+						if ( ! in_array( $type, array( 'checkbox', 'radio', 'hidden', 'submit', 'button', 'password', 'file', 'image', 'reset' ), true ) ) {
+							$bare = preg_replace( '/\svalue\s*=\s*"[^"]*"/i', '', $attrs );
+							$out  = '<input' . rtrim( $bare, '/ ' ) . ' value="' . esc_attr( $value ) . '">';
+						}
+					} elseif ( 'textarea' === $tag ) {
+						$out = '<textarea' . $attrs . '>' . esc_textarea( $value ) . '</textarea>';
+					}
+				}
+				if ( isset( $errors[ $name ] ) && '' !== $errors[ $name ] && empty( $placed[ $name ] ) ) {
+					$placed[ $name ] = true;
+					$out            .= $line( $errors[ $name ] );
+				}
+				return $out;
+			},
+			$form
+		);
+		$left = array_diff_key( array_filter( $errors, 'strlen' ), $placed );
+		$text = trim( ( '' !== $result['message'] ? $result['message'] : __( 'Please check the fields marked below.', 'visual-edit-lite' ) ) . ' ' . implode( ' ', $left ) );
+		return array( 'html' => ( null === $form ? substr( $inner, 0, $after ) : $form ) . $line( $text ) . substr( $inner, $after ), 'replace' => false );
 	}
 
 	/**
@@ -556,6 +951,8 @@ class Clara_VE_Form_Handlers {
 					'sent'    => __( 'Sent!', 'visual-edit-lite' ),
 					'thanks'  => __( 'Thanks — check your inbox.', 'visual-edit-lite' ),
 					'failed'  => __( 'Something went wrong — please try again.', 'visual-edit-lite' ),
+					'verify'  => __( 'Please complete the verification first.', 'visual-edit-lite' ),
+					'kinds'   => array_keys( self::KINDS ),
 				)
 			) . ';',
 			'before'

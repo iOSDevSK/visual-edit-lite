@@ -203,7 +203,7 @@ class Clara_VE_Forms {
 		// the answer. Only after every check above, so a connected form is
 		// held to the same honeypot, origin, time-trap and rate limit as ours.
 		if ( isset( Clara_VE_Form_Handlers::KINDS[ $type ] ) ) {
-			return self::hand_over( $type, $list, $params, $redirect, $ip ? $rate_key : '' );
+			return self::hand_over( $type, $list, $params, $redirect, $ip ? $rate_key : '', $form_id );
 		}
 		$params['to']        = $recipient;
 		$params['form_type'] = 'list' === $type ? 'list' : 'contact';
@@ -717,17 +717,37 @@ class Clara_VE_Forms {
 	 * Clara_VE_Form_Handlers::submit): its success message, or its refusal
 	 * with the reason for each of our fields under `data.errors`.
 	 *
+	 * A plain post (no JavaScript) is sent back to its page instead, with the
+	 * verdict kept for it there (Clara_VE_Form_Handlers::remember), so the
+	 * form shows the reasons under its fields — or its thank-you — without a
+	 * script and without the visitor ever seeing this endpoint's JSON.
+	 *
 	 * @param string $kind
 	 * @param string $list     Signed handler configuration.
 	 * @param array  $params
 	 * @param string $redirect
 	 * @param string $rate_key
+	 * @param string $form_id
 	 * @return WP_REST_Response|WP_Error
 	 */
-	private static function hand_over( $kind, $list, $params, $redirect, $rate_key ) {
+	private static function hand_over( $kind, $list, $params, $redirect, $rate_key, $form_id ) {
 		$verdict = Clara_VE_Form_Handlers::submit( $kind, $list, $params, $rate_key );
+		// The owner's "Then go to" first; else where the plugin's own
+		// confirmation sends the visitor.
+		$target = '' !== $redirect ? $redirect : $verdict['redirect'];
+		if ( ! self::wants_json() ) {
+			if ( 'sent' === $verdict['status'] && '' !== $target ) {
+				wp_safe_redirect( $target );
+				exit;
+			}
+			$back = wp_get_referer();
+			if ( $back ) {
+				wp_safe_redirect( Clara_VE_Form_Handlers::result_url( $back, $form_id, $verdict ) );
+				exit;
+			}
+		}
 		if ( 'sent' === $verdict['status'] ) {
-			return self::respond( $redirect, $verdict['message'] );
+			return self::respond( $target, $verdict['message'] );
 		}
 		$answers = array(
 			'invalid' => array( 'clara_ve_form_invalid', 400, __( 'Please check the fields marked below.', 'visual-edit-lite' ) ),

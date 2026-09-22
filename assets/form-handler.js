@@ -1,12 +1,14 @@
 /**
- * Inline submit for a [wp-form] handed to another form plugin (Contact Form 7).
+ * Inline submit for a [wp-form] handed to another form plugin (Contact Form 7,
+ * Fluent Forms).
  *
  * Such a form is rendered like every connected form — by this plugin, or by a
  * converted theme's own runtime — and either one's submit script would send
  * it. This one sends it instead, because the plugin's answer needs two things
- * the general scripts do not do: a reCAPTCHA v3 token the plugin checks, and
- * its errors shown under the fields they are about rather than one line under
- * the form.
+ * the general scripts do not do: a token from the captcha the plugin checks
+ * (reCAPTCHA or hCaptcha — whichever the server named in
+ * data-cve-captcha), and its errors shown under the fields they are about
+ * rather than one line under the form.
  *
  * The order matters. A converted design keeps its own validation (the
  * messages it recorded, shown on an empty submit), and that runs as a
@@ -26,8 +28,11 @@
 ( function () {
 	var config = window.claraVeFormHandler || {};
 
+	var kinds = config.kinds || [ 'cf7' ];
+
 	function handled( form ) {
-		return !! form.querySelector( 'input[name="clara_ve_nonce"]' ) && !! form.querySelector( 'input[name="form_type"][value="cf7"]' );
+		var type = form.querySelector( 'input[name="form_type"]' );
+		return !! form.querySelector( 'input[name="clara_ve_nonce"]' ) && !! type && kinds.indexOf( type.value ) >= 0;
 	}
 
 	function submitButton( form ) {
@@ -129,22 +134,224 @@
 		return left;
 	}
 
-	// CF7's own reCAPTCHA v3 script only fills the forms CF7 rendered; this
-	// asks for a token the same way for ours. No reCAPTCHA on the site: none.
-	function captcha() {
-		var recaptcha = window.wpcf7_recaptcha;
-		var g = window.grecaptcha;
-		if ( ! recaptcha || ! recaptcha.sitekey || ! g || ! g.execute ) {
+	// The plugin's captcha (data-cve-captcha: provider and public site key,
+	// from the server). Its script is loaded — or reused when the plugin
+	// already loads it on every page, as CF7 does — a widget that needs a place
+	// goes before the submit button, and each submit carries a fresh token as
+	// cve_captcha; the server hands it to the plugin, which verifies it with
+	// its own secret. Same providers as the html2wp Gutenberg runtime.
+	var scripts = {};
+	var captchas = [];
+	var PROVIDERS = {
+		'recaptcha-v3': { api: 'grecaptcha', src: function ( c ) { return 'https://www.google.com/recaptcha/api.js?render=' + encodeURIComponent( c.siteKey ); } },
+		'recaptcha-v2': { api: 'grecaptcha', widget: true, src: function () { return 'https://www.google.com/recaptcha/api.js?render=explicit'; } },
+		'recaptcha-v2-invisible': { api: 'grecaptcha', widget: true, src: function () { return 'https://www.google.com/recaptcha/api.js?render=explicit'; } },
+		hcaptcha: { api: 'hcaptcha', widget: true, src: function () { return 'https://js.hcaptcha.com/1/api.js?render=explicit'; } },
+	};
+
+	function load( src, api ) {
+		var same = src.split( '?' )[ 0 ];
+		if ( ! scripts[ src ] && window[ api ] ) {
+			scripts[ src ] = Promise.resolve();
+		}
+		if ( ! scripts[ src ] && Array.prototype.some.call( document.scripts, function ( el ) { return el.src.split( '?' )[ 0 ] === same; } ) ) {
+			scripts[ src ] = Promise.resolve();
+		}
+		if ( ! scripts[ src ] ) {
+			scripts[ src ] = new Promise( function ( ok, no ) {
+				var tag = document.createElement( 'script' );
+				tag.src = src;
+				tag.async = true;
+				tag.onload = ok;
+				tag.onerror = no;
+				document.head.appendChild( tag );
+			} );
+		}
+		return scripts[ src ];
+	}
+
+	function ready( api ) {
+		return new Promise( function ( ok ) {
+			var tries = 0;
+			( function wait() {
+				var g = window[ api ];
+				if ( g && g.render && ( 'grecaptcha' !== api || g.ready ) ) {
+					return 'grecaptcha' === api ? g.ready( function () { ok( g ); } ) : ok( g );
+				}
+				if ( ++tries > 200 ) {
+					return ok( null );
+				}
+				window.setTimeout( wait, 50 );
+			}() );
+		} );
+	}
+
+	function captchaOf( form ) {
+		for ( var i = 0; i < captchas.length; i++ ) {
+			if ( captchas[ i ].form === form ) {
+				return captchas[ i ];
+			}
+		}
+		return null;
+	}
+
+	function setupCaptcha( form ) {
+		var spec = null;
+		try {
+			spec = JSON.parse( form.getAttribute( 'data-cve-captcha' ) || 'null' );
+		} catch ( e ) {
+			spec = null;
+		}
+		var provider = spec && PROVIDERS[ spec.provider ];
+		if ( ! provider || ! spec.siteKey || captchaOf( form ) ) {
+			return;
+		}
+		var state = { form: form, spec: spec, provider: provider };
+		state.api = load( provider.src( spec ), provider.api ).then( function () { return ready( provider.api ); }, function () { return null; } );
+		if ( provider.widget ) {
+			var box = document.createElement( 'div' );
+			box.setAttribute( 'data-cve-captcha-box', '' );
+			box.style.cssText = 'margin:.75em 0';
+			var button = submitButton( form );
+			if ( button && button.parentNode ) {
+				button.parentNode.insertBefore( box, button );
+			} else {
+				form.appendChild( box );
+			}
+			state.widget = state.api.then( function ( g ) {
+				if ( ! g ) {
+					return null;
+				}
+				var options = { sitekey: spec.siteKey };
+				if ( 'recaptcha-v2-invisible' === spec.provider ) {
+					options.size = 'invisible';
+					options.callback = function ( t ) {
+						if ( state.pending ) {
+							state.pending( t );
+							state.pending = null;
+						}
+					};
+				}
+				return g.render( box, options );
+			} );
+		}
+		captchas.push( state );
+	}
+
+	// A token for this submit: '' when there is no captcha or its provider
+	// could not load (the plugin then refuses, and says so), null when a
+	// visible check has not been done yet.
+	function captcha( form ) {
+		var state = captchaOf( form );
+		if ( ! state ) {
 			return Promise.resolve( '' );
 		}
-		var action = ( recaptcha.actions && recaptcha.actions.contactform ) || 'contactform';
-		return new Promise( function ( resolve ) {
-			g.ready( function () {
-				g.execute( recaptcha.sitekey, { action: action } ).then( resolve, function () {
-					resolve( '' );
+		return state.api.then( function ( g ) {
+			if ( ! g ) {
+				return '';
+			}
+			if ( ! state.provider.widget ) {
+				return g.execute( state.spec.siteKey, { action: state.spec.action || 'submit' } );
+			}
+			return state.widget.then( function ( id ) {
+				if ( null === id || undefined === id ) {
+					return '';
+				}
+				if ( 'recaptcha-v2-invisible' === state.spec.provider ) {
+					return new Promise( function ( ok ) {
+						state.pending = ok;
+						g.execute( id );
+					} );
+				}
+				return g.getResponse( id ) || null;
+			} );
+		} ).catch( function () {
+			return '';
+		} );
+	}
+
+	// Tokens are single-use: after a verdict the widget asks again.
+	function resetCaptcha( form ) {
+		var state = captchaOf( form );
+		if ( state && state.widget ) {
+			state.api.then( function ( g ) {
+				return state.widget.then( function ( id ) {
+					if ( g && null !== id && undefined !== id && g.reset ) {
+						g.reset( id );
+					}
 				} );
 			} );
+		}
+	}
+
+	function setupAll() {
+		Array.prototype.forEach.call( document.querySelectorAll( 'form[data-cve-captcha]' ), function ( form ) {
+			if ( handled( form ) ) {
+				setupCaptcha( form );
+			}
 		} );
+	}
+	if ( 'loading' === document.readyState ) {
+		document.addEventListener( 'DOMContentLoaded', setupAll );
+	} else {
+		setupAll();
+	}
+
+	// The design's recorded thank-you (data-spa-success: a toast, a line after
+	// the form, or a block in its place), as the design showed it. False when
+	// the design recorded none.
+	function recordedSuccess( form ) {
+		var rec = null;
+		try {
+			rec = JSON.parse( form.getAttribute( 'data-spa-success' ) || 'null' );
+		} catch ( e ) {
+			rec = null;
+		}
+		if ( ! rec || ! rec.html ) {
+			return false;
+		}
+		var box = document.createElement( 'div' );
+		box.innerHTML = rec.html;
+		var node = box.firstElementChild || box;
+		node.setAttribute( 'data-cve-handler-note', '' );
+		if ( 'replace' === rec.kind ) {
+			form.parentNode.replaceChild( node, form );
+			return true;
+		}
+		if ( 'toast' !== rec.kind ) {
+			form.parentNode.insertBefore( node, form.nextSibling );
+			return true;
+		}
+		// A toast: the source's list (and region) around it, gone after its time.
+		var wrap = function ( open, fallbackTag ) {
+			var m = /^<(ol|ul|div|section)([^>]*)>/.exec( open || '' );
+			var el = document.createElement( m ? m[ 1 ] : fallbackTag );
+			if ( m ) {
+				var probe = document.createElement( 'div' );
+				probe.innerHTML = '<' + m[ 1 ] + m[ 2 ] + '></' + m[ 1 ] + '>';
+				var src = probe.firstElementChild;
+				for ( var i = 0; i < src.attributes.length; i++ ) {
+					el.setAttribute( src.attributes[ i ].name, src.attributes[ i ].value );
+				}
+			}
+			return el;
+		};
+		var list = wrap( rec.list, 'ol' );
+		var outer = rec.region ? wrap( rec.region, 'section' ) : null;
+		list.appendChild( node );
+		if ( outer ) {
+			outer.appendChild( list );
+		}
+		document.body.appendChild( outer || list );
+		if ( rec.ms > 0 ) {
+			window.setTimeout( function () {
+				node.setAttribute( 'data-state', 'closed' );
+				window.setTimeout( function () {
+					( outer || list ).remove();
+				}, 400 );
+			}, rec.ms );
+		}
+		return true;
 	}
 
 	var HELD = 'clara_ve_nonce__held';
@@ -197,11 +404,14 @@
 		setLabel( button, config.sending || 'Sending…' );
 		clear( form );
 
-		captcha()
+		captcha( form )
 			.then( function ( token ) {
+				if ( null === token ) {
+					throw new Error( config.verify || 'Please complete the verification first.' );
+				}
 				var body = new FormData( form );
 				if ( token ) {
-					body.set( '_wpcf7_recaptcha_response', token );
+					body.set( 'cve_captcha', token );
 				}
 				// getAttribute: a field named "action" would shadow form.action.
 				return window.fetch( form.getAttribute( 'action' ), {
@@ -217,6 +427,7 @@
 				} );
 			} )
 			.then( function ( result ) {
+				resetCaptcha( form );
 				if ( ! result.ok ) {
 					var errors = ( result.data.data && result.data.data.errors ) || {};
 					var left = fieldErrors( form, errors );
@@ -233,17 +444,19 @@
 					return;
 				}
 				setLabel( button, config.sent || 'Sent!' );
-				// The design's recorded thank-you first, then the plugin's
-				// own message, then the site-wide sentence.
-				summary( form, form.getAttribute( 'data-cve-thanks' ) || result.data.message || config.thanks || 'Thanks — check your inbox.', false );
 				form.reset();
+				// The design's recorded thank-you first, then the form's own
+				// sentence, then the plugin's message, then the site-wide one.
+				if ( ! recordedSuccess( form ) ) {
+					summary( form, form.getAttribute( 'data-cve-thanks' ) || result.data.message || config.thanks || 'Thanks — check your inbox.', false );
+				}
 			} )
-			.catch( function () {
+			.catch( function ( err ) {
 				if ( button ) {
 					button.disabled = false;
 				}
 				setLabel( button, original );
-				summary( form, config.failed || 'Something went wrong — please try again.', true );
+				summary( form, ( err && err.message && config.verify === err.message && err.message ) || config.failed || 'Something went wrong — please try again.', true );
 			} );
 	}
 }() );

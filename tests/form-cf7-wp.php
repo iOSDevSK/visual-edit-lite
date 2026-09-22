@@ -129,7 +129,25 @@ $reply = $send( array_merge( $fields, $visitor ) );
 $check( is_wp_error( $reply ) && 'clara_ve_rate_limited' === $reply->get_error_code(), 'while an accepted one still starts the rate limit' );
 delete_transient( $rate_key );
 
-// A reCAPTCHA v3 token the page obtained reaches CF7 where it reads one.
+// CF7's reCAPTCHA v3, set up: the form names it for the page, and the token
+// the page obtained reaches CF7 where it reads one. Google is answered by a
+// stub: a known token passes, anything else fails, as siteverify would.
+$recaptcha_before = WPCF7::get_option( 'recaptcha' );
+WPCF7::update_option( 'recaptcha', array( 'qa-site-key' => 'qa-secret' ) );
+// The service reads its keys once, when first asked; this script changed them.
+$recaptcha_service = new ReflectionProperty( 'WPCF7_RECAPTCHA', 'instance' );
+$recaptcha_service->setAccessible( true );
+$recaptcha_service->setValue( null, null );
+$google = static function ( $pre, $args, $url ) {
+	if ( false === strpos( (string) $url, 'recaptcha/api/siteverify' ) ) {
+		return $pre;
+	}
+	$good = isset( $args['body']['response'] ) && 'token-good' === $args['body']['response'];
+	return array( 'headers' => array(), 'response' => array( 'code' => 200, 'message' => 'OK' ), 'cookies' => array(), 'body' => wp_json_encode( $good ? array( 'success' => true, 'score' => 0.9, 'action' => 'contactform' ) : array( 'success' => false, 'error-codes' => array( 'invalid-input-response' ) ) ) );
+};
+add_filter( 'pre_http_request', $google, 10, 3 );
+$captcha_html = $render_plugin( $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( $cf7_id ) ) ) );
+$check( false !== strpos( $captcha_html, 'data-cve-captcha="' ) && false !== strpos( html_entity_decode( $captcha_html ), '"provider":"recaptcha-v3","siteKey":"qa-site-key"' ) && false === strpos( $captcha_html, 'qa-secret' ), 'the form names the captcha CF7 checks — its public key only' );
 $seen = null;
 $spy  = static function ( $spam ) use ( &$seen ) {
 	$seen = $_POST['_wpcf7_recaptcha_response'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -137,12 +155,20 @@ $spy  = static function ( $spam ) use ( &$seen ) {
 };
 add_filter( 'wpcf7_spam', $spy, 1 );
 $_POST = array( 'untouched' => '1' );
-$send( array_merge( $fields, $visitor, array( '_wpcf7_recaptcha_response' => 'token-abc' ) ) );
-remove_filter( 'wpcf7_spam', $spy, 1 );
-$check( 'token-abc' === $seen, 'a reCAPTCHA token is passed to CF7 as _wpcf7_recaptcha_response' );
+$mail  = array();
+$reply = $send( array_merge( $fields, $visitor, array( 'cve_captcha' => 'token-good' ) ) );
+$check( 'token-good' === $seen && ! is_wp_error( $reply ) && $mail, "the page's token reaches CF7 as _wpcf7_recaptcha_response, and CF7 accepts it" );
 $check( array( 'untouched' => '1' ) === $_POST, 'and the request is left as it was' );
-$_POST = array();
 delete_transient( $rate_key );
+$mail  = array();
+$reply = $send( array_merge( $fields, $visitor, array( 'cve_captcha' => 'token-bad' ) ) );
+$check( is_wp_error( $reply ) && 'clara_ve_form_refused' === $reply->get_error_code() && ! $mail, 'a token Google rejects is refused by CF7, nothing sent' );
+delete_transient( $rate_key );
+remove_filter( 'wpcf7_spam', $spy, 1 );
+remove_filter( 'pre_http_request', $google, 10 );
+WPCF7::update_option( 'recaptcha', $recaptcha_before );
+$recaptcha_service->setValue( null, null );
+$_POST = array();
 
 // A required CF7 field none of ours fills: CF7's reason cannot sit under a
 // field, so it joins the message.
@@ -161,6 +187,57 @@ foreach ( get_posts( array( 'post_type' => Clara_VE_Forms::CPT, 'post_status' =>
 	wp_delete_post( $row->ID, true );
 }
 delete_transient( $rate_key );
+
+echo "--- without JavaScript ---\n";
+// A plain post is sent back to its page with the verdict kept for it; the
+// page shows it in the form. wp_safe_redirect() is caught before it exits.
+unset( $_SERVER['HTTP_X_CLARA_VE_INLINE'] );
+$_SERVER['HTTP_REFERER'] = home_url( '/qa-contact/' );
+$caught = static function ( $location ) {
+	throw new RuntimeException( $location );
+};
+add_filter( 'wp_redirect', $caught, 1 );
+$plain = static function ( $params ) use ( $send ) {
+	try {
+		$send( $params );
+	} catch ( RuntimeException $e ) {
+		return $e->getMessage();
+	}
+	return '';
+};
+$recorded = '<form class="contact-grid" novalidate data-spa-success="' . esc_attr( wp_json_encode( array( 'kind' => 'inline', 'html' => '<p class="design-thanks">Thanks, I will write back soon.</p>' ) ) ) . '">';
+$designed = $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( $cf7_id ) ) );
+$designed = str_replace( '<form class="contact-grid" novalidate>', $recorded, $designed );
+$designed = str_replace( '</textarea></div>', '</textarea><p class="design-error" data-spa-invalid="v1" hidden>Tell me more</p></div>', $designed );
+$fields   = $hidden( $render_plugin( $designed ) );
+$back     = $plain( array_merge( $fields, $visitor, array( 'email' => 'not-an-address', 'subject' => '' ) ) );
+parse_str( (string) wp_parse_url( $back, PHP_URL_QUERY ), $query );
+$check( 0 === strpos( $back, home_url( '/qa-contact/' ) ) && ! empty( $query['cve_result'] ), 'a refused plain post goes back to its page, not to JSON (' . $back . ')' );
+$_GET['cve_result'] = $query['cve_result'] ?? '';
+$shown = $render_plugin( $designed );
+$check( (bool) preg_match( '~name="email"[^>]*value="not-an-address"[^>]*><p class="design-error" data-cve-handler-note="" data-cve-error="1" role="alert">[^<]+</p>~', $shown ), 'the reason sits under its field, in the design\'s error style, the field filled back in' );
+$check( false !== strpos( $shown, '>Hello there, about a print.</textarea>' ), 'a message the visitor wrote is kept' );
+$check( 1 === preg_match_all( '~</form><p class="design-error"[^>]*role="alert">~', $shown ), "and CF7's summary follows the form" );
+$check( false === strpos( $render_plugin( str_replace( 'id="qa-cf7"', 'id="qa-other"', $designed ) ), 'role="alert"' ), 'another form on the page shows nothing' );
+delete_transient( $rate_key );
+$back = $plain( array_merge( $fields, $visitor ) );
+parse_str( (string) wp_parse_url( $back, PHP_URL_QUERY ), $query );
+$_GET['cve_result'] = $query['cve_result'] ?? '';
+$shown = $render_plugin( $designed );
+$check( false !== strpos( $shown, '</form><p class="design-thanks">Thanks, I will write back soon.</p>' ), "an accepted plain post shows the design's own recorded thank-you" );
+$check( false === strpos( $shown, 'value="Ana Visitor"' ), 'with the form left empty' );
+delete_transient( $rate_key );
+$replace  = str_replace( '&quot;inline&quot;', '&quot;replace&quot;', $designed );
+$check( false === strpos( $render_plugin( $replace ), '<form' ) && false !== strpos( $render_plugin( $replace ), 'design-thanks' ), "a recorded thank-you that replaced the form replaces it" );
+$back = $plain( array_merge( $hidden( $render_plugin( $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( $cf7_id ) ) ) ) ), $visitor ) );
+parse_str( (string) wp_parse_url( $back, PHP_URL_QUERY ), $query );
+$_GET['cve_result'] = $query['cve_result'] ?? '';
+$check( false !== strpos( $render_plugin( $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( $cf7_id ) ) ) ), '>Thank you for your message. It has been sent.</p>' ), "with none recorded, CF7's own message" );
+delete_transient( $rate_key );
+unset( $_GET['cve_result'], $_SERVER['HTTP_REFERER'] );
+remove_filter( 'wp_redirect', $caught, 1 );
+$_SERVER['HTTP_X_CLARA_VE_INLINE'] = '1';
+$fields = $hidden( $render_plugin( $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( $cf7_id ) ) ) ) );
 
 echo "--- a plugin form that is gone ---\n";
 $gone     = $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( '999999' ) ) );
@@ -199,7 +276,9 @@ if ( $theme_runtime ) {
 	add_theme_support( 'html2wp-runtime', ...( is_array( $runtime_support ) ? $runtime_support : array() ) );
 	$html   = do_blocks( $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( $cf7_id ) ) ) );
 	$fields = $hidden( $html );
-	$check( 'cf7' === ( $fields['form_type'] ?? '' ) && ! empty( $fields['cve_delivery'] ) && 1 === substr_count( $html, 'name="cve_delivery"' ), 'the theme renders the token, and the signature it does not emit is already in the form' );
+	$check( 'cf7' === ( $fields['form_type'] ?? '' ) && ! empty( $fields['cve_delivery'] ) && 1 === substr_count( $html, 'name="cve_delivery"' ), 'the theme renders the token, signed exactly once' );
+	$presigned = str_replace( '<form class="contact-grid" novalidate>', '<form class="contact-grid" novalidate><input type="hidden" name="cve_delivery" value="theme-signed">', $page( array( 'id' => 'qa-cf7', 'type' => 'cf7', 'list' => $list( $cf7_id ) ) ) );
+	$check( 1 === substr_count( Clara_VE_Form_Handlers::prepare_block( $presigned, array() ), 'name="cve_delivery"' ), 'a form that already carries a signature gets no second one' );
 	$mail   = array();
 	$before = $inbound();
 	$params = array_merge( $fields, $visitor );
@@ -233,7 +312,7 @@ $request->set_body_params(
 $view = rest_get_server()->dispatch( $request )->get_data();
 $check( in_array( 'cf7', wp_list_pluck( $view['handlers'] ?? array(), 'value' ), true ) && in_array( $cf7_id, wp_list_pluck( $view['forms']['cf7'] ?? array(), 'id' ), true ), 'an editor sees Contact Form 7 and its forms' );
 $check( array( 'name' => 'your-name', 'mail' => 'your-email' ) === ( $view['mapping']['map'] ?? null ), 'and our fields matched to its fields' );
-$check( array( 'your-subject' ) === ( $view['mapping']['unmappedRequired'] ?? null ), 'with the required field nothing fills named' );
+$check( array( 'Subject' ) === ( $view['mapping']['unmappedRequired'] ?? null ), "with the required field nothing fills named by its CF7 label" );
 wp_set_current_user( 0 );
 
 wp_delete_post( (int) $cf7_id, true );
