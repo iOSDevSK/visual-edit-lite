@@ -91,19 +91,23 @@ class Clara_VE_Page_Actions {
 			$slug = sanitize_title( $title . '-copy' );
 		}
 
+		// wp_slash: wp_insert_post() unslashes its whole array; a copy must
+		// keep every backslash the original has.
 		$copy_id = wp_insert_post(
-			array(
-				'post_type'      => 'page',
-				'post_status'    => 'draft',
-				'post_title'     => $title,
-				'post_name'      => $slug,
-				'post_content'   => $post->post_content,
-				'post_excerpt'   => $post->post_excerpt,
-				'post_parent'    => $post->post_parent,
-				'menu_order'     => $post->menu_order,
-				'comment_status' => $post->comment_status,
-				'ping_status'    => $post->ping_status,
-				'post_author'    => get_current_user_id(),
+			wp_slash(
+				array(
+					'post_type'      => 'page',
+					'post_status'    => 'draft',
+					'post_title'     => $title,
+					'post_name'      => $slug,
+					'post_content'   => $post->post_content,
+					'post_excerpt'   => $post->post_excerpt,
+					'post_parent'    => $post->post_parent,
+					'menu_order'     => $post->menu_order,
+					'comment_status' => $post->comment_status,
+					'ping_status'    => $post->ping_status,
+					'post_author'    => get_current_user_id(),
+				)
 			),
 			true
 		);

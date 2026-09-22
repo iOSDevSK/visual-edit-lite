@@ -556,10 +556,13 @@ class Clara_VE_Source_Store {
 			return false;
 		}
 
+		// wp_slash: wp_update_post() unslashes what it is given, and a block
+		// page's attributes are JSON — every \u0022 and \" in them would
+		// lose its backslash on the way in.
 		$updated = wp_update_post(
 			array(
 				'ID'           => $post->ID,
-				'post_content' => $source,
+				'post_content' => wp_slash( $source ),
 			),
 			true
 		);
@@ -1166,10 +1169,15 @@ class Clara_VE_Source_Store {
 		// block directly in wp-admin still gets a normal revision, since
 		// that path never calls this function.
 		remove_action( 'post_updated', 'wp_save_post_revision' );
+		// wp_slash: wp_update_post() unslashes what it is given. Without it
+		// every backslash in the page left on the way in — a converted form's
+		// recorded messages are JSON in an attribute (data-spa-success), and
+		// a stripped \" left them unreadable, so the design's own thank-you
+		// never showed.
 		wp_update_post(
 			array(
 				'ID'           => $page->ID,
-				'post_content' => $content,
+				'post_content' => wp_slash( $content ),
 			)
 		);
 		add_action( 'post_updated', 'wp_save_post_revision' );
@@ -1217,10 +1225,11 @@ class Clara_VE_Source_Store {
 
 		if ( $template && 'custom' === $template->source && $template->wp_id ) {
 			remove_action( 'post_updated', 'wp_save_post_revision' );
+			// wp_slash: as for a page (sync_to_page).
 			wp_update_post(
 				array(
 					'ID'           => $template->wp_id,
-					'post_content' => $content,
+					'post_content' => wp_slash( $content ),
 				)
 			);
 			add_action( 'post_updated', 'wp_save_post_revision' );
@@ -1240,7 +1249,7 @@ class Clara_VE_Source_Store {
 				'post_type'    => 'wp_template_part',
 				'post_name'    => $key,
 				'post_title'   => ucfirst( $key ),
-				'post_content' => $content,
+				'post_content' => wp_slash( $content ),
 				'post_status'  => 'publish',
 				'tax_input'    => array( 'wp_theme' => array( $theme ) ),
 			),
