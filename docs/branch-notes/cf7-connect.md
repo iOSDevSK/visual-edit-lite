@@ -101,9 +101,14 @@ Not released. No version bump. Contact and mailing-list delivery are unchanged
   entry is cleared, so the visitor can correct the form and resend at once.
 - **Backslashes (33f7fcd):** `wp_insert_post()` and `wp_update_post()` unslash
   their input. VE's page mirror, template-part writes, block save, page
-  duplicate and article import passed content raw, so every backslash was lost.
-  bruce-banner's bundle carries valid recorded JSON (`class=\"…\"`), and the
-  imported page did not. Every one of those writes now uses `wp_slash()`.
+  duplicate and article import passed content raw, so every backslash was lost
+  on every VE save. Every one of those writes now uses `wp_slash()`.
+  bruce-banner's bundle carries valid recorded JSON (`class=\"…\"`), but its
+  imported page does not. That page was written by the theme's own importer
+  (`content-import.php`), which has the same bug and is still unfixed on
+  `feature/dual-target`; reported to P. After a VE save the page is correct.
+  A freshly imported page that was never saved stays broken until the
+  importer is fixed.
 
 ## How to test
 
@@ -138,6 +143,12 @@ Forms (wordpress.org latest), theme bruce-banner:
 - `form-handlers-map.php`, `form-connect-wp.php`, `form-blocks-wp.php`, the
   node suite, `check-js-symbols.php` and the `tools/build-plugin.sh` gates:
   pass.
+- `tests/regression-*.php` (via `wp eval-file`) and `theme-contract-api.php`:
+  pass, except three that fail identically on `origin/main` 520a74f in the
+  same environment. They are `block-convert` (2), `page-actions` ("the copy
+  was made") and `patterns` ("the route answers"), and they need a block
+  theme and a REST context this env doesn't have. So the duplicate `wp_slash`
+  is covered by `source-slashes-wp.php`, not by `page-actions`.
 - **Theme signing:** bruce-banner's runtime was re-rendered from
   `feature/dual-target` templates, using `make-theme.mjs`'s own class renames.
   On its own submit route (`BruceBanner_Runtime_Forms::handle_submit`):
