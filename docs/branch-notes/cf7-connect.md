@@ -161,6 +161,12 @@ Forms (wordpress.org latest), theme bruce-banner:
 
   The list path is shown by "No mailing list provider is connected." on the
   stored entry.
+
+  Confirmed afterwards on a real rebuild: P's bruce-banner 1.0.0 ZIP, built
+  from html2wp `dual/p2-left11` b226b23 (ce35033 plus a rewrite-rules fix),
+  sha1 `845dc55f…`. Same three results (1 signature each, recipient and list
+  honoured). `form-cf7-wp` 47/47 and `form-fluent-wp` 14/14 pass on it,
+  including "signed exactly once" on the theme runtime.
 - **Live in a browser, on bruce-banner /contact/:**
   - **CF7:**
     - The editor matched Name, Email, Subject and Message to `your-name`,
@@ -221,10 +227,13 @@ Forms (wordpress.org latest), theme bruce-banner:
   form protected by Turnstile is refused by its plugin, which shows its own
   message. Captchas were tested against stubbed siteverify endpoints, not
   against Google or hCaptcha.
-- **Recorded success in rebuilt themes:** a bruce build from current
-  `feature/dual-target` (recorder fix a9c67ed) was not converted here. That
-  needs the converter service. The plugin side was verified with a well-formed
-  recording, live and in tests.
+- **Recorded success in rebuilt themes:** P's rebuild recorded no
+  `data-spa-success` on bruce's /contact: the app's own `.min(10)` rule on the
+  message field refused the prerender's filled submit (reported to the lead by
+  P). So no real recording has been checked end to end yet. The plugin side
+  was verified with a well-formed recording, live and in tests. A fresh import
+  will also mangle any recording until the theme importer's `wp_slash` fix
+  lands.
 - **Refused cases:** CF7 "subscribers only" forms refuse, because the route is
   anonymous. File-upload fields are not forwarded.
 - **Theme rate limit (reported to P):** an html2wp theme's own limit (5
