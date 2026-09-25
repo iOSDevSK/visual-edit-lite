@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.31.2
+Stable tag: 1.31.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -216,6 +216,24 @@ about you or your site. Secrets you enter (SMTP password, provider API keys)
 are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
 
+== Screenshots ==
+
+1. Click any element on the live page to edit it. The panel follows the
+   selection: text, links and images on the Content tab, spacing, colour and
+   typography on Style.
+2. Every save is a restore point. History lists the ten most recent saves plus
+   the Original, and any of them can be restored.
+3. A designed form is connected by clicking, never rebuilt. Where it sends, and
+   the spam checks in front of it, live under Form Settings.
+4. SEO & AI Readiness: a read-only report of what the site tells search
+   engines and AI assistants, page by page.
+5. SEO & Sharing: the site-wide facts behind structured data, sharing images
+   and llms.txt.
+6. Form Settings: where submissions go, anti-spam, email delivery through your
+   server, SMTP or a provider API, and the mailing list.
+7. Import Content: bring in a converted theme's bundled content, or a content
+   ZIP, reviewed before anything is written.
+
 == Credits ==
 
 The click-to-edit layer — `assets/bridge.js`, `assets/editor.js`,
@@ -228,6 +246,11 @@ Apache License 2.0 is compatible with version 3 of the GPL, which this
 plugin's "GPLv2 or later" licence allows.
 
 == Changelog ==
+
+= 1.31.3 =
+
+* Changed: The readme carries captions for the seven screenshots on the
+  plugin's directory page. No code changes.
 
 = 1.31.2 =
 
