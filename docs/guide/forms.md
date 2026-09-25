@@ -24,6 +24,8 @@ it is just an unconnected HTML form.
 | **Nothing (not connected)** | The default. Submitting does nothing |
 | **Contact form** | Store the submission and email you |
 | **Mailing list** | Add the address to a mailing list |
+| **Contact Form 7** | Hand the submission to a Contact Form 7 form. Offered only while Contact Form 7 is active |
+| **Fluent Forms** | Hand the submission to a Fluent Forms form. Offered only while Fluent Forms is active |
 
 4. Fill in the rest, and **Save**.
 
@@ -36,9 +38,10 @@ it is just an unconnected HTML form.
   Two limits, both deliberate. **Send to** and **List** are honoured only on a
   page whose author administers the site — otherwise anyone who can publish
   could point a form at themselves, or at the owner's mailing list. And on a
-  theme converted from HTML they currently fall back to the site-wide address
-  either way, until the converter signs the choice into the page it generates.
-  In both cases the form still works; it is the address that falls back.
+  theme converted from HTML by an older converter, one that did not yet sign
+  the choice into the page, they fall back to the site-wide address either
+  way; rebuilding the theme with a current converter fixes that. In both
+  cases the form still works; it is the address that falls back.
 - **Then go to** — the page shown after submitting. This is a **page picker**,
   not a text field, with a "Somewhere else…" escape hatch for an external URL.
   It is a picker because the first version was a text field and forms shipped
@@ -50,6 +53,52 @@ it is just an unconnected HTML form.
   name and subscriber count. Never a numeric ID typed by hand.
 
 See [Mailing lists](mailing-lists.md).
+
+### Contact Form 7 and Fluent Forms settings
+
+Your form keeps its design, and the form plugin does the processing behind
+it, exactly as for one of its own forms:
+
+- **Contact Form 7** — its validation, its spam checks (Akismet, the
+  disallowed list, reCAPTCHA v3 or Turnstile), its mail with the recipient,
+  subject and body you set in Contact Form 7, and — with Flamingo installed —
+  its record of the message.
+- **Fluent Forms** — its validation, its spam checks and captcha (reCAPTCHA,
+  Turnstile or hCaptcha, on the form or through "autoload captcha"), its
+  entry under Fluent Forms → Entries, its email notifications and its
+  confirmation message or redirect.
+
+Visual Edit stores nothing of its own for such a form and sends no mail of its
+own.
+
+- **Form** — which of the plugin's forms processes the submissions. Create it
+  in the plugin first, with fields for what your form collects.
+- **Sends as** — one line per field of your form, saying which of the plugin
+  form's fields it fills. Matched automatically when you pick the form: the
+  same name (ignoring case, punctuation and Contact Form 7's `your-` prefix),
+  then the only field of the same kind (email, message, phone…), then the
+  same label, then a name that contains the other. Change any line, or set it
+  to **Don't send**. A Fluent Forms Name field takes one field of yours,
+  split into first and last name at the first space.
+- A field the plugin form **requires** that none of yours fills is named
+  under the list. Until one does, every submission is refused.
+
+What the visitor sees: the plugin's reason under the field it is about
+("Please enter an email address."), in the design's own error style when the
+design has one. After a successful send they see the design's own recorded
+thank-you if the design has one, otherwise the plugin's message. The design's
+own validation, if it has any, still runs first. The plugin's captcha is
+answered on the page: an invisible one runs by itself, and a visible one
+(Turnstile, hCaptcha, reCAPTCHA v2) appears above the submit button.
+
+Without JavaScript the form still works. The page comes back with the same
+reasons under the same fields, what the visitor typed filled back in, or the
+thank-you.
+
+If the plugin is deactivated, or the form you picked is deleted, the form
+behaves as not connected: it sends nothing, and a line under it — visible only
+to you when logged in — says which of the two happened. Pick another form, or
+reactivate the plugin, and it works again.
 
 ## Adding or changing fields
 

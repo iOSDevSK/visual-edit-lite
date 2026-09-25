@@ -55,6 +55,7 @@ trap cleanup EXIT
 # missing. build-plugin.sh runs this too; here it fails fast and by name.
 php "$SRC/tools/check-js-symbols.php" "$SRC"/assets/*.js || die "a called function has no definition"
 php "$SRC/tests/native-history.php" || die "native history adapter/storage regression"
+php "$SRC/tests/form-handlers-map.php" || die "form plugin field mapping regression"
 if command -v node >/dev/null; then
   node "$SRC/tests/popup-values.mjs" || die "shared popup values regression"
   node "$SRC/tests/workspace-model.mjs" || die "workspace model regression"

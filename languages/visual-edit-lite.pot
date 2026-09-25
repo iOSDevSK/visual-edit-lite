@@ -71,7 +71,7 @@ msgstr ""
 #: includes/class-block-patch.php:141
 #: includes/class-block-patch.php:571
 #: includes/class-page-actions.php:84
-#: includes/class-page-actions.php:173
+#: includes/class-page-actions.php:177
 #: includes/class-rest.php:937
 msgid "That page no longer exists."
 msgstr ""
@@ -233,62 +233,62 @@ msgstr ""
 
 #: includes/class-editor-page.php:20
 #: includes/class-editor-page.php:21
-#: visual-edit-lite.php:985
-#: visual-edit-lite.php:2381
-#: visual-edit-lite.php:2399
-#: visual-edit-lite.php:2411
-#: visual-edit-lite.php:2436
+#: visual-edit-lite.php:986
+#: visual-edit-lite.php:2382
+#: visual-edit-lite.php:2400
+#: visual-edit-lite.php:2412
+#: visual-edit-lite.php:2437
 #: assets/gutenberg.js:58
 #: assets/gutenberg.js:314
 msgid "Visual Edit Lite"
 msgstr ""
 
-#: includes/class-editor-page.php:342
+#: includes/class-editor-page.php:346
 msgid "You need theme-editing and unfiltered HTML permissions to use the visual editor."
 msgstr ""
 
-#: includes/class-editor-page.php:351
+#: includes/class-editor-page.php:355
 msgid "Visual Edit Lite — Front Page"
 msgstr ""
 
-#: includes/class-editor-page.php:352
+#: includes/class-editor-page.php:356
 msgid "Switch page"
 msgstr ""
 
-#: includes/class-editor-page.php:353
+#: includes/class-editor-page.php:357
 msgid "Preview live page in a new tab"
 msgstr ""
 
-#: includes/class-editor-page.php:354
+#: includes/class-editor-page.php:358
 msgid "Toggle edit mode"
 msgstr ""
 
-#: includes/class-editor-page.php:355
+#: includes/class-editor-page.php:359
 msgid "Preview device"
 msgstr ""
 
-#: includes/class-editor-page.php:356
+#: includes/class-editor-page.php:360
 msgid "Desktop — full width"
 msgstr ""
 
-#: includes/class-editor-page.php:357
+#: includes/class-editor-page.php:361
 msgid "Tablet — 820 × 1180"
 msgstr ""
 
-#: includes/class-editor-page.php:358
+#: includes/class-editor-page.php:362
 msgid "Mobile — 390 × 844"
 msgstr ""
 
-#: includes/class-editor-page.php:362
-#: includes/class-editor-page.php:396
+#: includes/class-editor-page.php:366
+#: includes/class-editor-page.php:400
 #: assets/gutenberg.js:70
 #: assets/workspace.js:1689
 #: assets/workspace.js:1723
 msgid "Search appearance"
 msgstr ""
 
-#: includes/class-editor-page.php:363
-#: includes/class-editor-page.php:379
+#: includes/class-editor-page.php:367
+#: includes/class-editor-page.php:383
 #: assets/workspace-history.js:142
 #: assets/workspace-history.js:143
 #: assets/workspace-history.js:146
@@ -297,56 +297,56 @@ msgstr ""
 msgid "History"
 msgstr ""
 
-#: includes/class-editor-page.php:364
+#: includes/class-editor-page.php:368
 #: assets/workspace.js:1690
 #: assets/workspace.js:1727
 msgid "Duplicate this page"
 msgstr ""
 
-#: includes/class-editor-page.php:365
+#: includes/class-editor-page.php:369
 #: assets/workspace.js:1691
 #: assets/workspace.js:1729
 msgid "Move this page to the trash"
 msgstr ""
 
-#: includes/class-editor-page.php:366
+#: includes/class-editor-page.php:370
 msgid "Discard changes"
 msgstr ""
 
-#: includes/class-editor-page.php:367
+#: includes/class-editor-page.php:371
 #: assets/workspace-history.js:132
 #: assets/workspace.js:1720
 msgid "Save"
 msgstr ""
 
-#: includes/class-editor-page.php:373
+#: includes/class-editor-page.php:377
 msgid "Front page preview"
 msgstr ""
 
-#: includes/class-editor-page.php:400
+#: includes/class-editor-page.php:404
 #: assets/workspace.js:1106
 msgid "Loading…"
 msgstr ""
 
-#: includes/class-editor-page.php:411
+#: includes/class-editor-page.php:415
 msgid "Duplicate page"
 msgstr ""
 
-#: includes/class-editor-page.php:423
+#: includes/class-editor-page.php:427
 #: assets/workspace.js:1767
 msgid "Title"
 msgstr ""
 
-#: includes/class-editor-page.php:427
+#: includes/class-editor-page.php:431
 #: assets/workspace.js:1768
 msgid "Address (slug)"
 msgstr ""
 
-#: includes/class-editor-page.php:430
+#: includes/class-editor-page.php:434
 msgid "The copy is created as a draft, so it is not live until you publish it. Everything on the page comes with it — pictures, settings and search appearance."
 msgstr ""
 
-#: includes/class-editor-page.php:431
+#: includes/class-editor-page.php:435
 #: assets/workspace.js:1033
 #: assets/workspace.js:1770
 msgid "Duplicate"
@@ -365,29 +365,35 @@ msgid "The Google Fonts list was not in the expected format."
 msgstr ""
 
 #: includes/class-form-blocks.php:69
-#: visual-edit-lite.php:2142
+#: includes/class-form-handlers.php:950
+#: visual-edit-lite.php:2143
 msgid "Sending…"
 msgstr ""
 
 #: includes/class-form-blocks.php:70
-#: visual-edit-lite.php:2143
+#: includes/class-form-handlers.php:951
+#: visual-edit-lite.php:2144
 msgid "Sent!"
 msgstr ""
 
 #: includes/class-form-blocks.php:71
+#: includes/class-form-handlers.php:881
+#: includes/class-form-handlers.php:952
 #: includes/class-tokens.php:850
-#: visual-edit-lite.php:2144
+#: visual-edit-lite.php:2145
 #: assets/workspace.js:805
 msgid "Thanks — check your inbox."
 msgstr ""
 
 #: includes/class-form-blocks.php:72
-#: visual-edit-lite.php:2145
+#: includes/class-form-handlers.php:953
+#: includes/class-forms.php:757
+#: visual-edit-lite.php:2146
 msgid "Something went wrong — please try again."
 msgstr ""
 
 #: includes/class-form-blocks.php:96
-#: visual-edit-lite.php:2038
+#: visual-edit-lite.php:2039
 #: assets/form-blocks.js:170
 #: assets/form-blocks.js:185
 #: assets/workspace.js:778
@@ -427,6 +433,27 @@ msgstr ""
 #: includes/class-form-blocks.php:130
 #: assets/form-blocks.js:149
 msgid "Form send button"
+msgstr ""
+
+#: includes/class-form-handlers.php:153
+msgid "Visible only to you: this form is connected to %s, which is not active — until it is, the form is not connected and sends nothing."
+msgstr ""
+
+#: includes/class-form-handlers.php:156
+msgid "Visible only to you: the %s form this form was connected to no longer exists — pick another in Visual Edit (click the form). Until then it sends nothing."
+msgstr ""
+
+#: includes/class-form-handlers.php:634
+msgid "This form isn’t accepting messages right now. Please reach out another way."
+msgstr ""
+
+#: includes/class-form-handlers.php:930
+#: includes/class-forms.php:753
+msgid "Please check the fields marked below."
+msgstr ""
+
+#: includes/class-form-handlers.php:954
+msgid "Please complete the verification first."
 msgstr ""
 
 #: includes/class-form-settings.php:143
@@ -795,21 +822,25 @@ msgstr ""
 msgid "Please wait a moment before submitting again."
 msgstr ""
 
-#: includes/class-forms.php:275
-#: includes/class-import-plan.php:1490
+#: includes/class-forms.php:282
+#: includes/class-import-plan.php:1493
 msgid "%1$s — %2$s"
 msgstr ""
 
-#: includes/class-forms.php:605
+#: includes/class-forms.php:612
 msgid "New form submission: %s"
 msgstr ""
 
-#: includes/class-forms.php:643
+#: includes/class-forms.php:650
 msgid "Thanks — we got your message (%s)"
 msgstr ""
 
-#: includes/class-forms.php:646
+#: includes/class-forms.php:653
 msgid "Thanks for getting in touch — your message reached %s and someone will read it shortly.\n\nThis is an automatic confirmation; there's no need to reply to it."
+msgstr ""
+
+#: includes/class-forms.php:755
+msgid "Your message could not be sent. Please try again later."
 msgstr ""
 
 #: includes/class-geo-audit.php:93
@@ -1378,87 +1409,87 @@ msgid_plural "%d categories added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:861
+#: includes/class-import-plan.php:864
 msgid "%d blog post added."
 msgid_plural "%d blog posts added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:969
+#: includes/class-import-plan.php:972
 msgid "%d page was empty and has been filled from its stored content."
 msgid_plural "%d pages were empty and have been filled from their stored content."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1066
+#: includes/class-import-plan.php:1069
 msgid "%d page added."
 msgid_plural "%d pages added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1074
+#: includes/class-import-plan.php:1077
 msgid "NOT imported — %s"
 msgstr ""
 
-#: includes/class-import-plan.php:1138
+#: includes/class-import-plan.php:1141
 msgid "Freed the address /%s/ from a media file so the imported page could use it."
 msgstr ""
 
-#: includes/class-import-plan.php:1151
+#: includes/class-import-plan.php:1154
 msgid "The address /%1$s/ was already taken by your page \"%2$s\", so the imported page got a slightly different one. Links in the design that point at /%1$s/ will reach your page, not the imported one."
 msgstr ""
 
-#: includes/class-import-plan.php:1174
+#: includes/class-import-plan.php:1177
 msgid "Reused WordPress's own placeholder page \"%s\" so the imported page keeps its proper address."
 msgstr ""
 
-#: includes/class-import-plan.php:1285
+#: includes/class-import-plan.php:1288
 msgid "Menu \"%1$s\" added with %2$d links."
 msgstr ""
 
-#: includes/class-import-plan.php:1299
+#: includes/class-import-plan.php:1302
 msgid "Shown in: %s."
 msgstr ""
 
-#: includes/class-import-plan.php:1305
+#: includes/class-import-plan.php:1308
 msgid "It is not shown anywhere yet: this theme does not register the navigation position it was built for, so there is nothing to attach it to. A theme made by the converter declares that in inc/visual-edit.php."
 msgstr ""
 
-#: includes/class-import-plan.php:1306
+#: includes/class-import-plan.php:1309
 msgid "It is not shown anywhere yet: another menu already occupies that position. Assign it under Appearance → Menus if you want this one instead."
 msgstr ""
 
-#: includes/class-import-plan.php:1329
+#: includes/class-import-plan.php:1332
 msgid "%d setting applied."
 msgid_plural "%d settings applied."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1382
+#: includes/class-import-plan.php:1385
 msgid "Permalinks switched to %s — the imported pages need path-style links to resolve."
 msgstr ""
 
-#: includes/class-import-plan.php:1405
+#: includes/class-import-plan.php:1408
 msgid "The front page is set as a static page, so it can carry its own title, description and social preview."
 msgstr ""
 
-#: includes/class-import-plan.php:1422
+#: includes/class-import-plan.php:1425
 msgid "Note: the bundle used \"%s\" as its blog page. It lists posts through its own design, so do NOT set it under Settings → Reading → Posts page."
 msgstr ""
 
-#: includes/class-import-plan.php:1455
+#: includes/class-import-plan.php:1458
 msgid "%d address from the original site now redirects to its new page, so existing links and search results keep working."
 msgid_plural "%d addresses from the original site now redirect to their new pages, so existing links and search results keep working."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1516
+#: includes/class-import-plan.php:1519
 msgid "%d form submission added."
 msgid_plural "%d form submissions added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-import-plan.php:1561
+#: includes/class-import-plan.php:1564
 msgid "%d subscriber added."
 msgid_plural "%d subscribers added."
 msgstr[0] ""
@@ -1654,19 +1685,19 @@ msgstr ""
 msgid "%s (copy)"
 msgstr ""
 
-#: includes/class-page-actions.php:176
+#: includes/class-page-actions.php:180
 msgid "You are not allowed to remove this page."
 msgstr ""
 
-#: includes/class-page-actions.php:185
+#: includes/class-page-actions.php:189
 msgid "This is the site's front page. Choose a different front page under Settings → Reading first, or the home page would be left empty."
 msgstr ""
 
-#: includes/class-page-actions.php:194
+#: includes/class-page-actions.php:198
 msgid "This is the page your posts are listed on. Choose a different posts page under Settings → Reading first."
 msgstr ""
 
-#: includes/class-page-actions.php:201
+#: includes/class-page-actions.php:205
 msgid "WordPress would not move that page to the trash."
 msgstr ""
 
@@ -1959,23 +1990,23 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: includes/class-source-store.php:931
+#: includes/class-source-store.php:934
 msgid "Front Page"
 msgstr ""
 
-#: includes/class-source-store.php:999
+#: includes/class-source-store.php:1002
 msgid "Header"
 msgstr ""
 
-#: includes/class-source-store.php:1000
+#: includes/class-source-store.php:1003
 msgid "Footer"
 msgstr ""
 
-#: includes/class-source-store.php:1001
+#: includes/class-source-store.php:1004
 msgid "Article template"
 msgstr ""
 
-#: includes/class-source-store.php:1002
+#: includes/class-source-store.php:1005
 msgid "Page not found (404)"
 msgstr ""
 
@@ -2029,88 +2060,88 @@ msgstr ""
 msgid "Visual Edit Lite is switched off because Visual Edit Pro is active on this site. Pro already includes everything Lite does — deactivate Lite to clear this notice."
 msgstr ""
 
-#: visual-edit-lite.php:974
+#: visual-edit-lite.php:975
 msgid "Not allowed."
 msgstr ""
 
-#: visual-edit-lite.php:984
+#: visual-edit-lite.php:985
 msgid "This content was written for a different design — its own assets and markers are missing from the active theme, so taking ownership would only put the wrong page back on the site. Activate the theme it belongs to, or give this theme its own WordPress install."
 msgstr ""
 
-#: visual-edit-lite.php:1012
+#: visual-edit-lite.php:1013
 msgid "another theme"
 msgstr ""
 
-#: visual-edit-lite.php:1017
+#: visual-edit-lite.php:1018
 msgid "Visual Edit: this site's editable content belongs to a different theme."
 msgstr ""
 
-#: visual-edit-lite.php:1021
+#: visual-edit-lite.php:1022
 msgid "The stored pages, styles and history were created for %1$s, but %2$s is active. Editing is paused: the plugin will not serve one theme's markup through another's design, and will not overwrite it either. Nothing has been lost."
 msgstr ""
 
-#: visual-edit-lite.php:1028
+#: visual-edit-lite.php:1029
 msgid "This content predates per-theme storage, so it could not be filed under the theme that made it. Activate %s to carry on editing it — that also files it, and from then on both themes can hold their own content on this install side by side."
 msgstr ""
 
-#: visual-edit-lite.php:1032
+#: visual-edit-lite.php:1033
 msgid "Themes"
 msgstr ""
 
-#: visual-edit-lite.php:1044
+#: visual-edit-lite.php:1045
 msgid "This content belongs to %s — take ownership"
 msgstr ""
 
-#: visual-edit-lite.php:1050
+#: visual-edit-lite.php:1051
 msgid "There is no \"take ownership\" here on purpose: this content carries another design's own assets and markers, so claiming it would only put the wrong page back on the site."
 msgstr ""
 
-#: visual-edit-lite.php:1621
+#: visual-edit-lite.php:1622
 msgctxt "post status"
 msgid "Parked with its theme"
 msgstr ""
 
-#: visual-edit-lite.php:1690
+#: visual-edit-lite.php:1691
 msgid "Menus are part of this theme."
 msgstr ""
 
-#: visual-edit-lite.php:1691
+#: visual-edit-lite.php:1692
 msgid "This theme keeps its navigation in WordPress's own navigation blocks, so Visual Edit opens it alongside the rest of the theme in Gutenberg."
 msgstr ""
 
-#: visual-edit-lite.php:1693
+#: visual-edit-lite.php:1694
 msgid "Open the Site Editor"
 msgstr ""
 
-#: visual-edit-lite.php:1700
+#: visual-edit-lite.php:1701
 msgid "Visual Edit: menu management is off."
 msgstr ""
 
-#: visual-edit-lite.php:1701
+#: visual-edit-lite.php:1702
 msgid "The active theme does not declare its navigation zones (the clara_ve_theme_contract filter), so the plugin cannot know which markup is a menu — a menu created here would not appear on the site. Themes generated by the converter declare this in inc/visual-edit.php."
 msgstr ""
 
-#: visual-edit-lite.php:2010
+#: visual-edit-lite.php:2011
 msgid "Choose the file"
 msgstr ""
 
-#: visual-edit-lite.php:2011
+#: visual-edit-lite.php:2012
 msgid "Use this image"
 msgstr ""
 
-#: visual-edit-lite.php:2385
+#: visual-edit-lite.php:2386
 msgid "Edit the complete site with Visual Edit Lite"
 msgstr ""
 
-#: visual-edit-lite.php:2386
+#: visual-edit-lite.php:2387
 msgid "Open the front page in the visual editor"
 msgstr ""
 
-#: visual-edit-lite.php:2455
+#: visual-edit-lite.php:2456
 msgid "Advanced (HTML block &amp; %s)"
 msgstr ""
 
-#: visual-edit-lite.php:2456
+#: visual-edit-lite.php:2457
 msgid "Edit HTML block"
 msgstr ""
 

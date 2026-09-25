@@ -276,6 +276,7 @@ require_once CLARA_VE_DIR . 'includes/class-optin.php';
 require_once CLARA_VE_DIR . 'includes/class-tokens.php';
 require_once CLARA_VE_DIR . 'includes/class-form-blocks.php';
 require_once CLARA_VE_DIR . 'includes/class-form-connect.php';
+require_once CLARA_VE_DIR . 'includes/class-form-handlers.php';
 require_once CLARA_VE_DIR . 'includes/class-fonts.php';
 require_once CLARA_VE_DIR . 'includes/class-editor-page.php';
 require_once CLARA_VE_DIR . 'includes/class-native-gutenberg.php';

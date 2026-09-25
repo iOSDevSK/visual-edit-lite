@@ -820,7 +820,10 @@ class Clara_VE_Import_Plan {
 					$insert['post_author'] = $author_id;
 				}
 			}
-			$post_id = wp_insert_post( $insert, true );
+			// wp_slash: wp_insert_post() unslashes its whole array, and an
+			// article's markup may carry backslashes (JSON in an attribute,
+			// a regex in a script) that must arrive as they are in the bundle.
+			$post_id = wp_insert_post( wp_slash( $insert ), true );
 			if ( is_wp_error( $post_id ) ) {
 				continue;
 			}
