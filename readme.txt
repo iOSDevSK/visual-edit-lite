@@ -26,8 +26,8 @@ this is the piece that was missing.
 Nothing here is locked, timed, or waiting for a key. Everything the plugin
 contains works on every install, offline included.
 
-The plugin's home page, with the documentation and the paid edition, is
-https://html2wp.dev/visualedit/ . Development happens in the open at
+The plugin's home page and documentation:
+[html2wp.dev/visualedit](https://html2wp.dev/visualedit/). Development happens in the open at
 https://github.com/iOSDevSK/visual-edit-lite — the full source, the build
 script and the translation-template generator are there. The plugin has no
 build step: the PHP, CSS and JavaScript shipped in this package are the
@@ -102,9 +102,6 @@ depend on the theme at all and work anywhere.
   form submissions. It leaves your pages and their content in place, together
   with a few marker fields the plugin wrote on them and any files it imported
   into the Media Library or the uploads folder.
-* **Visual Edit Pro**, the paid edition, shares this plugin's data format and
-  its class and option names. The two cannot run at the same time: with Pro
-  active, Lite switches itself off and says so rather than crashing the site.
 
 == Installation ==
 
@@ -122,19 +119,6 @@ depend on the theme at all and work anywhere.
 No. Visual Edit Lite has no licence key, no trial period and no locked
 buttons. The features Lite does not have are simply not part of it — there is
 nothing in the plugin to unlock.
-
-= What is in Visual Edit Pro that is not here? =
-
-An AI assistant that edits pages conversationally, AI image editing and AI
-video generation (all bring-your-own API key), Cloudflare Turnstile as an
-extra anti-spam layer, and one-click theme export. None of that code is in
-this plugin. Pro is a separate plugin, sold separately, and is not required
-for anything Lite does.
-
-= Will I lose my work if I switch between Lite and Pro? =
-
-No. Both editions store content and settings under the same names, so either
-one reads what the other wrote, in both directions and with nothing to migrate.
 
 = Can I use it on a theme I built myself? =
 
@@ -250,6 +234,11 @@ plugin's "GPLv2 or later" licence allows.
 
 = 1.31.4 =
 
+* New: A designed form can be handed to Contact Form 7 or Fluent Forms. Pick
+  the form in the FORM panel and check which of its fields each designed field
+  fills; that plugin then validates, checks for spam, verifies its captcha,
+  sends and records the submission, while the design stays as it is. Without
+  JavaScript the page comes back with the errors under the fields.
 * New: On a block theme, the ⋯ menu of the Visual Edit Lite workspace can
   duplicate the page or post that is open, and move it to the trash. The copy
   is a draft and brings its content, categories and tags, featured image,
@@ -257,6 +246,12 @@ plugin's "GPLv2 or later" licence allows.
   copied. The front page and the posts page cannot be removed from here.
 * Changed: Duplicating works for posts as well as pages, and asks for the right
   to create whichever of the two is being copied.
+* Fixed: A backslash in page content survives a save. Every write of page
+  content now goes through wp_slash(), which WordPress expects.
+* Changed: The four form field blocks carry their titles where the directory's
+  block scanner reads them, so its page lists Form field, Form text area, Form
+  choice list and Form checkbox.
+* Changed: The readme no longer describes the paid edition.
 
 = 1.31.3 =
 

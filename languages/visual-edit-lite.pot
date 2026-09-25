@@ -394,8 +394,8 @@ msgstr ""
 
 #: includes/class-form-blocks.php:96
 #: visual-edit-lite.php:2039
-#: assets/form-blocks.js:170
-#: assets/form-blocks.js:185
+#: assets/form-blocks.js:174
+#: assets/form-blocks.js:189
 #: assets/workspace.js:778
 #: assets/workspace.js:792
 #: assets/workspace.js:833
@@ -405,33 +405,37 @@ msgid "Form"
 msgstr ""
 
 #: includes/class-form-blocks.php:117
-#: assets/form-blocks.js:130
+#: assets/form-blocks.js:134
+#: assets/form-blocks.js:134
 msgid "Form field"
 msgstr ""
 
 #: includes/class-form-blocks.php:118
-#: assets/form-blocks.js:131
+#: assets/form-blocks.js:135
+#: assets/form-blocks.js:135
 msgid "Form text area"
 msgstr ""
 
 #: includes/class-form-blocks.php:119
-#: assets/form-blocks.js:132
+#: assets/form-blocks.js:136
+#: assets/form-blocks.js:136
 msgid "Form choice list"
 msgstr ""
 
 #: includes/class-form-blocks.php:120
-#: assets/form-blocks.js:133
+#: assets/form-blocks.js:137
+#: assets/form-blocks.js:137
 msgid "Form checkbox"
 msgstr ""
 
 #: includes/class-form-blocks.php:123
-#: assets/form-blocks.js:136
-#: assets/form-blocks.js:142
+#: assets/form-blocks.js:140
+#: assets/form-blocks.js:146
 msgid "Form row"
 msgstr ""
 
 #: includes/class-form-blocks.php:130
-#: assets/form-blocks.js:149
+#: assets/form-blocks.js:153
 msgid "Form send button"
 msgstr ""
 
@@ -643,7 +647,7 @@ msgid "Region"
 msgstr ""
 
 #: includes/class-form-settings.php:485
-#: assets/form-blocks.js:186
+#: assets/form-blocks.js:190
 #: assets/workspace.js:799
 #: assets/workspace.js:836
 msgid "Mailing list"
@@ -1595,7 +1599,7 @@ msgid "%d records"
 msgstr ""
 
 #: includes/class-optin.php:126
-#: assets/form-blocks.js:164
+#: assets/form-blocks.js:168
 #: assets/workspace.js:784
 #: assets/workspace.js:794
 #: assets/workspace.js:794
@@ -1607,7 +1611,7 @@ msgid "Status"
 msgstr ""
 
 #: includes/class-optin.php:128
-#: assets/form-blocks.js:187
+#: assets/form-blocks.js:191
 #: assets/workspace.js:1106
 #: assets/workspace.js:1110
 #: assets/workspace.js:1117
@@ -2178,77 +2182,77 @@ msgstr ""
 msgid "Name in submissions"
 msgstr ""
 
-#: assets/form-blocks.js:142
+#: assets/form-blocks.js:146
 msgid "CSS class"
 msgstr ""
 
-#: assets/form-blocks.js:152
-#: assets/form-blocks.js:157
-#: assets/form-blocks.js:159
-#: assets/form-blocks.js:166
+#: assets/form-blocks.js:156
+#: assets/form-blocks.js:161
+#: assets/form-blocks.js:163
+#: assets/form-blocks.js:170
 msgid "Send"
 msgstr ""
 
-#: assets/form-blocks.js:156
+#: assets/form-blocks.js:160
 #: assets/workspace.js:791
 msgid "Button"
 msgstr ""
 
-#: assets/form-blocks.js:156
+#: assets/form-blocks.js:160
 #: assets/workspace.js:791
 msgid "Button text"
 msgstr ""
 
-#: assets/form-blocks.js:163
+#: assets/form-blocks.js:167
 #: assets/workspace.js:989
 msgid "Name"
 msgstr ""
 
-#: assets/form-blocks.js:165
+#: assets/form-blocks.js:169
 #: assets/workspace.js:794
 #: assets/workspace.js:805
 msgid "Message"
 msgstr ""
 
-#: assets/form-blocks.js:171
+#: assets/form-blocks.js:175
 msgid "A form whose fields, texts and button are edited like the rest of the page. Submissions go to Form Submissions and are emailed to the Form Settings address."
 msgstr ""
 
-#: assets/form-blocks.js:186
+#: assets/form-blocks.js:190
 #: assets/workspace.js:799
 #: assets/workspace.js:836
 msgid "Does"
 msgstr ""
 
-#: assets/form-blocks.js:186
+#: assets/form-blocks.js:190
 #: assets/workspace.js:799
 #: assets/workspace.js:836
 msgid "Contact form"
 msgstr ""
 
-#: assets/form-blocks.js:187
+#: assets/form-blocks.js:191
 msgid "The list id at your provider. The Visual Edit popup offers the names instead."
 msgstr ""
 
-#: assets/form-blocks.js:188
+#: assets/form-blocks.js:192
 #: assets/workspace.js:802
 #: assets/workspace.js:839
 msgid "Send to"
 msgstr ""
 
-#: assets/form-blocks.js:188
+#: assets/form-blocks.js:192
 msgid "Leave empty for the address in Form Settings."
 msgstr ""
 
-#: assets/form-blocks.js:189
+#: assets/form-blocks.js:193
 msgid "After sending, go to"
 msgstr ""
 
-#: assets/form-blocks.js:189
+#: assets/form-blocks.js:193
 msgid "A page address such as /thank-you/. Empty: stay on the page and show the message."
 msgstr ""
 
-#: assets/form-blocks.js:190
+#: assets/form-blocks.js:194
 msgid "Message after sending"
 msgstr ""
 
