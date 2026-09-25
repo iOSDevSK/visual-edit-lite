@@ -26,7 +26,8 @@ this is the piece that was missing.
 Nothing here is locked, timed, or waiting for a key. Everything the plugin
 contains works on every install, offline included.
 
-Development happens in the open at
+The plugin's home page, with the documentation and the paid edition, is
+https://html2wp.dev/visualedit/ . Development happens in the open at
 https://github.com/iOSDevSK/visual-edit-lite — the full source, the build
 script and the translation-template generator are there. The plugin has no
 build step: the PHP, CSS and JavaScript shipped in this package are the
@@ -250,7 +251,13 @@ plugin's "GPLv2 or later" licence allows.
 = 1.31.3 =
 
 * Changed: The readme carries captions for the seven screenshots on the
-  plugin's directory page. No code changes.
+  plugin's directory page.
+* Changed: The seven form blocks carry their titles on the server as well as
+  in the editor, so the directory lists them as Form, Form field, Form text
+  area, Form choice list, Form checkbox, Form row and Form send button rather
+  than by their internal names.
+* Changed: The plugin's homepage link points at html2wp.dev; the source stays
+  on GitHub.
 
 = 1.31.2 =
 

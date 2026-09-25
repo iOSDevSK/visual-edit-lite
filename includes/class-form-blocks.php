@@ -79,6 +79,9 @@ class Clara_VE_Form_Blocks {
 			wp_register_style( 'clara-ve-forms', CLARA_VE_URL . 'assets/forms.css', array(), clara_ve_asset_version( 'assets/forms.css' ) );
 		}
 
+		// Titles on the server too, not only in the editor script: the directory
+		// reads block names from what PHP registers, and without them it showed
+		// "Clara Ve Field" for a block the editor calls "Form field".
 		$common = array(
 			'api_version'           => 3,
 			'category'              => 'widgets',
@@ -90,6 +93,7 @@ class Clara_VE_Form_Blocks {
 			array_merge(
 				$common,
 				array(
+					'title'           => __( 'Form', 'visual-edit-lite' ),
 					'attributes'      => array(
 						'formId'       => array( 'type' => 'string', 'default' => '' ),
 						'formClass'    => array( 'type' => 'string', 'default' => '' ),
@@ -110,19 +114,20 @@ class Clara_VE_Form_Blocks {
 				)
 			)
 		);
-		register_block_type( 'clara-ve/field', array_merge( $common, array( 'attributes' => array_merge( self::text_attributes(), array( 'type' => array( 'type' => 'string', 'default' => 'text' ) ) ) ) ) );
-		register_block_type( 'clara-ve/textarea', array_merge( $common, array( 'attributes' => array_merge( self::text_attributes(), array( 'rows' => array( 'type' => 'number', 'default' => 0 ) ) ) ) ) );
-		register_block_type( 'clara-ve/select', array_merge( $common, array( 'attributes' => array_merge( self::text_attributes(), array( 'options' => array( 'type' => 'array', 'default' => array(), 'items' => array( 'type' => 'string' ) ) ) ) ) ) );
-		register_block_type( 'clara-ve/checkbox', array_merge( $common, array( 'attributes' => self::text_attributes() ) ) );
+		register_block_type( 'clara-ve/field', array_merge( $common, array( 'title' => __( 'Form field', 'visual-edit-lite' ), 'attributes' => array_merge( self::text_attributes(), array( 'type' => array( 'type' => 'string', 'default' => 'text' ) ) ) ) ) );
+		register_block_type( 'clara-ve/textarea', array_merge( $common, array( 'title' => __( 'Form text area', 'visual-edit-lite' ), 'attributes' => array_merge( self::text_attributes(), array( 'rows' => array( 'type' => 'number', 'default' => 0 ) ) ) ) ) );
+		register_block_type( 'clara-ve/select', array_merge( $common, array( 'title' => __( 'Form choice list', 'visual-edit-lite' ), 'attributes' => array_merge( self::text_attributes(), array( 'options' => array( 'type' => 'array', 'default' => array(), 'items' => array( 'type' => 'string' ) ) ) ) ) ) );
+		register_block_type( 'clara-ve/checkbox', array_merge( $common, array( 'title' => __( 'Form checkbox', 'visual-edit-lite' ), 'attributes' => self::text_attributes() ) ) );
 		register_block_type(
 			'clara-ve/form-group',
-			array_merge( $common, array( 'attributes' => array( 'groupClass' => array( 'type' => 'string', 'default' => '' ) ) ) )
+			array_merge( $common, array( 'title' => __( 'Form row', 'visual-edit-lite' ), 'attributes' => array( 'groupClass' => array( 'type' => 'string', 'default' => '' ) ) ) )
 		);
 		register_block_type(
 			'clara-ve/submit',
 			array_merge(
 				$common,
 				array(
+					'title'      => __( 'Form send button', 'visual-edit-lite' ),
 					'attributes' => array(
 						'text'      => array( 'type' => 'string', 'default' => '' ),
 						'buttonClass' => array( 'type' => 'string', 'default' => '' ),

@@ -175,6 +175,17 @@ NAMEHITS="$(printf '%s\n' "$NAMEHITS" \
 [ -z "$NAMEHITS" ] || { echo "$NAMEHITS" >&2; fail "the Pro product name is still in a user-visible string"; }
 grep -rn "Require License\|Update URI" "$MAIN" >/dev/null 2>&1 && fail "forbidden plugin header present"
 
+# ------------------------------------------------- reviewed findings, again ---
+# Every finding the directory's reviewers raised against this plugin, re-run
+# before every build. The checks live in the submit-checker skill so they grow
+# with each review of any plugin; the build refuses if one has come back.
+SWEEP="$HOME/.claude/skills/wp-plugin-submit-checker/scripts/regression-sweep.sh"
+if [ -x "$SWEEP" ]; then
+  "$SWEEP" "$SRC" --prefix=clara_ve >/dev/null 2>&1 || { "$SWEEP" "$SRC" --prefix=clara_ve; fail "a finding a reviewer already raised is back"; }
+else
+  echo "  (regression sweep not found at $SWEEP — skipped)" >&2
+fi
+
 # ------------------------------------------------ WordPress.org submission ---
 # Plugin Check blocks a submission on any ERROR in its "Plugin repo" category.
 # These are the ones a build can decide statically; run the real Plugin Check

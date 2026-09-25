@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Visual Edit Lite – Visual Editor for Block Themes
- * Plugin URI: https://github.com/iOSDevSK/visual-edit-lite
+ * Plugin URI: https://html2wp.dev/visualedit/
  * Description: Visual editing for raw-HTML sites and complete native Gutenberg editing for block themes, with responsive controls, movement, forms, SEO and AI-readiness.
  * Version: 1.31.3
  * Requires at least: 6.6
