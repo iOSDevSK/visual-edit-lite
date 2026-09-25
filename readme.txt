@@ -134,8 +134,8 @@ screen and needs JavaScript, like the block editor does.
 == External services ==
 
 This plugin does not contact any external service on its own. Every service
-below is reached only after you switch it on, and only for the purpose
-described.
+below is reached only after you switch it on, or connect a form plugin that
+uses it, and only for the purpose described.
 
 **Google Fonts** — used only if you open the Google fonts picker in the
 editor. Opening it makes your server request the public font catalogue from
@@ -181,6 +181,28 @@ privacy links as above.
 **Your own SMTP server** — used only if you select SMTP as the mailer. The
 message is sent to the host you configured.
 
+**Contact Form 7 and Fluent Forms** — used only if you hand a designed form to
+one of those plugins in the editor. The submission is then processed by that
+plugin on your own server: its validation, spam checks, notifications and
+records apply, under its own settings. Nothing leaves the site through this
+plugin for that.
+
+**Google reCAPTCHA** — used only if a form you handed to Contact Form 7 or
+Fluent Forms has reCAPTCHA configured in that plugin. The page then loads the
+reCAPTCHA script from `www.google.com` in the visitor's browser, which sends
+Google their IP address, user agent and how they interact with the page, and
+Google may set cookies. The token it returns is verified by Contact Form 7 or
+Fluent Forms with the secret key you entered there; this plugin holds no key.
+Terms: https://policies.google.com/terms — Privacy:
+https://policies.google.com/privacy
+
+**hCaptcha** — used only if a form you handed to Fluent Forms uses hCaptcha.
+The page then loads the hCaptcha script from `js.hcaptcha.com` in the
+visitor's browser, which receives their IP address, user agent and how they
+interact with the page. The token is verified by Fluent Forms with your
+hCaptcha secret; this plugin holds no key.
+Terms: https://www.hcaptcha.com/terms — Privacy: https://www.hcaptcha.com/privacy
+
 **Importing a remote image** — when you click "Import image into this site" on
 a picture hosted elsewhere, the plugin downloads that one URL, which you chose,
 and stores the file in your Media Library.
@@ -196,7 +218,7 @@ Terms: https://automattic.com/terms/ — Privacy: https://automattic.com/privacy
 == Privacy ==
 
 The plugin stores form submissions and mailing-list subscribers in your own
-database. It sets no cookies, runs no analytics, and sends nothing anywhere
+database. It sets no cookies of its own, runs no analytics, and sends nothing anywhere
 about you or your site. Secrets you enter (SMTP password, provider API keys)
 are encrypted at rest with your site's own salt and are always removed when
 the plugin is deleted.
@@ -251,7 +273,8 @@ plugin's "GPLv2 or later" licence allows.
 * Changed: The four form field blocks carry their titles where the directory's
   block scanner reads them, so its page lists Form field, Form text area, Form
   choice list and Form checkbox.
-* Changed: The readme no longer describes the paid edition.
+* Changed: The readme no longer describes the paid edition, and documents the
+  captcha providers a connected form plugin may load.
 
 = 1.31.3 =
 

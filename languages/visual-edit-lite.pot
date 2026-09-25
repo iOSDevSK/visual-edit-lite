@@ -365,20 +365,20 @@ msgid "The Google Fonts list was not in the expected format."
 msgstr ""
 
 #: includes/class-form-blocks.php:69
-#: includes/class-form-handlers.php:950
+#: includes/class-form-handlers.php:995
 #: visual-edit-lite.php:2143
 msgid "Sending…"
 msgstr ""
 
 #: includes/class-form-blocks.php:70
-#: includes/class-form-handlers.php:951
+#: includes/class-form-handlers.php:996
 #: visual-edit-lite.php:2144
 msgid "Sent!"
 msgstr ""
 
 #: includes/class-form-blocks.php:71
-#: includes/class-form-handlers.php:881
-#: includes/class-form-handlers.php:952
+#: includes/class-form-handlers.php:926
+#: includes/class-form-handlers.php:997
 #: includes/class-tokens.php:850
 #: visual-edit-lite.php:2145
 #: assets/workspace.js:805
@@ -386,7 +386,7 @@ msgid "Thanks — check your inbox."
 msgstr ""
 
 #: includes/class-form-blocks.php:72
-#: includes/class-form-handlers.php:953
+#: includes/class-form-handlers.php:998
 #: includes/class-forms.php:757
 #: visual-edit-lite.php:2146
 msgid "Something went wrong — please try again."
@@ -447,16 +447,16 @@ msgstr ""
 msgid "Visible only to you: the %s form this form was connected to no longer exists — pick another in Visual Edit (click the form). Until then it sends nothing."
 msgstr ""
 
-#: includes/class-form-handlers.php:634
+#: includes/class-form-handlers.php:654
 msgid "This form isn’t accepting messages right now. Please reach out another way."
 msgstr ""
 
-#: includes/class-form-handlers.php:930
+#: includes/class-form-handlers.php:975
 #: includes/class-forms.php:753
 msgid "Please check the fields marked below."
 msgstr ""
 
-#: includes/class-form-handlers.php:954
+#: includes/class-form-handlers.php:999
 msgid "Please complete the verification first."
 msgstr ""
 

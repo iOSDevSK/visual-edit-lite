@@ -511,22 +511,35 @@ class Clara_VE_Form_Handlers {
 			return array( 'status' => 'error', 'errors' => array(), 'message' => '' );
 		}
 		$saved = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- restored below; the plugin reads the submission from here.
-		$_POST = array_merge(
-			(array) $values,
-			array(
-				'_wpcf7'                => (string) $form->id(),
-				'_wpcf7_version'        => defined( 'WPCF7_VERSION' ) ? WPCF7_VERSION : '',
-				'_wpcf7_locale'         => method_exists( $form, 'locale' ) ? (string) $form->locale() : '',
-				'_wpcf7_unit_tag'       => 'wpcf7-f' . $form->id() . '-o1',
-				'_wpcf7_container_post' => '0',
+		// Contact Form 7 reads its own endpoint's $_POST, which PHP has slashed,
+		// and wp_unslash()es it. The values here have already been unslashed by
+		// the REST server, so they are slashed again to arrive the same way —
+		// without this, every backslash a visitor typed was lost on the way in.
+		$_POST = wp_slash(
+			array_merge(
+				(array) $values,
+				array(
+					'_wpcf7'                => (string) $form->id(),
+					'_wpcf7_version'        => defined( 'WPCF7_VERSION' ) ? WPCF7_VERSION : '',
+					'_wpcf7_locale'         => method_exists( $form, 'locale' ) ? (string) $form->locale() : '',
+					'_wpcf7_unit_tag'       => 'wpcf7-f' . $form->id() . '-o1',
+					'_wpcf7_container_post' => '0',
+				)
 			)
 		);
+		// Only the signed mapping reaches the form. Contact Form 7 reads file
+		// uploads straight from $_FILES, which the mapping never carries, so an
+		// upload posted under a name that happens to match one of its [file]
+		// tags would otherwise be processed outside the owner's choice.
+		$files  = $_FILES;
+		$_FILES = array();
 		try {
 			$result = (array) $form->submit();
 		} catch ( Throwable $e ) {
 			$result = array( 'status' => 'error', 'message' => '' );
 		}
-		$_POST = $saved;
+		$_POST  = $saved;
+		$_FILES = $files;
 
 		$errors = array();
 		foreach ( (array) ( isset( $result['invalid_fields'] ) ? $result['invalid_fields'] : array() ) as $name => $field ) {
@@ -578,6 +591,13 @@ class Clara_VE_Form_Handlers {
 		}
 		// Its nonce check is off by default. When a site turns it on, this
 		// request has already passed this plugin's own origin check.
+		// Fluent Forms expects its own nonce, minted by the page that shows the
+		// form. This request never saw that page: it is the one this plugin
+		// already accepted — origin token, honeypot, time-trap and rate limit
+		// all passed in handle_submit() before anything reaches here — so the
+		// nonce is minted now, for the same anonymous context Fluent would
+		// mint it in. It stands in for a check this plugin has already done,
+		// not for one it skipped.
 		$data[ '_fluentform_' . (int) $form_id . '_fluentformnonce' ] = wp_create_nonce( 'fluentform-submit-form' );
 		try {
 			$result = ( new \FluentForm\App\Services\Form\SubmissionHandlerService() )->handleSubmission( $data, (int) $form_id );
@@ -680,9 +700,13 @@ class Clara_VE_Form_Handlers {
 			$message = trim( $message . ' ' . implode( ' ', $loose ) );
 		}
 		// A visitor correcting what the plugin refused sends again at once,
-		// and that is not the burst the rate limit is there for.
+		// and that is not the burst the rate limit is there for. The limit is
+		// shortened rather than removed: without JavaScript every refused post
+		// writes a result row (see result_url()), and a limit that vanished on
+		// each refusal would let one address write them as fast as it can post.
+		// Five seconds is a person retyping a field; it is not a loop.
 		if ( 'invalid' === $verdict['status'] && '' !== $rate_key ) {
-			delete_transient( $rate_key );
+			set_transient( $rate_key, 1, 5 );
 		}
 		return array(
 			'status'   => $verdict['status'],
@@ -803,6 +827,12 @@ class Clara_VE_Form_Handlers {
 			$signed = preg_replace( '/(<form\b[^>]*>)/i', '$1' . Clara_VE_Forms::delivery_field( $form_id, $to, $kind, $list ), $inner, 1 );
 			$inner  = null === $signed ? $inner : $signed;
 		}
+		// What this method GENERATES — the owner-only note, the captcha
+		// attribute, the signature field, the shown result — is escaped where
+		// it is built. $inner is the rest of the block's own content, already
+		// rendered by WordPress and passed through unchanged, as a
+		// render_block_core/html filter does; escaping it again would break the
+		// form it exists to hand over.
 		return '[wp-form' . $m[1] . ']' . $inner . '[/wp-form]';
 	}
 
@@ -819,14 +849,29 @@ class Clara_VE_Form_Handlers {
 	 */
 	public static function result_url( $back, $form_id, $verdict ) {
 		$key = strtolower( wp_generate_password( 20, false, false ) );
+		// What is kept for the page to show is bounded: an anonymous post
+		// decides its own size, and this row lives in wp_options for ten
+		// minutes. A field is cut at 4000 characters and at most 60 fields are
+		// kept — more than any designed form has, and less than a payload
+		// meant to fill a table.
+		$values = array();
+		if ( 'sent' !== $verdict['status'] ) {
+			foreach ( array_slice( (array) $verdict['values'], 0, 60, true ) as $name => $value ) {
+				$values[ $name ] = is_scalar( $value ) ? mb_substr( (string) $value, 0, 4000 ) : '';
+			}
+		}
+		$errors = array();
+		foreach ( array_slice( (array) $verdict['errors'], 0, 60, true ) as $name => $error ) {
+			$errors[ $name ] = mb_substr( (string) $error, 0, 500 );
+		}
 		set_transient(
 			'clara_ve_form_result_' . $key,
 			array(
 				'form'    => (string) $form_id,
 				'status'  => (string) $verdict['status'],
-				'errors'  => (array) $verdict['errors'],
-				'message' => (string) $verdict['message'],
-				'values'  => 'sent' === $verdict['status'] ? array() : (array) $verdict['values'],
+				'errors'  => $errors,
+				'message' => mb_substr( (string) $verdict['message'], 0, 1000 ),
+				'values'  => $values,
 			),
 			10 * MINUTE_IN_SECONDS
 		);
@@ -840,7 +885,7 @@ class Clara_VE_Form_Handlers {
 	 * @return array|null
 	 */
 	private static function result_for( $form_id ) {
-		$key = isset( $_GET[ self::RESULT_ARG ] ) ? preg_replace( '/[^a-z0-9]/', '', strtolower( (string) wp_unslash( $_GET[ self::RESULT_ARG ] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$key = isset( $_GET[ self::RESULT_ARG ] ) ? preg_replace( '/[^a-z0-9]/', '', strtolower( (string) wp_unslash( $_GET[ self::RESULT_ARG ] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- reduced to [a-z0-9] by the preg_replace on this line; a lookup key for a page view, nothing is processed.
 		if ( '' === $key ) {
 			return null;
 		}
@@ -1002,7 +1047,9 @@ class Clara_VE_Form_Handlers {
 				$chosen = array();
 				foreach ( (array) $request->get_param( 'fieldMap' ) as $mine => $theirs ) {
 					if ( is_string( $mine ) && is_string( $theirs ) ) {
-						$chosen[ sanitize_key( $mine ) ] = $theirs;
+						// The same characters parse() accepts when the token is read
+						// back, so what the editor writes is what the page will use.
+						$chosen[ sanitize_key( $mine ) ] = preg_replace( '/[^A-Za-z0-9_:.\-]/', '', (string) $theirs );
 					}
 				}
 				$theirs         = self::form_fields( $kind, $form );
