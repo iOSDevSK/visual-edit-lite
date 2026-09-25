@@ -270,9 +270,6 @@ plugin's "GPLv2 or later" licence allows.
   to create whichever of the two is being copied.
 * Fixed: A backslash in page content survives a save. Every write of page
   content now goes through wp_slash(), which WordPress expects.
-* Changed: The four form field blocks carry their titles where the directory's
-  block scanner reads them, so its page lists Form field, Form text area, Form
-  choice list and Form checkbox.
 * Changed: The readme no longer describes the paid edition, and documents the
   captcha providers a connected form plugin may load.
 
@@ -280,10 +277,6 @@ plugin's "GPLv2 or later" licence allows.
 
 * Changed: The readme carries captions for the seven screenshots on the
   plugin's directory page.
-* Changed: The seven form blocks carry their titles on the server as well as
-  in the editor, so the directory lists them as Form, Form field, Form text
-  area, Form choice list, Form checkbox, Form row and Form send button rather
-  than by their internal names.
 * Changed: The plugin's homepage link points at html2wp.dev; the source stays
   on GitHub.
 

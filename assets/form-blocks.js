@@ -109,13 +109,9 @@
 	 */
 	var INLINE_EDITOR_STYLE = { display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', flex: '1 1 220px', minWidth: 0, gap: 'inherit' };
 
-	// The name and the title are written out at each registerBlockType() call
-	// below, not passed in: the directory's block scanner reads the call as
-	// text, and a title held in a variable came out as "Clara Ve Field" on the
-	// plugin's page. The settings shared by the four fields live here.
-	function fieldSettings( kind, title, extra ) {
-		return {
-			apiVersion: 3, category: 'widgets', icon: 'feedback', ancestor: [ 'clara-ve/form' ],
+	function registerField( name, kind, title, extra ) {
+		wp.blocks.registerBlockType( name, {
+			apiVersion: 3, title: title, category: 'widgets', icon: 'feedback', ancestor: [ 'clara-ve/form' ],
 			attributes: withAttributes( extra ),
 			supports: { html: false, customClassName: false, reusable: false },
 			__experimentalLabel: function ( a ) { return a.label || title; },
@@ -129,12 +125,12 @@
 				var a = props.attributes;
 				return fieldMarkup( kind, a, be.useBlockProps.save( { className: cls( a.wrapperClass ), style: a.inline ? { display: 'contents' } : undefined } ), false );
 			}
-		};
+		} );
 	}
-	wp.blocks.registerBlockType( 'clara-ve/field', Object.assign( { title: __( 'Form field', 'visual-edit-lite' ) }, fieldSettings( 'field', __( 'Form field', 'visual-edit-lite' ), { type: { type: 'string', default: 'text' } } ) ) );
-	wp.blocks.registerBlockType( 'clara-ve/textarea', Object.assign( { title: __( 'Form text area', 'visual-edit-lite' ) }, fieldSettings( 'textarea', __( 'Form text area', 'visual-edit-lite' ), { rows: { type: 'number', default: 0 } } ) ) );
-	wp.blocks.registerBlockType( 'clara-ve/select', Object.assign( { title: __( 'Form choice list', 'visual-edit-lite' ) }, fieldSettings( 'select', __( 'Form choice list', 'visual-edit-lite' ), { options: { type: 'array', default: [] } } ) ) );
-	wp.blocks.registerBlockType( 'clara-ve/checkbox', Object.assign( { title: __( 'Form checkbox', 'visual-edit-lite' ) }, fieldSettings( 'checkbox', __( 'Form checkbox', 'visual-edit-lite' ) ) ) );
+	registerField( 'clara-ve/field', 'field', __( 'Form field', 'visual-edit-lite' ), { type: { type: 'string', default: 'text' } } );
+	registerField( 'clara-ve/textarea', 'textarea', __( 'Form text area', 'visual-edit-lite' ), { rows: { type: 'number', default: 0 } } );
+	registerField( 'clara-ve/select', 'select', __( 'Form choice list', 'visual-edit-lite' ), { options: { type: 'array', default: [] } } );
+	registerField( 'clara-ve/checkbox', 'checkbox', __( 'Form checkbox', 'visual-edit-lite' ) );
 
 	wp.blocks.registerBlockType( 'clara-ve/form-group', {
 		apiVersion: 3, title: __( 'Form row', 'visual-edit-lite' ), category: 'widgets', icon: 'columns', ancestor: [ 'clara-ve/form' ],
