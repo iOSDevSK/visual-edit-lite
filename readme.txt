@@ -4,7 +4,7 @@ Tags: visual editor, html to wordpress, static site, front-end editor, llms.txt
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.31.3
+Stable tag: 1.31.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -247,6 +247,16 @@ Apache License 2.0 is compatible with version 3 of the GPL, which this
 plugin's "GPLv2 or later" licence allows.
 
 == Changelog ==
+
+= 1.31.4 =
+
+* New: On a block theme, the ⋯ menu of the Visual Edit Lite workspace can
+  duplicate the page or post that is open, and move it to the trash. The copy
+  is a draft and brings its content, categories and tags, featured image,
+  search-appearance record and small-screen rules; its canonical address is not
+  copied. The front page and the posts page cannot be removed from here.
+* Changed: Duplicating works for posts as well as pages, and asks for the right
+  to create whichever of the two is being copied.
 
 = 1.31.3 =
 

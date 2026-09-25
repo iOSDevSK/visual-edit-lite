@@ -129,6 +129,16 @@ class Clara_VE_Native_Gutenberg {
 			'googleFontsCss'       => Clara_VE_Fonts::css_url(),
 			'googleFontsMax'       => Clara_VE_Fonts::MAX_FONTS,
 			'canManageFonts'       => clara_ve_user_can_edit(),
+			// Copying and removing the open page or post, from the ⋯ menu. The
+			// routes ask for more than this — the right to create that type, to
+			// delete that post — and answer for themselves; this only keeps the
+			// two items out of the menu of somebody who could never use them.
+			'canPageActions'       => clara_ve_user_can_edit(),
+			'workspaceUrl'         => self::workspace_url(),
+			// The two pages WordPress itself depends on. Removing either breaks
+			// the site rather than the page, so the menu does not offer it (and
+			// Clara_VE_Page_Actions::trash() refuses regardless).
+			'protectedPages'       => array_values( array_filter( array( (int) get_option( 'page_on_front' ), (int) get_option( 'page_for_posts' ) ) ) ),
 			// False when the theme or the site's SEO settings keep Visual Edit from
 			// printing titles and descriptions on the public site (see
 			// clara_ve_stand_down_public_seo_on_foreign_theme()).

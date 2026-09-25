@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Visual Edit Lite 1.31.3\n"
+"Project-Id-Version: Visual Edit Lite 1.31.4\n"
 "Report-Msgid-Bugs-To: https://github.com/iOSDevSK/visual-edit-lite/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,8 +70,8 @@ msgstr ""
 #: includes/class-block-patch.php:82
 #: includes/class-block-patch.php:141
 #: includes/class-block-patch.php:571
-#: includes/class-page-actions.php:75
-#: includes/class-page-actions.php:163
+#: includes/class-page-actions.php:84
+#: includes/class-page-actions.php:173
 #: includes/class-rest.php:937
 msgid "That page no longer exists."
 msgstr ""
@@ -79,8 +79,8 @@ msgstr ""
 #: includes/class-block-patch.php:87
 #: includes/class-block-patch.php:146
 #: includes/class-responsive.php:166
-#: includes/class-rest.php:1057
-#: includes/class-rest.php:1088
+#: includes/class-rest.php:1059
+#: includes/class-rest.php:1090
 msgid "This page is not edited as blocks."
 msgstr ""
 
@@ -283,7 +283,7 @@ msgstr ""
 #: includes/class-editor-page.php:396
 #: assets/gutenberg.js:70
 #: assets/workspace.js:1689
-#: assets/workspace.js:1721
+#: assets/workspace.js:1723
 msgid "Search appearance"
 msgstr ""
 
@@ -292,16 +292,20 @@ msgstr ""
 #: assets/workspace-history.js:142
 #: assets/workspace-history.js:143
 #: assets/workspace-history.js:146
-#: assets/workspace.js:1708
-#: assets/workspace.js:1708
+#: assets/workspace.js:1710
+#: assets/workspace.js:1710
 msgid "History"
 msgstr ""
 
 #: includes/class-editor-page.php:364
+#: assets/workspace.js:1690
+#: assets/workspace.js:1727
 msgid "Duplicate this page"
 msgstr ""
 
 #: includes/class-editor-page.php:365
+#: assets/workspace.js:1691
+#: assets/workspace.js:1729
 msgid "Move this page to the trash"
 msgstr ""
 
@@ -311,7 +315,7 @@ msgstr ""
 
 #: includes/class-editor-page.php:367
 #: assets/workspace-history.js:132
-#: assets/workspace.js:1718
+#: assets/workspace.js:1720
 msgid "Save"
 msgstr ""
 
@@ -329,10 +333,12 @@ msgid "Duplicate page"
 msgstr ""
 
 #: includes/class-editor-page.php:423
+#: assets/workspace.js:1767
 msgid "Title"
 msgstr ""
 
 #: includes/class-editor-page.php:427
+#: assets/workspace.js:1768
 msgid "Address (slug)"
 msgstr ""
 
@@ -342,6 +348,7 @@ msgstr ""
 
 #: includes/class-editor-page.php:431
 #: assets/workspace.js:1033
+#: assets/workspace.js:1770
 msgid "Duplicate"
 msgstr ""
 
@@ -1137,7 +1144,7 @@ msgstr ""
 #: includes/class-parked-page.php:156
 #: includes/class-parked-page.php:405
 #: assets/gutenberg.js:66
-#: assets/workspace.js:1738
+#: assets/workspace.js:1797
 msgid "Pages"
 msgstr ""
 
@@ -1169,7 +1176,7 @@ msgstr ""
 #: includes/class-import-page.php:172
 #: includes/class-parked-page.php:410
 #: assets/gutenberg.js:74
-#: assets/workspace.js:1693
+#: assets/workspace.js:1695
 msgid "Form submissions"
 msgstr ""
 
@@ -1232,6 +1239,8 @@ msgstr ""
 #: assets/workspace-history.js:132
 #: assets/workspace.js:996
 #: assets/workspace.js:1054
+#: assets/workspace.js:1770
+#: assets/workspace.js:1785
 msgid "Cancel"
 msgstr ""
 
@@ -1637,23 +1646,27 @@ msgstr ""
 msgid "Thanks for confirming — here's what you signed up for:\n\n{download_url}"
 msgstr ""
 
-#: includes/class-page-actions.php:81
+#: includes/class-page-actions.php:91
 msgid "You are not allowed to copy this page."
 msgstr ""
 
-#: includes/class-page-actions.php:87
+#: includes/class-page-actions.php:97
 msgid "%s (copy)"
 msgstr ""
 
-#: includes/class-page-actions.php:166
+#: includes/class-page-actions.php:176
 msgid "You are not allowed to remove this page."
 msgstr ""
 
-#: includes/class-page-actions.php:175
+#: includes/class-page-actions.php:185
 msgid "This is the site's front page. Choose a different front page under Settings → Reading first, or the home page would be left empty."
 msgstr ""
 
-#: includes/class-page-actions.php:182
+#: includes/class-page-actions.php:194
+msgid "This is the page your posts are listed on. Choose a different posts page under Settings → Reading first."
+msgstr ""
+
+#: includes/class-page-actions.php:201
 msgid "WordPress would not move that page to the trash."
 msgstr ""
 
@@ -1830,7 +1843,7 @@ msgstr ""
 msgid "Could not rename that save."
 msgstr ""
 
-#: includes/class-rest.php:1193
+#: includes/class-rest.php:1195
 msgid "That save no longer exists."
 msgstr ""
 
@@ -2225,7 +2238,7 @@ msgid "Edit the complete site"
 msgstr ""
 
 #: assets/gutenberg.js:67
-#: assets/workspace.js:1738
+#: assets/workspace.js:1797
 msgid "Posts"
 msgstr ""
 
@@ -2234,8 +2247,8 @@ msgid "More Visual Edit tools"
 msgstr ""
 
 #: assets/gutenberg.js:73
-#: assets/workspace.js:1692
-#: assets/workspace.js:1723
+#: assets/workspace.js:1694
+#: assets/workspace.js:1725
 msgid "SEO & sharing settings"
 msgstr ""
 
@@ -2454,7 +2467,7 @@ msgid "Synced pattern"
 msgstr ""
 
 #: assets/workspace-history.js:57
-#: assets/workspace.js:1738
+#: assets/workspace.js:1797
 msgid "Navigation"
 msgstr ""
 
@@ -2477,7 +2490,7 @@ msgstr ""
 
 #: assets/workspace-history.js:124
 #: assets/workspace.js:351
-#: assets/workspace.js:1749
+#: assets/workspace.js:1808
 msgid "Retry"
 msgstr ""
 
@@ -2648,7 +2661,7 @@ msgstr ""
 
 #: assets/workspace.js:353
 #: assets/workspace.js:1587
-#: assets/workspace.js:1747
+#: assets/workspace.js:1806
 msgid "Search"
 msgstr ""
 
@@ -3110,7 +3123,7 @@ msgstr ""
 
 #: assets/workspace.js:985
 #: assets/workspace.js:1000
-#: assets/workspace.js:1709
+#: assets/workspace.js:1711
 msgid "Section"
 msgstr ""
 
@@ -3226,17 +3239,17 @@ msgid "Screen size"
 msgstr ""
 
 #: assets/workspace.js:1044
-#: assets/workspace.js:1705
+#: assets/workspace.js:1707
 msgid "Desktop"
 msgstr ""
 
 #: assets/workspace.js:1044
-#: assets/workspace.js:1705
+#: assets/workspace.js:1707
 msgid "Tablet"
 msgstr ""
 
 #: assets/workspace.js:1044
-#: assets/workspace.js:1705
+#: assets/workspace.js:1707
 msgid "Mobile"
 msgstr ""
 
@@ -3343,7 +3356,7 @@ msgid "Open Visual Edit settings"
 msgstr ""
 
 #: assets/workspace.js:1585
-#: assets/workspace.js:1709
+#: assets/workspace.js:1711
 msgid "Add a section"
 msgstr ""
 
@@ -3388,158 +3401,228 @@ msgid "All blocks"
 msgstr ""
 
 #: assets/workspace.js:1690
+#: assets/workspace.js:1727
+msgid "Duplicate this post"
+msgstr ""
+
+#: assets/workspace.js:1691
+#: assets/workspace.js:1729
+msgid "Move this post to the trash"
+msgstr ""
+
+#: assets/workspace.js:1692
 msgid "Lock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1690
+#: assets/workspace.js:1692
 msgid "Unlock pattern design"
 msgstr ""
 
-#: assets/workspace.js:1691
+#: assets/workspace.js:1693
 msgid "Hide WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1691
+#: assets/workspace.js:1693
 msgid "Show WordPress controls"
 msgstr ""
 
-#: assets/workspace.js:1694
+#: assets/workspace.js:1696
 msgid "Open in the WordPress editor"
 msgstr ""
 
-#: assets/workspace.js:1695
-#: assets/workspace.js:1764
+#: assets/workspace.js:1697
+#: assets/workspace.js:1823
 msgid "Back to the dashboard"
 msgstr ""
 
-#: assets/workspace.js:1703
+#: assets/workspace.js:1705
 msgid "Visual Edit"
 msgstr ""
 
-#: assets/workspace.js:1704
+#: assets/workspace.js:1706
 msgid "Your website"
 msgstr ""
 
-#: assets/workspace.js:1704
+#: assets/workspace.js:1706
 msgid "Switch page, template or part"
 msgstr ""
 
-#: assets/workspace.js:1705
+#: assets/workspace.js:1707
 msgid "Device"
 msgstr ""
 
-#: assets/workspace.js:1706
-#: assets/workspace.js:1706
-#: assets/workspace.js:1711
+#: assets/workspace.js:1708
+#: assets/workspace.js:1708
+#: assets/workspace.js:1713
 msgid "Undo"
 msgstr ""
 
-#: assets/workspace.js:1707
-#: assets/workspace.js:1707
+#: assets/workspace.js:1709
+#: assets/workspace.js:1709
 msgid "Redo"
 msgstr ""
 
-#: assets/workspace.js:1708
+#: assets/workspace.js:1710
 msgid "Saved versions and restore"
 msgstr ""
 
-#: assets/workspace.js:1709
+#: assets/workspace.js:1711
 msgid "Add a section from your theme"
 msgstr ""
 
-#: assets/workspace.js:1710
+#: assets/workspace.js:1712
 msgid "Design unlocked"
 msgstr ""
 
-#: assets/workspace.js:1710
+#: assets/workspace.js:1712
 msgid "Lock pattern design again"
 msgstr ""
 
-#: assets/workspace.js:1711
+#: assets/workspace.js:1713
 msgid "Version restored — Save to keep it"
 msgstr ""
 
-#: assets/workspace.js:1715
+#: assets/workspace.js:1717
 msgid "Saving…"
 msgstr ""
 
-#: assets/workspace.js:1715
+#: assets/workspace.js:1717
 msgid "Save failed — changes kept"
 msgstr ""
 
-#: assets/workspace.js:1715
+#: assets/workspace.js:1717
 msgid "unsaved"
 msgstr ""
 
-#: assets/workspace.js:1715
+#: assets/workspace.js:1717
 msgid "Saved"
 msgstr ""
 
-#: assets/workspace.js:1716
+#: assets/workspace.js:1718
 msgid "Preview"
 msgstr ""
 
-#: assets/workspace.js:1716
+#: assets/workspace.js:1718
 msgid "View site"
 msgstr ""
 
-#: assets/workspace.js:1717
-#: assets/workspace.js:1717
+#: assets/workspace.js:1719
+#: assets/workspace.js:1719
 msgid "More"
 msgstr ""
 
-#: assets/workspace.js:1723
+#: assets/workspace.js:1725
 msgid "This site does not print search titles and descriptions from Visual Edit: the theme provides its own, or the site-wide SEO & sharing settings are not enabled yet. Values saved here are kept."
 msgstr ""
 
-#: assets/workspace.js:1725
+#: assets/workspace.js:1731
 msgid "Click anything on the page to change it."
 msgstr ""
 
-#: assets/workspace.js:1725
+#: assets/workspace.js:1731
 msgid "Got it"
 msgstr ""
 
-#: assets/workspace.js:1738
-msgid "Templates"
-msgstr ""
-
-#: assets/workspace.js:1738
-msgid "Template parts"
-msgstr ""
-
-#: assets/workspace.js:1738
-msgid "Synced patterns"
-msgstr ""
-
-#: assets/workspace.js:1740
-msgid "There are unsaved changes. Leave this document?"
-msgstr ""
-
-#: assets/workspace.js:1746
-msgid "Show"
-msgstr ""
-
-#: assets/workspace.js:1747
-msgid "Search…"
-msgstr ""
-
 #: assets/workspace.js:1749
-msgid "Could not load this content."
+msgid "(copy)"
 msgstr ""
 
-#: assets/workspace.js:1750
-msgid "No results."
+#: assets/workspace.js:1755
+msgid "The copy could not be made."
 msgstr ""
 
-#: assets/workspace.js:1758
-msgid "Previous"
+#: assets/workspace.js:1762
+msgid "Copied as a draft. That address was taken, so the copy is at:"
 msgstr ""
 
-#: assets/workspace.js:1759
-msgid "Next"
+#: assets/workspace.js:1762
+msgid "Copied as a draft."
 msgstr ""
 
 #: assets/workspace.js:1763
+msgid "Open the copy"
+msgstr ""
+
+#: assets/workspace.js:1763
+msgid "Stay here"
+msgstr ""
+
+#: assets/workspace.js:1766
+msgid "The copy is made from the last saved version. Save first if your latest changes should be in it."
+msgstr ""
+
+#: assets/workspace.js:1767
+msgid "Title of the copy"
+msgstr ""
+
+#: assets/workspace.js:1768
+msgid "From the title"
+msgstr ""
+
+#: assets/workspace.js:1770
+msgid "Copying…"
+msgstr ""
+
+#: assets/workspace.js:1780
+msgid "It could not be moved to the trash."
+msgstr ""
+
+#: assets/workspace.js:1783
+msgid "This document"
+msgstr ""
+
+#: assets/workspace.js:1783
+msgid "will be moved to the trash. WordPress keeps it there, so it can be restored from the Pages or Posts list."
+msgstr ""
+
+#: assets/workspace.js:1785
+msgid "Moving…"
+msgstr ""
+
+#: assets/workspace.js:1785
+msgid "Move to trash"
+msgstr ""
+
+#: assets/workspace.js:1797
+msgid "Templates"
+msgstr ""
+
+#: assets/workspace.js:1797
+msgid "Template parts"
+msgstr ""
+
+#: assets/workspace.js:1797
+msgid "Synced patterns"
+msgstr ""
+
+#: assets/workspace.js:1799
+msgid "There are unsaved changes. Leave this document?"
+msgstr ""
+
+#: assets/workspace.js:1805
+msgid "Show"
+msgstr ""
+
+#: assets/workspace.js:1806
+msgid "Search…"
+msgstr ""
+
+#: assets/workspace.js:1808
+msgid "Could not load this content."
+msgstr ""
+
+#: assets/workspace.js:1809
+msgid "No results."
+msgstr ""
+
+#: assets/workspace.js:1817
+msgid "Previous"
+msgstr ""
+
+#: assets/workspace.js:1818
+msgid "Next"
+msgstr ""
+
+#: assets/workspace.js:1822
 msgid "Open the WordPress Site Editor"
 msgstr ""

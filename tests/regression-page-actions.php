@@ -235,6 +235,47 @@ $check( 'and is still there', 'publish' === get_post_status( $front ) );
 update_option( 'show_on_front', $was_show );
 update_option( 'page_on_front', $was_front );
 
+// ------------------------------------------------------------ posts as well
+
+// The block workspace opens posts as readily as pages, so a Copy that works on
+// one and answers 404 on the other reads as a bug. A post brings its own things
+// along: categories, tags, a featured image.
+$cat     = wp_insert_term( 'Clara VE copy test', 'category' );
+$cat_id  = is_wp_error( $cat ) ? (int) $cat->get_error_data() : (int) $cat['term_id'];
+$article = wp_insert_post(
+	array(
+		'post_type'    => 'post',
+		'post_status'  => 'publish',
+		'post_title'   => 'Origin article',
+		'post_content' => '<!-- wp:paragraph --><p>An article.</p><!-- /wp:paragraph -->',
+		'post_excerpt' => 'Teaser.',
+	)
+);
+$made[] = $article;
+wp_set_object_terms( $article, array( $cat_id ), 'category' );
+wp_set_object_terms( $article, array( 'clara-ve-tag' ), 'post_tag' );
+update_post_meta( $article, '_thumbnail_id', 4242 );
+
+$article_copy = Clara_VE_Page_Actions::duplicate( $article, 'Origin article copy', 'clara-ve-origin-article-copy' );
+$check( 'a post copies too', ! is_wp_error( $article_copy ) );
+if ( ! is_wp_error( $article_copy ) ) {
+	$made[]  = $article_copy['id'];
+	$twin    = get_post( $article_copy['id'] );
+	$check( 'and the copy is a post, not a page', 'post' === $twin->post_type );
+	$check( 'it is a draft', 'draft' === $twin->post_status );
+	$check( 'its category came across', has_term( $cat_id, 'category', $twin ) );
+	$check( 'and its tag', has_term( 'clara-ve-tag', 'post_tag', $twin ) );
+	$check( 'and its featured image', 4242 === (int) get_post_meta( $twin->ID, '_thumbnail_id', true ) );
+	$check( 'and its summary', 'Teaser.' === $twin->post_excerpt );
+}
+$template = get_posts( array( 'post_type' => 'wp_template_part', 'posts_per_page' => 1, 'post_status' => 'any' ) );
+$nav      = wp_insert_post( array( 'post_type' => 'wp_navigation', 'post_status' => 'publish', 'post_title' => 'Clara VE nav' ) );
+$made[]   = $nav;
+$refusal  = Clara_VE_Page_Actions::duplicate( $nav );
+$check( 'a navigation menu is not something this copies', is_wp_error( $refusal ) && 'clara_ve_no_page' === $refusal->get_error_code() );
+$refusal  = Clara_VE_Page_Actions::trash( $nav );
+$check( 'or removes', is_wp_error( $refusal ) && 'clara_ve_no_page' === $refusal->get_error_code() );
+
 // ------------------------------------------- the right to do what is asked
 
 // A permission has to match what the request DOES, not what it reads. Copying
@@ -268,6 +309,16 @@ $refused = Clara_VE_Page_Actions::duplicate( $origin, 'Should not exist', 'clara
 $check( 'and so does the method that would insert the post', is_wp_error( $refused ) && 'clara_ve_forbidden' === $refused->get_error_code() );
 $check( 'nothing was created on the way to refusing', null === get_page_by_path( 'clara-ve-should-not-exist', OBJECT, 'page' ) );
 
+// The copy is of the same type as the original, so a post asks the POST type's
+// create capability — taking the page one away must not close this door, and
+// taking the post one away must.
+$post_type = get_post_type_object( 'post' );
+$deny      = array( $page_type->cap->create_posts );
+$check( 'copying a post does not depend on the right to create pages', true === Clara_VE_REST::can_duplicate_page( $request( array( 'post' => $article ) ) ) );
+$deny = array( $post_type->cap->create_posts );
+$check( 'without the right to create posts, copying a post refuses', true !== Clara_VE_REST::can_duplicate_page( $request( array( 'post' => $article ) ) ) );
+$check( 'while copying a page is still allowed', true === Clara_VE_REST::can_duplicate_page( $request( array( 'post' => $origin ) ) ) );
+
 $deny = array();
 $check( 'an administrator may remove a page', true === Clara_VE_REST::can_trash_page( $request( array( 'post' => $origin ) ) ) );
 $deny = array( $page_type->cap->delete_posts, $page_type->cap->delete_published_posts, $page_type->cap->delete_others_posts, $page_type->cap->delete_private_posts );
@@ -295,6 +346,13 @@ remove_filter( 'user_has_cap', $strip, 99 );
 
 foreach ( $made as $id ) {
 	wp_delete_post( $id, true );
+}
+if ( ! empty( $cat_id ) ) {
+	wp_delete_term( $cat_id, 'category' );
+}
+$tag = get_term_by( 'slug', 'clara-ve-tag', 'post_tag' );
+if ( $tag ) {
+	wp_delete_term( $tag->term_id, 'post_tag' );
 }
 
 echo "\n";

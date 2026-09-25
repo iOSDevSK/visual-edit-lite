@@ -32,6 +32,14 @@ class Clara_VE_Page_Actions {
 	 * minted fresh below, and the parked slug/status pair belongs to whatever
 	 * put the original away, not to a copy made today.
 	 */
+	/**
+	 * What can be copied or removed from here: the two kinds of content a
+	 * person writes. Templates, parts and patterns have their own lifecycle in
+	 * WordPress's Site Editor, and a copy of one made here would be an override
+	 * nobody asked for.
+	 */
+	const TYPES = array( 'page', 'post' );
+
 	const NEVER_COPIED = array(
 		'_edit_lock',
 		'_edit_last',
@@ -43,16 +51,17 @@ class Clara_VE_Page_Actions {
 	);
 
 	/**
-	 * May the current user bring a new page into existence?
+	 * May the current user bring a new post of this type into existence?
 	 *
-	 * The capability is read from the post type — `create_posts`, which for
-	 * pages maps to `edit_pages` unless a site has remapped it — rather than
+	 * The capability is read from the post type — `create_posts`, which maps to
+	 * `edit_pages` or `edit_posts` unless a site has remapped it — rather than
 	 * written out, the way WP_REST_Posts_Controller asks before it inserts.
 	 *
+	 * @param string $post_type Post type of the thing being created.
 	 * @return bool
 	 */
-	public static function can_create_pages() {
-		$type = get_post_type_object( 'page' );
+	public static function can_create( $post_type ) {
+		$type = in_array( $post_type, self::TYPES, true ) ? get_post_type_object( $post_type ) : null;
 		return $type && current_user_can( $type->cap->create_posts );
 	}
 
@@ -71,13 +80,14 @@ class Clara_VE_Page_Actions {
 	 */
 	public static function duplicate( $post_id, $title = '', $slug = '' ) {
 		$post = get_post( (int) $post_id );
-		if ( ! $post || 'page' !== $post->post_type ) {
+		if ( ! $post || ! in_array( $post->post_type, self::TYPES, true ) ) {
 			return new WP_Error( 'clara_ve_no_page', __( 'That page no longer exists.', 'visual-edit-lite' ), array( 'status' => 404 ) );
 		}
 		// Two rights, not one: editing the page being copied, and creating the
-		// page the copy becomes. Asked here as well as in the REST permission
-		// callback, because this method is the thing that inserts the post.
-		if ( ! current_user_can( 'edit_post', $post->ID ) || ! self::can_create_pages() ) {
+		// page the copy becomes — of the same type as the original, so that is
+		// the type whose capability is asked. Asked here as well as in the REST
+		// permission callback, because this method is the thing that inserts.
+		if ( ! current_user_can( 'edit_post', $post->ID ) || ! self::can_create( $post->post_type ) ) {
 			return new WP_Error( 'clara_ve_forbidden', __( 'You are not allowed to copy this page.', 'visual-edit-lite' ), array( 'status' => 403 ) );
 		}
 
@@ -93,7 +103,7 @@ class Clara_VE_Page_Actions {
 
 		$copy_id = wp_insert_post(
 			array(
-				'post_type'      => 'page',
+				'post_type'      => $post->post_type,
 				'post_status'    => 'draft',
 				'post_title'     => $title,
 				'post_name'      => $slug,
@@ -112,7 +122,7 @@ class Clara_VE_Page_Actions {
 		}
 
 		self::copy_meta( $post->ID, (int) $copy_id );
-		self::copy_terms( $post->ID, (int) $copy_id );
+		self::copy_terms( $post->ID, (int) $copy_id, $post->post_type );
 		update_post_meta( (int) $copy_id, CLARA_VE_PAGE_THEME_META, sanitize_key( get_stylesheet() ) );
 
 		// The source. A block page keeps its content in post_content, which the
@@ -159,7 +169,7 @@ class Clara_VE_Page_Actions {
 	 */
 	public static function trash( $post_id ) {
 		$post = get_post( (int) $post_id );
-		if ( ! $post || 'page' !== $post->post_type ) {
+		if ( ! $post || ! in_array( $post->post_type, self::TYPES, true ) ) {
 			return new WP_Error( 'clara_ve_no_page', __( 'That page no longer exists.', 'visual-edit-lite' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'delete_post', $post->ID ) ) {
@@ -173,6 +183,15 @@ class Clara_VE_Page_Actions {
 			return new WP_Error(
 				'clara_ve_is_front_page',
 				__( 'This is the site\'s front page. Choose a different front page under Settings → Reading first, or the home page would be left empty.', 'visual-edit-lite' ),
+				array( 'status' => 409 )
+			);
+		}
+		// The same goes for the page WordPress uses as the blog index: bin it and
+		// every listing of posts on the site goes with it.
+		if ( (int) get_option( 'page_for_posts' ) === (int) $post->ID ) {
+			return new WP_Error(
+				'clara_ve_is_posts_page',
+				__( 'This is the page your posts are listed on. Choose a different posts page under Settings → Reading first.', 'visual-edit-lite' ),
 				array( 'status' => 409 )
 			);
 		}
@@ -286,8 +305,8 @@ class Clara_VE_Page_Actions {
 	 * @param int $to   Copy.
 	 * @return void
 	 */
-	private static function copy_terms( $from, $to ) {
-		foreach ( get_object_taxonomies( 'page' ) as $taxonomy ) {
+	private static function copy_terms( $from, $to, $post_type = 'page' ) {
+		foreach ( get_object_taxonomies( $post_type ) as $taxonomy ) {
 			$terms = wp_get_object_terms( $from, $taxonomy, array( 'fields' => 'ids' ) );
 			if ( ! is_wp_error( $terms ) && $terms ) {
 				wp_set_object_terms( $to, $terms, $taxonomy );
