@@ -12,7 +12,7 @@ Click any text, image or link on the live page and change it there. A front-end 
 
 == Description ==
 
-https://www.youtube.com/watch?v=1i8lNETiGuE
+https://www.youtube.com/watch?v=OuehQddfoh4
 
 Click any text, image or link on the live page and change it there. Visual Edit Lite is a front-end editor for WordPress that keeps every save as a restore point, so you can always go back to the page as it was.
 
