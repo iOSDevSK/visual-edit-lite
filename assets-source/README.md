@@ -17,8 +17,8 @@ cached hard, so a change can take minutes — occasionally hours — to appear.
 
 | File | Size | Where it shows |
 |---|---|---|
-| `icon-128x128.png` | 128 × 128 | **Search results** and the plugin card |
-| `icon-256x256.png` | 256 × 256 | The same, on retina displays |
+| `icon-128x128.gif` | 128 × 128 | **Search results** and the plugin card (animated, built by `icon-animated/build.sh`) |
+| `icon-256x256.gif` | 256 × 256 | The same, on retina displays |
 | `icon.svg` | vector | Preferred; **still requires a PNG fallback** |
 | `banner-772x250.png` | 772 × 250 | Top of the plugin's directory page |
 | `banner-1544x500.png` | 1544 × 500 | The same, retina — only works alongside the 772 wide one |
@@ -64,3 +64,15 @@ Suggested set, in the order that explains the product fastest:
 Take them at a 2× device pixel ratio on a light background, crop to the
 browser viewport with no desktop furniture, and keep the same site and content
 across all five so they read as one story.
+
+## The animated icon
+
+The icon is an animated GIF (a 2.7 s loop: the selection frame draws itself, the
+eye opens, the cursor clicks). `icon-animated/make_icon.py` holds the shapes,
+traced from the earlier PNG icon, and the timing; `icon-animated/build.sh`
+renders `icon-256x256.gif` and `icon-128x128.gif` (needs rsvg-convert,
+ImageMagick, ffmpeg and gifsicle).
+
+**Do not put a PNG, JPG or SVG icon next to the GIFs.** The directory ranks
+icon formats svg > png > jpg > gif (`find_best_asset()` in the plugin-directory
+source), so any other icon file hides the animation.

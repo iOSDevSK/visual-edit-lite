@@ -69,6 +69,36 @@
 		var attributes = editor.getBlockAttributes ? editor.getBlockAttributes( rootClientId ) || {} : {};
 		return name === 'core/post-content' || ( name === 'core/group' && attributes.tagName === 'main' );
 	}
+	/**
+	 * The items of a Page List are the site's published pages, drawn fresh each
+	 * time the block renders. Inside a navigation WordPress lets them be selected
+	 * and moved, but throws every move, removal or copy away (its edit hands the
+	 * inner blocks a no-op onChange), so the block still saves as one
+	 * <!-- wp:page-list /-->. Offering ▲▼ × ＋ there is a promise nothing keeps.
+	 */
+	function isPageListChild( editor, rootClientId ) {
+		return !! rootClientId && !! editor.getBlockName && editor.getBlockName( rootClientId ) === 'core/page-list';
+	}
+	/**
+	 * The links core's own "Edit Page List" dialog would make: one per page, a
+	 * submenu where a page has child pages, bound to the page's address where
+	 * this WordPress knows how (7.x), so a renamed page keeps its link.
+	 */
+	function pageListAsLinks( editor, clientId ) {
+		var core = wp.data.select( 'core' );
+		var bound = !! ( wp.blocks.getBlockBindingsSource && wp.blocks.getBlockBindingsSource( 'core/post-data' ) );
+		return ( editor.getBlockOrder( clientId ) || [] ).map( function ( id ) {
+			var own = editor.getBlockAttributes( id ) || {};
+			// The item does not carry the address (core reads page.url, the REST
+			// record says link), but the list's own query left the page in the
+			// store with exactly these fields, so the address is there to read.
+			var record = own.id ? core.getEntityRecord( 'postType', 'page', own.id, { _fields: [ 'id', 'link' ] } ) : null;
+			var attributes = { id: own.id, label: own.label || own.title || '', url: own.link || ( record && record.link ) || '', type: 'page', kind: 'post-type' };
+			if ( bound ) { attributes.metadata = { bindings: { url: { source: 'core/post-data', args: { field: 'link' } } } }; }
+			var inner = pageListAsLinks( editor, id );
+			return wp.blocks.createBlock( inner.length ? 'core/navigation-submenu' : 'core/navigation-link', attributes, inner );
+		} );
+	}
 	function insertionTarget( select ) {
 		var editor = select( 'core/block-editor' ); var postType = currentPostType( select );
 		var selected = editor.getSelectedBlockClientId ? editor.getSelectedBlockClientId() : null;
@@ -683,11 +713,13 @@
 			var root = editor.getBlockRootClientId ? editor.getBlockRootClientId( block.clientId ) || '' : '';
 			var order = editor.getBlockOrder ? editor.getBlockOrder( root ) : [];
 			var index = order.indexOf( block.clientId );
+			// A page in a Page List: WordPress would take the move, then forget it.
+			var frozen = isPageListChild( editor, root );
 			return JSON.stringify( {
 				root: root, index: index, first: index <= 0, last: index < 0 || index === order.length - 1,
-				canMove: !! ( editor.canMoveBlock && editor.canMoveBlock( block.clientId, root ) ),
-				canRemove: !! ( editor.canRemoveBlock && editor.canRemoveBlock( block.clientId ) ),
-				canDuplicate: !! ( editor.canInsertBlockType && editor.canInsertBlockType( block.name, root ) ),
+				canMove: ! frozen && !! ( editor.canMoveBlock && editor.canMoveBlock( block.clientId, root ) ),
+				canRemove: ! frozen && !! ( editor.canRemoveBlock && editor.canRemoveBlock( block.clientId ) ),
+				canDuplicate: ! frozen && !! ( editor.canInsertBlockType && editor.canInsertBlockType( block.name, root ) ),
 				children: editor.getBlockOrder ? editor.getBlockOrder( block.clientId ).length : 0,
 				isSection: !! ( editor.getBlockName && isSectionRoot( editor, root, currentPostType( select ) ) )
 			} );
@@ -1238,6 +1270,26 @@
 		}, [ props.clientId ] ) );
 		var editor = registry.select( 'core/block-editor' ); var actions = registry.dispatch( 'core/block-editor' );
 		var last = items[ items.length - 1 ];
+		if ( editor.getBlockName( props.clientId ) === 'core/page-list' ) {
+			// The pages themselves, not blocks anyone arranged: no ▲▼ × ＋ (see
+			// isPageListChild). What core's "Edit Page List" dialog offers instead
+			// is offered here, in place, when the list sits in a navigation.
+			var parent = editor.getBlockRootClientId( props.clientId ) || '';
+			// Core's own limit for the conversion: a hundred pages.
+			var canConvert = !! parent && items.length > 0 && items.length <= 100 && !! editor.canInsertBlockType && editor.canInsertBlockType( 'core/navigation-link', parent );
+			var convertToLinks = function () {
+				var links = pageListAsLinks( editor, props.clientId );
+				if ( ! links.length ) { return; }
+				actions.replaceBlocks( [ props.clientId ], links );
+				lastPointer = null; actions.selectBlock( parent );
+			};
+			return h( 'div', { className: 'cve-w-items' },
+				h( 'ol', null, items.map( function ( item ) { return h( 'li', { key: item.id }, h( 'span', { className: 'cve-w-item-name', title: item.label }, item.label ) ); } ) ),
+				h( 'div', { className: 'cve-w-mode-note', role: 'status' },
+					h( 'span', null, __( 'These are your published pages, in the order set on each page, then by title. A new page joins the list by itself.', 'visual-edit-lite' ) ),
+					canConvert && h( 'span', null, __( 'To arrange, remove or add items yourself, turn the list into links. New pages will then no longer be added by themselves.', 'visual-edit-lite' ) ),
+					canConvert && button( __( 'Convert to links', 'visual-edit-lite' ), convertToLinks, { className: 'cve-w-wide' } ) ) );
+		}
 		// A form adds fields from its own popup; a copy of its last child would be a second send button.
 		var canAdd = !! ( last && editor.canInsertBlockType && editor.canInsertBlockType( last.name, props.clientId ) ) && String( editor.getBlockName( props.clientId ) || '' ).indexOf( 'clara-ve/' ) !== 0;
 		return h( 'div', { className: 'cve-w-items' },
@@ -1885,6 +1937,9 @@
 			if ( needsBlock && ! live ) { return 'Block not found.'; }
 			var root = live ? editor().getBlockRootClientId( id ) || '' : '';
 			var paths = {};
+			if ( live && [ 'remove', 'duplicate', 'move' ].indexOf( op.op ) >= 0 && isPageListChild( editor(), root ) ) {
+				return 'This is a page in a Page List, which WordPress draws from the pages themselves; a change here would not be kept. Convert the Page List to links first (Items panel of the Page List).';
+			}
 			switch ( op.op ) {
 				case 'set-text':
 					if ( TEXT_BLOCKS.indexOf( live.name ) < 0 ) { return 'This block has no editable text.'; }
